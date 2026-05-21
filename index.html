@@ -419,13 +419,7 @@ canvas{max-width:100%;}
 <div id="toast"></div>
 <script>
 // iOS error handler — shows errors on screen for debugging
-window.onerror = function(msg, src, line) {
-  const d = document.createElement('div');
-  d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:#fff;padding:10px;font-size:12px;z-index:9999;word-break:break-all;';
-  d.textContent = 'JS Error: ' + msg + ' (line ' + line + ')';
-  document.body.appendChild(d);
-  return false;
-};
+// window.onerror removido (era apenas para debug)
 
 const EX_IMGS = {
   'db_bench_press': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bench_Press/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bench_Press/1.jpg'],
