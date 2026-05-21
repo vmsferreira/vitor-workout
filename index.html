@@ -1,0 +1,2422 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vitor Workout">
+<title>Vitor Workout</title>
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="manifest" href="manifest.json">
+<style>
+:root {
+  --bg: #0d0d0d; --bg2: #1a1a1a; --bg3: #242424;
+  --text: #f0f0f0; --text2: #aaa; --text3: #666;
+  --accent: #FF6B35; --accent2: #FF8C5A; --accentbg: rgba(255,107,53,0.15);
+  --green: #2ECC71; --greenbg: rgba(46,204,113,0.15);
+  --blue: #3498DB; --bluebg: rgba(52,152,219,0.15);
+  --yellow: #F1C40F; --red: #E74C3C;
+  --card: #1a1a1a; --border: #2e2e2e; --shadow: rgba(0,0,0,0.5);
+  --radius: 14px; --radius-sm: 8px;
+  --nav-h: 60px; --top-h: 56px;
+  --safe-top: env(safe-area-inset-top); --safe-bot: env(safe-area-inset-bottom);
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f5f5f5; --bg2: #fff; --bg3: #ebebeb;
+    --text: #111; --text2: #555; --text3: #999;
+    --card: #fff; --border: #ddd; --shadow: rgba(0,0,0,0.1);
+    --accentbg: rgba(255,107,53,0.1); --greenbg: rgba(46,204,113,0.1);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:16px;}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;}
+.screen{display:none;flex:1;flex-direction:column;overflow:hidden;}
+.screen.active{display:flex;}
+
+/* TOP BAR */
+.topbar{height:calc(var(--top-h) + var(--safe-top));padding:0 16px;padding-top:var(--safe-top);display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0;}
+.top-title{font-size:16px;font-weight:700;color:var(--text1);}
+.topbar h1{font-size:18px;font-weight:700;letter-spacing:-0.3px;}
+.topbar .timer-chip{background:var(--accentbg);color:var(--accent);font-size:14px;font-weight:700;padding:4px 10px;border-radius:20px;font-variant-numeric:tabular-nums;}
+.btn-back{width:36px;height:36px;border:none;background:var(--bg3);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text);}
+
+/* BOTTOM NAV */
+#bottomnav{height:calc(var(--nav-h) + var(--safe-bot));background:var(--bg2);border-top:1px solid var(--border);display:flex;align-items:flex-start;padding-top:8px;flex-shrink:0;}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:11px;font-weight:500;}
+.nav-btn.active{color:var(--accent);}
+.nav-btn svg{width:24px;height:24px;}
+
+/* SCROLL AREA */
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;min-height:0;}
+#hist-detail-screen.active{
+  position:fixed!important;inset:0!important;z-index:100!important;
+  display:block!important;overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+  background:var(--bg)!important;
+}
+#hist-detail-screen .topbar{position:sticky;top:0;z-index:50;background:var(--bg);box-shadow:0 1px 0 var(--border);}
+#hist-detail-content{padding:16px;padding-bottom:80px;}
+#settings-screen.active{
+  position:fixed!important;inset:0!important;z-index:100!important;
+  display:block!important;overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+  background:var(--bg)!important;
+}
+#settings-screen .topbar{position:sticky;top:0;z-index:50;background:var(--bg);box-shadow:0 1px 0 var(--border);}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;}
+.card-sm{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;}
+
+/* BUTTONS */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 20px;border-radius:var(--radius);font-size:16px;font-weight:600;border:none;cursor:pointer;transition:opacity .15s;}
+.btn:active{opacity:.75;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-secondary{background:var(--bg3);color:var(--text);}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);}
+.btn-green{background:var(--green);color:#fff;}
+.btn-sm{padding:8px 14px;font-size:14px;border-radius:var(--radius-sm);}
+.btn-icon{width:44px;height:44px;padding:0;border-radius:50%;background:var(--bg3);color:var(--text);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;}
+
+/* CHIPS */
+.chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;}
+.chip-accent{background:var(--accentbg);color:var(--accent);}
+.chip-green{background:var(--greenbg);color:var(--green);}
+.chip-blue{background:var(--bluebg);color:var(--blue);}
+.chip-gray{background:var(--bg3);color:var(--text2);}
+
+/* SECTION HEADER */
+.section-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.section-header h2{font-size:16px;font-weight:700;flex:1;}
+.section-line{height:2px;flex:1;background:var(--border);}
+
+/* HOME SCREEN */
+.workout-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px;}
+.workout-type-card{background:var(--card);border:2px solid var(--border);border-radius:var(--radius);padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:border-color .15s,background .15s;min-height:110px;position:relative;}
+.workout-type-card.active-type{border-color:var(--accent);background:var(--accentbg);}
+.workout-type-card.soon{opacity:.5;pointer-events:none;}
+button{-webkit-tap-highlight-color:rgba(0,0,0,0.1);touch-action:manipulation;}
+.session-card{touch-action:manipulation;}
+.workout-type-card .type-icon{font-size:32px;}
+.workout-type-card .type-name{font-size:14px;font-weight:700;text-align:center;}
+.workout-type-card .type-sub{font-size:11px;color:var(--text2);text-align:center;}
+.soon-badge{position:absolute;top:8px;right:8px;background:var(--bg3);color:var(--text3);font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;text-transform:uppercase;}
+
+/* SESSION CARDS */
+.session-card{cursor:pointer;background:var(--card);border:2px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;cursor:pointer;transition:border-color .15s;}
+.session-card:active{opacity:.8;}
+.session-card .sess-head{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.session-card .sess-letter{width:48px;height:48px;border-radius:12px;background:var(--accentbg);color:var(--accent);font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.session-card .sess-info h3{font-size:15px;font-weight:700;}
+.session-card .sess-info p{font-size:12px;color:var(--text2);margin-top:2px;}
+.session-card .sess-muscles{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+
+/* WORKOUT SCREEN */
+#workout-screen .topbar{position:relative;}
+.progress-bar-wrap{height:3px;background:var(--border);flex-shrink:0;}
+.progress-bar{height:100%;background:var(--accent);transition:width .3s;}
+.section-pill-row{display:flex;gap:8px;padding:10px 16px;flex-shrink:0;overflow-x:auto;}
+.section-pill{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;background:var(--bg3);color:var(--text3);cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.section-pill.active-pill{background:var(--accentbg);color:var(--accent);}
+.section-pill.done-pill{background:var(--greenbg);color:var(--green);}
+
+/* EXERCISE CARD */
+.exercise-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px;}
+.exercise-card .ex-top{padding:14px 14px 10px;}
+.exercise-card .ex-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;}
+.exercise-card .ex-name{font-size:17px;font-weight:700;line-height:1.2;}
+.exercise-card .ex-name-pt{font-size:12px;color:var(--text2);margin-top:2px;}
+.ex-meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.ex-notes{font-size:13px;color:var(--text2);line-height:1.4;background:var(--bg3);border-radius:var(--radius-sm);padding:10px;margin-bottom:10px;}
+.yt-btn{display:flex;align-items:center;gap:8px;background:rgba(255,0,0,0.12);color:#ff4444;border:none;border-radius:var(--radius-sm);padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;width:100%;}
+.muscle-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+.muscle-tag{font-size:11px;font-weight:600;padding:3px 8px;border-radius:10px;background:var(--bg3);color:var(--text2);}
+
+/* SETS TABLE */
+.sets-table{width:100%;border-collapse:collapse;}
+.sets-table th{font-size:11px;color:var(--text3);font-weight:600;text-align:center;padding:6px 4px;border-bottom:1px solid var(--border);}
+.sets-table th:first-child{text-align:left;padding-left:14px;}
+.sets-table td{padding:6px 4px;text-align:center;border-bottom:1px solid var(--border);}
+.sets-table td:first-child{padding-left:14px;font-size:13px;font-weight:600;color:var(--text2);text-align:left;}
+.sets-table tr.set-done td{opacity:.6;}
+.sets-table tr.set-done .set-num::after{content:"✓";margin-left:4px;color:var(--green);}
+
+/* STEPPER INPUT */
+.stepper{display:flex;align-items:center;gap:0;background:var(--bg3);border-radius:8px;overflow:hidden;}
+.stepper button{width:36px;height:36px;background:none;border:none;font-size:20px;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.stepper input{width:52px;text-align:center;background:none;border:none;font-size:15px;font-weight:700;color:var(--text);padding:0;-moz-appearance:textfield;}
+.stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;}
+.rir-select{background:var(--bg3);border:none;border-radius:8px;color:var(--text);font-size:14px;font-weight:600;padding:8px 6px;text-align:center;width:44px;}
+
+/* DONE SET BUTTON */
+.done-set-btn{background:var(--bg3);border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:4px 8px;border-radius:8px;transition:background .15s;}
+.done-set-btn.active{background:var(--greenbg);color:var(--green);}
+
+/* REST TIMER OVERLAY */
+#rest-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+#rest-overlay.show{display:flex;}
+.rest-circle{position:relative;width:160px;height:160px;}
+.rest-circle svg{transform:rotate(-90deg);}
+.rest-circle .rest-time{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.rest-circle .rest-secs{font-size:42px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;}
+.rest-circle .rest-label{font-size:12px;color:var(--text2);font-weight:600;}
+.rest-actions{display:flex;gap:12px;}
+.rest-next-ex{font-size:14px;color:var(--text2);text-align:center;max-width:260px;}
+
+/* EXERCISE NAV */
+.ex-nav{display:flex;align-items:center;gap:8px;padding:12px 16px;flex-shrink:0;border-top:1px solid var(--border);}
+.ex-nav-info{flex:1;text-align:center;}
+.ex-nav-info .ex-progress{font-size:12px;color:var(--text3);}
+.ex-nav-info .ex-current-name{font-size:14px;font-weight:600;color:var(--text2);}
+.superset-indicator{text-align:left;padding:6px 16px;font-size:12px;font-weight:600;color:var(--accent);background:var(--accentbg);flex-shrink:0;}
+
+/* SUMMARY SCREEN */
+.summary-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center;}
+.stat-box .s-val{font-size:26px;font-weight:800;color:var(--accent);}
+.stat-box .s-lbl{font-size:11px;color:var(--text2);font-weight:600;margin-top:2px;}
+.ex-summary-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.ex-summary-row:last-child{border:none;}
+.ex-s-name{font-size:13px;font-weight:600;flex:1;}
+.ex-s-sets{font-size:12px;color:var(--text2);}
+.ex-s-vol{font-size:12px;font-weight:700;color:var(--accent);}
+
+/* MUSCLE DIAGRAM */
+.muscle-diagram-wrap{display:flex;gap:16px;justify-content:center;padding:16px 0;}
+.body-fig{width:130px;text-align:center;}
+.body-fig-label{font-size:10px;color:var(--text3);font-weight:600;letter-spacing:1px;margin-top:6px;}
+.body-svg{width:155px;}
+.muscle-list-item{display:flex;justify-content:space-between;align-items:center;padding:9px 10px;border-radius:8px;cursor:pointer;transition:background .15s;}
+.muscle-list-item:hover,.muscle-list-item.active{background:var(--bg3);}
+.muscle-list-item .ml-bar-wrap{flex:1;height:5px;background:var(--border);border-radius:3px;margin:0 10px;}
+.muscle-list-item .ml-bar{height:5px;border-radius:3px;transition:width .3s;}
+.muscle-list-item .ml-label{font-size:13px;font-weight:600;min-width:110px;}
+.muscle-list-item .ml-count{font-size:12px;color:var(--text3);min-width:24px;text-align:right;}
+/* History detail exercise rows */
+.hd-ex-row{border-bottom:1px solid var(--border);}
+.hd-ex-header{display:flex;align-items:center;gap:10px;padding:12px 0;cursor:pointer;}
+.hd-ex-img{width:52px;height:52px;object-fit:cover;border-radius:8px;flex-shrink:0;background:var(--bg3);}
+.hd-ex-img-placeholder{width:52px;height:52px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.hd-ex-info{flex:1;min-width:0;}
+.hd-ex-name{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hd-ex-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+.hd-ex-vol{font-size:12px;color:var(--accent);font-weight:700;margin-top:2px;}
+.hd-ex-chevron{font-size:16px;color:var(--text3);flex-shrink:0;transition:transform .2s;}
+.hd-ex-chevron.open{transform:rotate(180deg);}
+.hd-ex-sets{display:none;padding-bottom:10px;}
+.hd-ex-sets.open{display:block;}
+
+/* HISTORY SCREEN */
+.hist-empty{text-align:center;padding:40px 20px;color:var(--text3);}
+.hist-entry{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;}
+.hist-entry .h-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.hist-entry .h-date{font-size:13px;font-weight:700;}
+.hist-entry .h-sess{font-size:12px;color:var(--text2);}
+.hist-entry .h-stats{display:flex;gap:12px;}
+.hist-entry .h-stat{font-size:12px;color:var(--text2);}
+.hist-entry .h-stat span{font-weight:700;color:var(--text);}
+.chart-wrap{position:relative;height:180px;margin:8px 0;}
+canvas{max-width:100%;}
+.ex-progress-item{margin-bottom:16px;}
+.ex-progress-item .ep-name{font-size:13px;font-weight:700;margin-bottom:6px;}
+.ep-bar-wrap{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.ep-bar{height:100%;background:var(--accent);border-radius:3px;transition:width .5s;}
+.ep-stats{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:3px;}
+
+/* CALENDAR HEATMAP */
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px;}
+.cal-day{aspect-ratio:1;border-radius:4px;background:var(--bg3);}
+.cal-day.trained{background:var(--accent);}
+.cal-day.today{outline:2px solid var(--accent);}
+.cal-labels{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;}
+.cal-labels span{font-size:9px;color:var(--text3);text-align:center;font-weight:600;}
+
+/* SHARE / EXPORT */
+.share-btns{display:flex;flex-direction:column;gap:10px;}
+
+/* TOAST */
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:#222;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:600;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;z-index:200;white-space:nowrap;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* TABS */
+.tabs{display:flex;gap:0;background:var(--bg3);border-radius:10px;padding:3px;margin-bottom:16px;}
+.tab{flex:1;padding:8px;text-align:center;font-size:13px;font-weight:600;color:var(--text3);border-radius:8px;cursor:pointer;transition:all .15s;}
+.tab.active{background:var(--card);color:var(--text);box-shadow:0 1px 4px var(--shadow);}
+
+/* ANIMATIONS */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.fadein{animation:fadeIn .25s ease}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.pulse{animation:pulse .6s ease infinite;}
+
+@keyframes exFlip {
+  0%,45%  { opacity:1; }
+  50%,95% { opacity:0; }
+  100%    { opacity:1; }
+}
+@keyframes exFlip2 {
+  0%,45%  { opacity:0; }
+  50%,95% { opacity:1; }
+  100%    { opacity:0; }
+}
+.ex-img-wrap {
+  position:relative; width:100%; aspect-ratio:4/3;
+  background:var(--bg3); border-radius:10px; overflow:hidden;
+  margin-bottom:10px;
+}
+.ex-img-wrap img {
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; border-radius:10px;
+}
+.ex-img-wrap .img0 { animation: exFlip 2s infinite; }
+.ex-img-wrap .img1 { animation: exFlip2 2s infinite; }
+.ex-img-wrap .img-badge {
+  position:absolute; bottom:8px; right:8px;
+  background:rgba(0,0,0,0.6); color:#fff;
+  font-size:10px; font-weight:700; padding:3px 8px;
+  border-radius:10px; letter-spacing:0.5px;
+}
+</style>
+</head>
+<body>
+<div id="app">
+<!-- HOME SCREEN -->
+<div id="home-screen" class="screen active">
+  <div class="topbar" style="display:flex;align-items:center;justify-content:space-between"><h1>💪 Vitor Workout</h1><div style="display:flex;align-items:center;gap:8px"><span id="home-date" style="font-size:12px;color:var(--text2)"></span><button style="background:none;border:none;font-size:22px;cursor:pointer;padding:4px;color:var(--text2)" onclick="openSettings()">⚙️</button></div></div>
+  <div class="scroll">
+    <div style="padding:8px 0 4px;"><p style="font-size:13px;color:var(--text2);padding:0 4px 12px;">Selecciona o tipo de treino:</p></div>
+    <div class="workout-type-grid">
+      <button class="workout-type-card active-type" id="btn-hotel" data-action="goSessions" data-arg="hotel" onclick="goSessions('hotel')" style="border:2px solid var(--accent);background:var(--accentbg);cursor:pointer;font-family:inherit;display:flex;-webkit-appearance:none;">
+        <div class="type-icon">🏨</div>
+        <div class="type-name">Hotel</div>
+        <div class="type-sub">Halteres · Cadeira · Chão</div>
+      </button>
+      <div class="workout-type-card soon">
+        <div class="soon-badge">Em Breve</div>
+        <div class="type-icon">🏋️</div>
+        <div class="type-name">Ginásio</div>
+        <div class="type-sub">Angola · Full Gym</div>
+      </div>
+      <div class="workout-type-card soon">
+        <div class="soon-badge">Em Breve</div>
+        <div class="type-icon">⚙️</div>
+        <div class="type-name">Speediance</div>
+        <div class="type-sub">Portugal · Casa</div>
+      </div>
+      <div class="workout-type-card soon">
+        <div class="soon-badge">Em Breve</div>
+        <div class="type-icon">🏃</div>
+        <div class="type-name">Corrida</div>
+        <div class="type-sub">Garmin · Zonas</div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:8px;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:8px;">📊 Resumo Rápido</div>
+      <div id="quick-stats" style="color:var(--text2);font-size:13px;">A carregar...</div>
+    </div>
+    <button id="last-workout-card" onclick="openLastWorkout()" style="width:100%;text-align:left;font-family:inherit;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;cursor:pointer;touch-action:manipulation;-webkit-appearance:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="font-size:13px;font-weight:700;">🔥 Último Treino</div>
+        <span style="color:var(--text3);font-size:16px">›</span>
+      </div>
+      <div id="last-workout-summary" style="color:var(--text2);font-size:13px;">Nenhum treino registado ainda.</div>
+    </button>
+  </div>
+</div>
+
+<!-- SESSIONS SCREEN -->
+<div id="sessions-screen" class="screen">
+  <div class="topbar">
+    <button class="btn-back" onclick="showScreen('home-screen')">←</button>
+    <h1 id="sessions-title">Hotel — Sessões</h1>
+    <div style="width:36px"></div>
+  </div>
+  <div class="scroll" id="sessions-list"></div>
+</div>
+
+<!-- WORKOUT SCREEN -->
+<div id="workout-screen" class="screen">
+  <div class="topbar">
+    <button onclick="confirmEndWorkout()" style="width:44px;height:44px;border:none;background:rgba(231,76,60,0.18);border-radius:50%;color:#e74c3c;font-size:20px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;flex-shrink:0">✕</button>
+    <h1 id="wk-title">Treino</h1>
+    <div class="timer-chip" id="wk-timer">00:00</div>
+  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar" id="wk-progress"></div></div>
+  <div class="section-pill-row" id="section-pills"></div>
+  <div id="superset-indicator" class="superset-indicator" style="display:none;"></div>
+  <div class="scroll" id="workout-content"></div>
+ <!-- Log mode footer -->
+ <div id="log-footer" style="display:none;position:sticky;bottom:0;background:var(--card);border-top:2px solid var(--accent);padding:14px 16px;z-index:10">
+   <div style="font-size:11px;color:var(--accent);font-weight:700;text-align:center;letter-spacing:1px;margin-bottom:10px">📋 MODO LOG — SEM TIMERS</div>
+   <button class="btn btn-primary" style="width:100%;font-size:16px;font-weight:700;padding:16px" onclick="confirmEndWorkout()">✓ Concluir e Guardar Log</button>
+ </div>
+  <div class="ex-nav">
+    <button class="btn-icon" id="prev-ex-btn" onclick="navigateEx(-1)">←</button>
+    <div class="ex-nav-info">
+      <div class="ex-progress" id="ex-progress-label"></div>
+      <div class="ex-current-name" id="ex-nav-name"></div>
+    </div>
+    <button class="btn-icon" id="next-ex-btn" onclick="navigateEx(1)">→</button>
+  </div>
+</div>
+
+<!-- SUMMARY SCREEN -->
+<div id="summary-screen" class="screen">
+  <div class="topbar">
+    <h1>🎉 Treino Completo!</h1>
+  </div>
+  <div class="scroll" id="summary-content"></div>
+</div>
+
+<!-- HISTORY SCREEN -->
+<div id="history-screen" class="screen">
+  <div class="topbar">
+    <h1>📈 Histórico</h1>
+    <button id="cloud-sync-btn" onclick="syncFromCloud()" style="background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;touch-action:manipulation">☁️ Sync</button>
+  </div>
+  <div style="padding:12px 16px 0;flex-shrink:0;">
+    <div class="tabs">
+      <button class="tab active" onclick="switchHistTab('log')" style="font-family:inherit;cursor:pointer">Log</button>
+      <button class="tab" onclick="switchHistTab('charts')" style="font-family:inherit;cursor:pointer">Evolução</button>
+      <button class="tab" onclick="switchHistTab('muscles')" style="font-family:inherit;cursor:pointer">Músculos</button>
+    </div>
+  </div>
+  <div class="scroll" id="history-content"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div id="bottomnav">
+  <button class="nav-btn active" id="nav-home" onclick="navTo('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Início
+  </button>
+  <button class="nav-btn" id="nav-hist" onclick="navTo('history')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Histórico
+  </button>
+</div>
+
+<!-- REST TIMER OVERLAY -->
+<div id="rest-overlay">
+  <div style="color:var(--text2);font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Descanso</div>
+  <div class="rest-circle">
+    <svg width="160" height="160" viewBox="0 0 160 160">
+      <circle cx="80" cy="80" r="70" fill="none" stroke="var(--border)" stroke-width="8"/>
+      <circle id="rest-arc" cx="80" cy="80" r="70" fill="none" stroke="var(--accent)" stroke-width="8" stroke-linecap="round" stroke-dasharray="439.8" stroke-dashoffset="0"/>
+    </svg>
+    <div class="rest-time"><div class="rest-secs" id="rest-secs">90</div><div class="rest-label">segundos</div></div>
+  </div>
+  <div class="rest-next-ex" id="rest-next-ex"></div>
+  <div class="rest-actions">
+    <button class="btn btn-secondary btn-sm" onclick="skipRest()">Saltar</button>
+    <button class="btn btn-primary btn-sm" onclick="addRestTime(30)">+30s</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script>
+// iOS error handler — shows errors on screen for debugging
+window.onerror = function(msg, src, line) {
+  const d = document.createElement('div');
+  d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:#fff;padding:10px;font-size:12px;z-index:9999;word-break:break-all;';
+  d.textContent = 'JS Error: ' + msg + ' (line ' + line + ')';
+  document.body.appendChild(d);
+  return false;
+};
+
+const EX_IMGS = {
+  'db_bench_press': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bench_Press/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bench_Press/1.jpg'],
+  'db_triceps_kickback': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Tricep_Dumbbell_Kickback/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Tricep_Dumbbell_Kickback/1.jpg'],
+  'incline_db_press': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Press/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Press/1.jpg'],
+  'db_lateral_raise': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Lying_One-Arm_Rear_Lateral_Raise/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Lying_One-Arm_Rear_Lateral_Raise/1.jpg'],
+  'db_fly': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Flyes/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Flyes/1.jpg'],
+  'seated_overhead_triceps_ext': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Seated_Triceps_Extension/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bicep_Curl/1.jpg'],
+  'arnold_press': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Arnold_Dumbbell_Press/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Arnold_Dumbbell_Press/1.jpg'],
+  'rear_delt_fly': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Bent-Over_Rear_Delt_Raise/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Bent-Over_Rear_Delt_Raise/1.jpg'],
+  'rear_delt_fly_d': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Bent-Over_Rear_Delt_Raise/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Bent-Over_Rear_Delt_Raise/1.jpg'],
+  'bulgarian_split_squat_a': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Split_Squat_with_Dumbbells/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Split_Squat_with_Dumbbells/1.jpg'],
+  'bulgarian_split_squat_c': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Split_Squat_with_Dumbbells/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Split_Squat_with_Dumbbells/1.jpg'],
+  'single_leg_calf_a': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Calf_Raise_On_A_Dumbbell/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Calf_Raise_On_A_Dumbbell/1.jpg'],
+  'nordic_hamstring_c': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lying_Hamstring_Curl_with_Dumbbell/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lying_Hamstring_Curl_with_Dumbbell/1.jpg'],
+  'step_calf_raise': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Calf_Raise_On_A_Dumbbell/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Calf_Raise_On_A_Dumbbell/1.jpg'],
+  'decline_pushup_crunch': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Push-Up/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Push-Up/1.jpg'],
+  'forearm_plank_a': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plank/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plank/1.jpg'],
+  'decline_db_press': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Dumbbell_Bench_Press/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Dumbbell_Bench_Press/1.jpg'],
+  'incline_db_fly': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Flyes/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Flyes/1.jpg'],
+  'db_pullover_a': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Straight-Arm_Dumbbell_Pullover/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Straight-Arm_Dumbbell_Pullover/1.jpg'],
+  'db_pullover_b': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Straight-Arm_Dumbbell_Pullover/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Straight-Arm_Dumbbell_Pullover/1.jpg'],
+  'db_bent_row': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bent_Over_Two-Dumbbell_Row/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bent_Over_Two-Dumbbell_Row/1.jpg'],
+  'standing_biceps_curl': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bicep_Curl/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bicep_Curl/1.jpg'],
+  'single_arm_row': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One-Arm_Dumbbell_Row/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One-Arm_Dumbbell_Row/1.jpg'],
+  'single_arm_row_d': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One-Arm_Dumbbell_Row/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One-Arm_Dumbbell_Row/1.jpg'],
+  'hammer_curl': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Alternate_Hammer_Curl/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Alternate_Hammer_Curl/1.jpg'],
+  'incline_biceps_curl': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Hammer_Curls/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Hammer_Curls/1.jpg'],
+  'db_deadlift': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Deadlift/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Deadlift/1.jpg'],
+  'concentration_curl': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Concentration_Curls/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Concentration_Curls/1.jpg'],
+  'pushup_b': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Push-Up_off_of_a_Dumbbell/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Push-Up_off_of_a_Dumbbell/1.jpg'],
+  'single_leg_rdl': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Single_Leg_Glute_Bridge/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Single_Leg_Glute_Bridge/1.jpg'],
+  'db_step_up_b': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Step_Ups/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Step_Ups/1.jpg'],
+  'db_step_up_d': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Step_Ups/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Step_Ups/1.jpg'],
+  'russian_twist_b': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Russian_Twist/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Russian_Twist/1.jpg'],
+  'russian_twist_c': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Russian_Twist/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Russian_Twist/1.jpg'],
+  'side_plank_b': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Push_Up_to_Side_Plank/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Push_Up_to_Side_Plank/1.jpg'],
+  'dead_bug': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dead_Bug/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dead_Bug/1.jpg'],
+  'reverse_curl': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Dumbbell_Reverse_Curl/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Dumbbell_Reverse_Curl/1.jpg'],
+  'zottman_curl': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Zottman_Curl/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Zottman_Curl/1.jpg'],
+  'db_rdl_c': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Romanian_Deadlift/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Romanian_Deadlift/1.jpg'],
+  'db_rdl_d': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Romanian_Deadlift/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Romanian_Deadlift/1.jpg'],
+  'walking_lunge': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Lunges/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Lunges/1.jpg'],
+  'stiff_leg_dl': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Stiff-Legged_Dumbbell_Deadlift/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Stiff-Legged_Dumbbell_Deadlift/1.jpg'],
+  'goblet_squat': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Goblet_Squat/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Goblet_Squat/1.jpg'],
+  'goblet_squat_d': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Goblet_Squat/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Goblet_Squat/1.jpg'],
+  'sumo_squat': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Sumo_Deadlift/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Sumo_Deadlift/1.jpg'],
+  'side_lunge': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Lunge/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Lunge/1.jpg'],
+  'tibialis_raise': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Anterior_Tibialis-SMR/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Anterior_Tibialis-SMR/1.jpg'],
+  'db_hip_thrust': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Hip_Thrust/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Hip_Thrust/1.jpg'],
+  'single_leg_hip_thrust_d': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Single_Leg_Glute_Bridge/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Single_Leg_Glute_Bridge/1.jpg'],
+  'hip_abduction': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Glute_Kickback/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Glute_Kickback/1.jpg'],
+  'reverse_crunch': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Reverse_Crunch/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Reverse_Crunch/1.jpg'],
+  'copenhagen_plank': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Push_Up_to_Side_Plank/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Push_Up_to_Side_Plank/1.jpg'],
+  'tke': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bodyweight_Squat/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bodyweight_Squat/1.jpg'],
+  'db_incline_press_d': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Press/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Press/1.jpg'],
+  'db_lunge_d': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Lunges/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Lunges/1.jpg'],
+  'seated_ohp': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Shoulder_Press/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Shoulder_Press/1.jpg'],
+  'upright_row': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Dumbbell_Upright_Row/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Dumbbell_Upright_Row/1.jpg'],
+  'db_shrug': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Shrug/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Shrug/1.jpg'],
+  'bird_dog': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plank/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plank/1.jpg'],
+  'decline_situp': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/3_4_Sit-Up/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/3_4_Sit-Up/1.jpg'],
+  'incline_db_fly_d': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Flyes/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Flyes/1.jpg'],
+  'bench_dip': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bench_Dips/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bench_Dips/1.jpg'],
+  'preacher_curl': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One_Arm_Dumbbell_Preacher_Curl/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One_Arm_Dumbbell_Preacher_Curl/1.jpg'],
+  'spider_curl': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Spider_Curl/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Spider_Curl/1.jpg'],
+};
+
+// ── Bodyweight exercises (use bodyweight for volume) ──
+const BODYWEIGHT_EX = [
+  'decline_pushup_crunch','forearm_plank_a','pushup_b','side_plank_b',
+  'reverse_crunch','copenhagen_plank','tke','bird_dog','decline_situp',
+  'bench_dip','glute_bridge','hip_thrust_bw','mountain_climber',
+  'jumping_jack','burpee','forearm_plank_d','side_plank_d',
+  'forearm_plank_b','forearm_plank_c'
+];
+function getBodyweight() {
+  return parseFloat(loadSettings().bodyweight)||80;
+}
+// ═══════════════════════════════════════════════════════
+// EXERCISE DATA
+// ═══════════════════════════════════════════════════════
+const YT = s => `https://www.youtube.com/results?search_query=${encodeURIComponent(s)}`;
+const M = { // Muscle colors for diagram
+  chest:'#FF6B35', upper_chest:'#FF8C5A', triceps:'#E74C3C',
+  front_delt:'#FF6B35', side_delt:'#F39C12', rear_delt:'#E67E22',
+  biceps:'#3498DB', back:'#2980B9', lats:'#1ABC9C', traps:'#16A085',
+  abs:'#9B59B6', core:'#8E44AD', quads:'#2ECC71', hamstrings:'#27AE60',
+  glutes:'#1ABC9C', calves:'#17A589', adductors:'#3498DB',
+  lower_back:'#E67E22', forearms:'#95A5A6', tibialis:'#2ECC71'
+};
+const MUSCLE_PT = {
+  chest:'Peitoral', upper_chest:'Peit.Superior', triceps:'Tríceps',
+  front_delt:'Delt.Anterior', side_delt:'Delt.Lateral', rear_delt:'Delt.Posterior',
+  biceps:'Bíceps', back:'Costas', lats:'Dorsal', traps:'Trapézio',
+  abs:'Abdominais', core:'Core', quads:'Quadríceps', hamstrings:'Isquiotibiais',
+  glutes:'Glúteos', calves:'Gémeos', adductors:'Adutores',
+  lower_back:'Lombar', forearms:'Antebraços', tibialis:'Tibial'
+};
+
+const SESSIONS = {
+  hotel: {
+    name: 'Hotel / Viagem',
+    sessions: {
+      A: {
+        name: 'Session A — PUSH',
+        day: '2ª Feira', duration: '~90 min',
+        focus: 'Peito ⭐ · Tríceps · Ombros · Core',
+        muscles: ['chest','triceps','front_delt','side_delt','abs'],
+        warmup: [
+          {id:'w_cardio_a',name:'Light Cardio',namePT:'Cardio Leve',reps:'5 min',rest:0,notes:'Passadeira, bicicleta estática, ou saltos no lugar. Frequência cardíaca ≈100-120bpm.',muscles:[],yt:YT('cardio warm up 5 minutes gym')},
+          {id:'w_cross_swings',name:'Straight-Arm Cross Swings',namePT:'Braços Cruzados',reps:'×20',rest:0,notes:'Braços estendidos, cruzar à frente do peito e abrir. Activação deltóides e peitoral.',muscles:['front_delt','chest'],yt:YT('cross body arm swings warm up shoulders')},
+          {id:'w_shoulder_circles',name:'Dynamic Shoulder Circles',namePT:'Círculos de Ombros',reps:'×20',rest:0,notes:'Círculos lentos e amplos. Frente e trás. Mobilidade articular do ombro.',muscles:['front_delt','side_delt'],yt:YT('dynamic shoulder circles warm up')},
+          {id:'w_chest_opener',name:'Chest Opener',namePT:'Abertura de Peito',reps:'×10',rest:0,notes:'Braços para trás, abre o peito ao máximo. Stretch dinâmico do peitoral.',muscles:['chest'],yt:YT('chest opener stretch warm up')},
+          {id:'w_pushup_a',name:'BW Push-Up',namePT:'Flexões (Aquecimento)',reps:'×15',rest:0,notes:'Ritmo moderado, amplitude completa. Ativar peitoral e tríceps antes do treino principal.',muscles:['chest','triceps'],yt:YT('perfect push up form jeff nippard')},
+          {id:'w_lat_raise_act',name:'Lateral Raise Activation',namePT:'Activação Lateral',reps:'×15',rest:0,notes:'Peso muito leve ou sem peso. Foco em sentir o deltóide lateral a trabalhar.',muscles:['side_delt'],yt:YT('lateral raise proper form technique')}
+        ],
+        workout: [
+          {id:'db_bench_press',name:'Dumbbell Bench Press',namePT:'Press Halteres Plano',group:'SS1',isMain:true,sets:4,reps:'6-8',rir:0,rest:120,notes:'PRINCIPAL ⭐ — peito horizontal. Banco hotel ou chão. Amplitude máxima. Pés no chão, arco natural, descida controlada 2-3s.',muscles:['chest','front_delt','triceps'],yt:YT('dumbbell bench press proper form jeff nippard')},
+          {id:'db_triceps_kickback',name:'Dumbbell Triceps Kickback',namePT:'Extensão Tríceps Inclinado',group:'SS1',sets:4,reps:'12-15',rir:0,rest:120,notes:'Tríceps — cotovelo fixo junto ao tronco, extensão completa. Inclinado 45°. Sem balanço.',muscles:['triceps'],yt:YT('dumbbell triceps kickback proper form athleanx')},
+          {id:'incline_db_press',name:'45° Incline Dumbbell Press',namePT:'Press Inclinado 45°',group:'SS2',sets:3,reps:'10-12',rir:0,rest:90,notes:'Peito superior / clavicular. Banco inclinado ou encosto de cadeira a 45°. Cotovelos ligeiramente para dentro.',muscles:['upper_chest','front_delt','triceps'],yt:YT('incline dumbbell press 45 degrees form technique jeff nippard')},
+          {id:'db_lateral_raise',name:'Dumbbell Lateral Raise',namePT:'Elevação Lateral Halteres',group:'SS2',sets:3,reps:'15-20',rir:0,rest:90,notes:'Deltóide lateral. Cotovelo ligeiramente flectido. Executar devagar — 2s subida, 3s descida. Não trapézio!',muscles:['side_delt'],yt:YT('lateral raise technique jeff nippard deltoid')},
+          {id:'db_fly',name:'Dumbbell Fly',namePT:'Fly Halteres Plano',group:'SS3',sets:3,reps:'12-15',rir:0,rest:90,notes:'Peito — esticamento máximo no fundo. Banco ou chão. Cotovelos ligeiramente flectidos. Imagina abraçar uma árvore.',muscles:['chest'],yt:YT('dumbbell fly chest stretch technique athleanx')},
+          {id:'seated_overhead_triceps_ext',name:'Seated Overhead Triceps Extension',namePT:'Extensão Tríceps Cabeça',group:'SS3',sets:3,reps:'10-12',rir:0,rest:90,notes:'Cabeça longa do tríceps. Sentado, halter com as duas mãos atrás da cabeça. Cotovelos apontados para cima.',muscles:['triceps'],yt:YT('seated overhead dumbbell triceps extension technique form')},
+          {id:'arnold_press',name:'Seated Arnold Press',namePT:'Press Arnold Sentado',group:'SS4',sets:3,reps:'10-12',rir:0,rest:90,notes:'Ombros completo. Começa com palmas para ti, roda para fora ao subir. Rotação completa.',muscles:['front_delt','side_delt','triceps'],yt:YT('arnold press technique proper form athleanx')},
+          {id:'rear_delt_fly',name:'Dumbbell Bent-Over Rear Delt Fly',namePT:'Fly Deltóide Posterior',group:'SS4',sets:3,reps:'15',rir:0,rest:90,notes:'Deltóide posterior. Inclinado a 45°, costas paralelas. Cotovelos ligeiramente flectidos. Puxar para os lados.',muscles:['rear_delt','traps','back'],yt:YT('rear delt fly bent over dumbbell technique jeff nippard')},
+          {id:'bulgarian_split_squat_a',name:'Bulgarian Split Squat',namePT:'Agachamento Búlgaro',group:'SS5',sets:3,reps:'8-10/leg',rir:1,rest:90,notes:'🏃 RUNNING KEY — pé traseiro na cama/cadeira. Profundidade total. Joelho dianteiro alinhado com o pé. DB opcional.',muscles:['quads','glutes','hamstrings'],yt:YT('bulgarian split squat technique jeff nippard')},
+          {id:'single_leg_calf_a',name:'Standing on Step Single-Leg Dumbbell Calf Raise',namePT:'Elevação Gémeos Unipodal no Degrau',group:'SS5',sets:3,reps:'15/leg',rir:0,rest:90,notes:'🏃 RUNNING KEY — borda de escada ou placa no chão. Amplitude total: descer talão abaixo do nível. Pausa no topo 1s. Halter na mão.',muscles:['calves'],yt:YT('standing on step single leg dumbbell calf raise full range amplitude')},
+          {id:'decline_pushup_crunch',name:'Decline Push-Up Crunch',namePT:'Flexão Declinada + Crunch',group:'SS6',sets:3,reps:'12-15',rir:0,rest:60,notes:'ABS — pés elevados na cama/cadeira. Combina push-up declinado com crunch no topo. Core activo.',muscles:['abs','chest','triceps'],yt:YT('decline push up crunch abs exercise form')},
+          {id:'forearm_plank_a',name:'Forearm Plank',namePT:'Prancha Antebraços',group:'SS6',sets:3,reps:'45-60s',rir:0,rest:60,notes:'Core activo — glúteos contraídos, coluna neutra, não deixar cair as ancas. Respiração controlada.',muscles:['core','abs'],yt:YT('forearm plank proper form core technique')},
+          {id:'decline_db_press',name:'Decline Dumbbell Press',namePT:'Press Halteres Declinado',group:'SS7',sets:3,reps:'10-12',rir:0,rest:90,notes:'Peito inferior — pés na cama/cadeira elevados, cabeça mais baixa que as ancas. Peito esternal inferior.',muscles:['chest','triceps'],yt:YT('decline dumbbell press lower chest technique')},
+          {id:'incline_db_fly',name:'Incline Dumbbell Fly',namePT:'Fly Halteres Inclinado',group:'SS7',sets:3,reps:'12-15',rir:0,rest:90,notes:'PEITO SUPERIOR — deitado inclinado (almofada/mochila como apoio). Amplitude máxima, cotovelos ligeiramente flectidos.',muscles:['upper_chest','front_delt'],yt:YT('incline dumbbell fly upper chest technique jeff nippard')},
+          {id:'db_pullover_a',name:'Dumbbell Pullover',namePT:'Pullover com Halter',group:'SS8',sets:3,reps:'12-15',rir:1,rest:90,notes:'🆕 PEITO CLAVICULAR + DORSAL — deitado no chão ou banco. Amplitude máxima. Cotovelos ligeiramente flectidos. Descer até sentir esticamento.',muscles:['chest','lats','front_delt'],yt:YT('dumbbell pullover technique chest lats athleanx')}
+        ],
+        cooldown: [
+          {id:'c_chest_stretch',name:'Chest Stretch',namePT:'Stretch Peitoral',reps:'2×30s',rest:0,notes:'Braço estendido contra parede ou porta. Rodar ligeiramente o tronco para afastar o peitoral.',muscles:['chest'],yt:YT('chest stretch doorway proper form')},
+          {id:'c_triceps_stretch',name:'Triceps Stretch',namePT:'Stretch Tríceps',reps:'2×30s',rest:0,notes:'Braço atrás da cabeça, cotovelo apontado para cima. Outra mão puxa o cotovelo.',muscles:['triceps'],yt:YT('triceps stretch overhead form')},
+          {id:'c_lat_delt_stretch',name:'Lateral Deltoid Stretch',namePT:'Stretch Deltóide Lateral',reps:'2×30s',rest:0,notes:'Braço cruzado à frente do peito. Outra mão puxa o cotovelo para o peito.',muscles:['side_delt'],yt:YT('lateral deltoid shoulder stretch form')},
+          {id:'c_thoracic_a',name:'Thoracic Rotation',namePT:'Rotação Torácica',reps:'×10',rest:0,notes:'Deitado de lado, joelhos a 90°. Rotar o tronco superior abrindo o braço. Mobilidade espinhal.',muscles:['back'],yt:YT('thoracic rotation mobility exercise')},
+          {id:'c_child_pose_a',name:'Child Pose',namePT:'Posição Criança',reps:'60s',rest:0,notes:'Joelhos no chão, braços estendidos à frente. Descanso activo — relaxar completamente.',muscles:['back','lats'],yt:YT('childs pose yoga form benefits')}
+        ]
+      },
+      B: {
+        name: 'Session B — PULL',
+        day: '3ª Feira', duration: '~90 min',
+        focus: 'Costas · Bíceps ⭐ · Running Key',
+        muscles: ['back','lats','biceps','hamstrings','glutes','abs'],
+        warmup: [
+          {id:'w_cardio_b',name:'Light Cardio',namePT:'Cardio Leve',reps:'5 min',rest:0,notes:'5 minutos leve para aquecer. FC ≈100-120bpm.',muscles:[],yt:YT('cardio warm up 5 minutes')},
+          {id:'w_cat_cow',name:'Cat & Cow',namePT:'Gato & Vaca',reps:'×12',rest:0,notes:'De quatro apoios. Alternar arqueamento e redondamento da coluna. Mobilidade espinhal.',muscles:['back'],yt:YT('cat cow exercise spine mobility form')},
+          {id:'w_arm_circles_b',name:'Single-Arm Circles',namePT:'Círculos Unilaterais',reps:'×10 cada',rest:0,notes:'Círculos amplos com cada braço. Foco na articulação glenoumeral.',muscles:['front_delt','side_delt'],yt:YT('single arm circles shoulder mobility warm up')},
+          {id:'w_scapular',name:'Scapular Retraction',namePT:'Retracção Escapular',reps:'×15',rest:0,notes:'Braços estendidos, puxar omoplatas para trás e para baixo. Activação dorsal.',muscles:['back','rear_delt'],yt:YT('scapular retraction exercise form activation')},
+          {id:'w_bw_rdl',name:'Bodyweight Romanian Deadlift',namePT:'RDL Peso Corporal',reps:'×12',rest:0,notes:'Bisagra de anca. Manter costas planas, descer até sentir isquiotibiais. Ativar posterior.',muscles:['hamstrings','glutes','lower_back'],yt:YT('bodyweight romanian deadlift hinge form')},
+          {id:'w_kneeling_pulldown',name:'Kneeling Lat Activation',namePT:'Activação Dorsal Ajoelhado',reps:'×15',rest:0,notes:'De joelhos, braços acima. Puxar cotovelos para baixo e para trás. Sentir o grande dorsal.',muscles:['lats'],yt:YT('kneeling lat activation exercise form')}
+        ],
+        workout: [
+          {id:'db_bent_row',name:'Dumbbell Bent-Over Row',namePT:'Remada Inclinada Bilateral',group:'SS1',isMain:true,sets:4,reps:'8-10',rir:0,rest:120,notes:'COSTAS ⭐ — bilateral. Costas paralelas ao chão (90°). Puxar os halteres ao quadril. Contracção escapular no topo.',muscles:['back','lats','rear_delt','biceps'],yt:YT('dumbbell bent over row form jeff nippard back')},
+          {id:'standing_biceps_curl',name:'Standing Dumbbell Biceps Curl',namePT:'Curl Bíceps em Pé',group:'SS1',sets:4,reps:'8-10',rir:0,rest:120,notes:'Bíceps — supinação total no topo. Cotovelos fixos junto ao tronco. Excêntrico controlado 3s.',muscles:['biceps'],yt:YT('dumbbell biceps curl form supination jeff nippard')},
+          {id:'single_arm_row',name:'Single-Arm Dumbbell Row',namePT:'Remada Unilateral',group:'SS2',sets:3,reps:'12/lado',rir:0,rest:90,notes:'Apoio na cadeira ou banco. Puxar o halter ao quadril. Foco na contracção do grande dorsal — não bíceps.',muscles:['lats','back','biceps'],yt:YT('single arm dumbbell row proper form athleanx')},
+          {id:'hammer_curl',name:'Standing Dumbbell Hammer Curl',namePT:'Hammer Curl em Pé',group:'SS2',sets:3,reps:'10-12',rir:0,rest:90,notes:'Pegada neutra (polegar para cima). Trabalha braquiorradial e braquial. Cotovelos fixos.',muscles:['biceps','forearms'],yt:YT('hammer curl technique jeff nippard biceps')},
+          {id:'db_pullover_b',name:'Dumbbell Pullover',namePT:'Pullover Dorsal',group:'SS3',sets:3,reps:'10-12',rir:0,rest:90,notes:'Grande dorsal + serrátil. Deitado no chão ou banco perpendicular. Amplitude máxima — descer até sentir esticamento.',muscles:['lats','chest'],yt:YT('dumbbell pullover lats back technique form')},
+          {id:'incline_biceps_curl',name:'Incline Dumbbell Biceps Curl',namePT:'Curl Inclinado Bíceps',group:'SS3',sets:3,reps:'10-12',rir:0,rest:90,notes:'Cabeça longa do bíceps. Sentado inclinado (~60°). Cotovelo atrás do tronco — amplitude total.',muscles:['biceps'],yt:YT('incline dumbbell bicep curl long head jeff nippard')},
+          {id:'db_deadlift',name:'Dumbbell Deadlift',namePT:'Deadlift com Halteres',group:'SS4',sets:3,reps:'10-12',rir:1,rest:90,notes:'Costas + ísquios. Bisagra controlada. Excêntrico 3s. Halteres deslizam pelas pernas.',muscles:['hamstrings','lower_back','glutes','back'],yt:YT('dumbbell deadlift form technique proper')},
+          {id:'concentration_curl',name:'Dumbbell Concentration Curl',namePT:'Curl Concentrado',group:'SS4',sets:3,reps:'12',rir:0,rest:90,notes:'Pico do bíceps. Cotovelo apoiado no joelho interior. DROPSET na última série — reduz peso 30%, vai até falha.',muscles:['biceps'],yt:YT('concentration curl technique jeff nippard dropset')},
+          {id:'pushup_b',name:'Push-Up',namePT:'Flexões',group:'SS5',sets:3,reps:'até falha',rir:0,rest:90,notes:'Push secundário — vai até falha com boa técnica. Cotovelos a 45° do corpo, descida controlada.',muscles:['chest','triceps','front_delt'],yt:YT('push up perfect form jeff nippard')},
+          {id:'single_leg_rdl',name:'Single-Leg Romanian Deadlift',namePT:'RDL Unipodal',group:'SS5',sets:3,reps:'8-10/leg',rir:1,rest:90,notes:'🏃 RUNNING KEY — DB | estabilidade unilateral. Manter anca nivelada. Coluna neutra. Descer até sentir isquiotibiais.',muscles:['hamstrings','glutes','lower_back'],yt:YT('single leg romanian deadlift technique jeff nippard')},
+          {id:'db_step_up_b',name:'Dumbbell Step-Up',namePT:'Step-Up com Halteres',group:'SS6',sets:3,reps:'10/leg',rir:0,rest:90,notes:'🏃 RUNNING KEY — cadeira ou step. Drive do joelho em altura no topo. Controlar a descida.',muscles:['quads','glutes'],yt:YT('dumbbell step up technique knee drive athleanx')},
+          {id:'russian_twist_b',name:'Dumbbell Russian Twist',namePT:'Twist Russo com Halter',group:'SS7',sets:3,reps:'12-15/lado',rir:0,rest:60,notes:'ABS rotacional — oblíquos. Pés no ar ou apoiados. Rotar o tronco completamente de lado a lado.',muscles:['abs','core'],yt:YT('russian twist dumbbell obliques form technique')},
+          {id:'side_plank_b',name:'Side Plank',namePT:'Prancha Lateral',group:'SS7',sets:3,reps:'30s/lado',rir:0,rest:60,notes:'Core lateral. Corpo em linha recta. Quadril não cair. Progressão: elevar a perna de cima.',muscles:['core','abs'],yt:YT('side plank proper form progression technique')},
+          {id:'dead_bug',name:'Dead Bug',namePT:'Insecto Morto',group:'SS7',sets:3,reps:'8/lado',rir:0,rest:60,notes:'CORE PROFUNDO ⭐ — TVA. Costas no chão. Braço + perna opostos em simultâneo. Lombar colada ao chão. Expirar no esforço.',muscles:['core','abs'],yt:YT('dead bug exercise proper form core TVA')},
+          {id:'reverse_curl',name:'Dumbbell Reverse Curl',namePT:'Curl Reverso',group:'SS8',sets:3,reps:'12-15',rir:0,rest:75,notes:'Braquiorradial + antebraço. Pegada pronada (palmas para baixo). Cotovelos fixos.',muscles:['forearms','biceps'],yt:YT('reverse curl dumbbell form technique forearms')},
+          {id:'zottman_curl',name:'Zottman Curl',namePT:'Curl Zottman',group:'SS8',sets:3,reps:'10-12',rir:0,rest:75,notes:'Supinação na subida (bíceps), pronação na descida (braquiorradial). Combina dois movimentos.',muscles:['biceps','forearms'],yt:YT('zottman curl technique proper form biceps')}
+        ],
+        cooldown: [
+          {id:'c_lat_stretch',name:'Lat Stretch',namePT:'Stretch Dorsal',reps:'2×30s',rest:0,notes:'Segura numa porta ou poste. Afastar o peso do corpo para trás. Sentir o grande dorsal a esticar.',muscles:['lats'],yt:YT('lat stretch doorway hanging form')},
+          {id:'c_biceps_stretch',name:'Biceps Stretch',namePT:'Stretch Bíceps',reps:'30s',rest:0,notes:'Braço estendido, palma para cima. Afastar o pulso para trás. Sentir bíceps e antebraço.',muscles:['biceps'],yt:YT('biceps stretch wall form')},
+          {id:'c_child_arm_reach',name:'Child Pose with Arm Reach',namePT:'Posição Criança + Extensão',reps:'45s',rest:0,notes:'Posição criança com braços estendidos ao máximo para a frente. Relaxar completamente.',muscles:['back','lats'],yt:YT('childs pose arm reach lat stretch yoga')},
+          {id:'c_thoracic_b',name:'Thoracic Rotation',namePT:'Rotação Torácica',reps:'×10',rest:0,notes:'Mobilidade torácica — rotar o tronco superior deitado de lado.',muscles:['back'],yt:YT('thoracic rotation mobility form')},
+          {id:'c_neck_stretch',name:'Neck Stretch',namePT:'Stretch Cervical',reps:'30s/lado',rest:0,notes:'Inclinar a cabeça para um lado, mão puxa suavemente. Sentir trapézio e cervical.',muscles:['traps'],yt:YT('neck stretch trap upper body form')}
+        ]
+      },
+      C: {
+        name: 'Session C — PERNAS',
+        day: '5ª Feira', duration: '~110 min',
+        focus: 'Adutores ⭐⭐ · Glúteos · Running Key',
+        muscles: ['quads','hamstrings','glutes','adductors','calves','abs'],
+        warmup: [
+          {id:'w_bike_c',name:'Bicicleta Estática',namePT:'Bicicleta Estática',reps:'5 min',rest:0,notes:'Resistência leve. Aquecer as articulações dos joelhos e ancas.',muscles:[],yt:YT('stationary bike warm up 5 minutes')},
+          {id:'w_hip_circles',name:'Dynamic Standing Hip Circles',namePT:'Círculos de Anca',reps:'×20',rest:0,notes:'Em pé, anca descreve círculos amplos. Mobilidade coxofemoral.',muscles:['glutes','adductors'],yt:YT('dynamic hip circles warm up mobility')},
+          {id:'w_leg_swing_fb',name:'Leg Swing Forward-Backward',namePT:'Balanço Frontal Perna',reps:'×10 cada',rest:0,notes:'Segurar na parede. Balançar a perna para frente e para trás com amplitude crescente.',muscles:['hamstrings','quads','glutes'],yt:YT('leg swings forward backward warm up hip mobility')},
+          {id:'w_leg_swing_lat',name:'Dynamic Lateral Leg Swings',namePT:'Balanço Lateral Perna',reps:'×10 cada',rest:0,notes:'Balançar a perna de lado a lado. Activação adutores e abdutores.',muscles:['adductors','glutes'],yt:YT('lateral leg swings warm up hip adductor')},
+          {id:'w_bw_squat',name:'Bodyweight Squat',namePT:'Agachamento Peso Corporal',reps:'×15',rest:0,notes:'Profundidade total. Foco em mobilidade e activação.',muscles:['quads','glutes'],yt:YT('bodyweight squat form depth warm up')},
+          {id:'w_bw_hip_thrust',name:'Bodyweight Hip Thrust',namePT:'Hip Thrust Peso Corporal',reps:'×15',rest:0,notes:'Costas no banco/cama. Apertar o glúteo no topo. Activação glúteos.',muscles:['glutes','hamstrings'],yt:YT('bodyweight hip thrust glute activation form')},
+          {id:'w_rev_lunge_twist',name:'Reverse Lunge With Twist',namePT:'Avanço Recuado + Rotação',reps:'×5 cada',rest:0,notes:'Avanço recuado + rotação torácica para o lado da perna da frente. Mobilidade total.',muscles:['quads','glutes','back'],yt:YT('reverse lunge with twist warm up mobility')}
+        ],
+        workout: [
+          {id:'db_rdl_c',name:'Dumbbell Romanian Deadlift',namePT:'RDL com Halteres',group:'SS1',isMain:true,sets:4,reps:'8-10',rir:1,rest:120,notes:'POSTERIOR ⭐ — isquiotibiais + glúteos. Excêntrico 3 segundos. Bisagra controlada. Halteres perto das pernas.',muscles:['hamstrings','glutes','lower_back'],yt:YT('dumbbell romanian deadlift proper form jeff nippard')},
+          {id:'bulgarian_split_squat_c',name:'Bulgarian Split Squat',namePT:'Agachamento Búlgaro',group:'SS1',sets:4,reps:'8-10/leg',rir:1,rest:120,notes:'🏃 RUNNING KEY ⭐ — pé traseiro na cama/cadeira. Profundidade total. Joelho traseiro toca quase no chão.',muscles:['quads','glutes','hamstrings'],yt:YT('bulgarian split squat depth technique jeff nippard')},
+          {id:'walking_lunge',name:'Dumbbell Walking Lunge',namePT:'Avanço Caminhando',group:'SS2',sets:3,reps:'10/leg',rir:1,rest:90,notes:'10 passos cada perna. Passada longa. Joelho da frente alinhado. Controlo total.',muscles:['quads','glutes','hamstrings'],yt:YT('dumbbell walking lunge technique proper form')},
+          {id:'stiff_leg_dl',name:'Dumbbell Stiff-Leg Deadlift',namePT:'Deadlift Pernas Rígidas',group:'SS2',sets:3,reps:'12-15',rir:1,rest:90,notes:'Isquiotibiais — pernas quase rectas (ligeiro flex). Excêntrico lento 3-4s. Sentir o esticamento.',muscles:['hamstrings','lower_back'],yt:YT('dumbbell stiff leg deadlift hamstrings technique form')},
+          {id:'goblet_squat',name:'Dumbbell Goblet Squat',namePT:'Agachamento Goblet',group:'SS3',sets:3,reps:'12-15',rir:0,rest:75,notes:'ADUTORES ⭐ — stance largo. Profundidade total (abaixo paralelo). Activar adutor interno. Halter ao peito.',muscles:['quads','adductors','glutes'],yt:YT('goblet squat wide stance adductors technique jeff nippard')},
+          {id:'sumo_squat',name:'Dumbbell Sumo Squat',namePT:'Agachamento Sumo',group:'SS3',sets:3,reps:'12-15',rir:0,rest:75,notes:'ADUTORES ⭐ — stance máximo (pés muito afastados, bicos para fora). Excêntrico controlado. Halter entre as pernas.',muscles:['adductors','quads','glutes'],yt:YT('dumbbell sumo squat technique adductors form')},
+          {id:'side_lunge',name:'Dumbbell Side Lunge',namePT:'Avanço Lateral',group:'SS4',sets:3,reps:'10-12/leg',rir:1,rest:90,notes:'Glúteo médio + adutor. Passo lateral, joelho flectido, outro esticado. Halter na mão oposta.',muscles:['adductors','glutes','quads'],yt:YT('dumbbell side lunge lateral technique form')},
+          {id:'nordic_hamstring_c',name:'Nordic Hamstring Curl',namePT:'Curl Isquiotibiais Nórdico',group:'SS4',sets:3,reps:'6-8',rir:2,rest:120,notes:'🏃 RUNNING KEY — isquiotibiais excêntrico. Pés presos sob a cama ou mala pesada. Descer controlado 3-4s. Subir com ajuda das mãos. Exercício muito intenso.',muscles:['hamstrings','glutes'],yt:YT('nordic hamstring curl technique form proper')},
+          {id:'tibialis_raise',name:'Tibialis Raise',namePT:'Tibial Anterior',group:'SS5',sets:3,reps:'15-20',rir:0,rest:60,notes:'🏃 RUNNING KEY — prevenção shin splints. Costas contra parede, elevar a ponta dos pés. Tibial anterior.',muscles:['tibialis'],yt:YT('tibialis anterior raise shin splints prevention technique')},
+          {id:'db_hip_thrust',name:'Dumbbell Hip Thrust',namePT:'Hip Thrust com Halter',group:'SS5',sets:3,reps:'12',rir:1,rest:90,notes:'🏃 RUNNING KEY — DB no quadril. Costas no banco/cama. Squeeze glúteo máximo no topo. Manter 1s.',muscles:['glutes','hamstrings'],yt:YT('dumbbell hip thrust glute technique athleanx')},
+          {id:'step_calf_raise',name:'Standing on Step Single-Leg Dumbbell Calf Raise',namePT:'Elevação Gémeos Unipodal no Degrau',group:'SS6',sets:3,reps:'15-20',rir:0,rest:75,notes:'🏃 GÉMEOS — borda do degrau do hotel. Amplitude total: talão abaixo do nível. Pausa no topo e no fundo. Halter na mão.',muscles:['calves'],yt:YT('standing on step single leg dumbbell calf raise full range amplitude')},
+          {id:'hip_abduction',name:'Side-Lying Hip Abduction',namePT:'Abdução Anca Deitado',group:'SS6',sets:3,reps:'15/lado',rir:0,rest:75,notes:'Glúteo médio + TFL. Deitado de lado. Pé ligeiramente rodado para dentro. Movimento controlado.',muscles:['glutes','adductors'],yt:YT('side lying hip abduction glute medius technique')},
+          {id:'russian_twist_c',name:'Dumbbell Russian Twist',namePT:'Twist Russo com Halter',group:'SS7',sets:3,reps:'15/lado',rir:0,rest:60,notes:'Oblíquos. Pés no ar ou apoiados. Controlo total — não jogar o halter, rotar o tronco.',muscles:['abs','core'],yt:YT('russian twist obliques dumbbell form')},
+          {id:'reverse_crunch',name:'Reverse Crunch',namePT:'Crunch Inverso',group:'SS7',sets:3,reps:'15',rir:0,rest:60,notes:'ABS inferior. Deitado, elevar a bacia do chão usando o core. Lombar no chão.',muscles:['abs'],yt:YT('reverse crunch lower abs technique form jeff nippard')},
+          {id:'copenhagen_plank',name:'Static Copenhagen Plank',namePT:'Prancha Copenhagen',group:'SS8',sets:3,reps:'30s/lado',rir:0,rest:75,notes:'🏃 RUNNING KEY — adutores funcionais. Pé superior na cama/cadeira. Corpo em linha. Activar adutor.',muscles:['adductors','core'],yt:YT('copenhagen plank adductors technique form jeff nippard')},
+          {id:'tke',name:'Banded Terminal Knee Extension',namePT:'Extensão Terminal do Joelho',group:'SS8',sets:3,reps:'15/leg',rir:0,rest:75,notes:'🦵 JOELHO — VMO. Banda elástica no tornozelo posterior. Extensão final do joelho. Prevenção lesões.',muscles:['quads'],yt:YT('terminal knee extension TKE band VMO knee rehab technique')}
+        ],
+        cooldown: [
+          {id:'c_quad_stretch',name:'Standing Quad Stretch',namePT:'Stretch Quadríceps',reps:'2×30s',rest:0,notes:'Em pé, puxar o pé para o glúteo. Manter o joelho junto ao outro. Equilíbrio numa perna.',muscles:['quads'],yt:YT('standing quad stretch balance form')},
+          {id:'c_hip_flexor',name:'Kneeling Hip Flexor Stretch',namePT:'Stretch Flexor Anca',reps:'2×30s',rest:0,notes:'Ajoelhado, perna da frente a 90°. Empurrar a anca para a frente. Alongar o psoas.',muscles:['quads'],yt:YT('kneeling hip flexor stretch psoas form')},
+          {id:'c_hamstring',name:'Hamstring Stretch',namePT:'Stretch Isquiotibiais',reps:'2×30s',rest:0,notes:'Perna estendida, dobrar para a frente. Manter costas rectas.',muscles:['hamstrings'],yt:YT('hamstring stretch standing seated proper form')},
+          {id:'c_inner_thigh',name:'Kneeling Inner Thigh Stretch',namePT:'Stretch Adutor',reps:'2×30s',rest:0,notes:'De joelhos, perna em avanço lateral. Sentir a virilha e adutor interno.',muscles:['adductors'],yt:YT('inner thigh adductor stretch kneeling form')},
+          {id:'c_9090',name:'Seated 90/90 Stretch',namePT:'Stretch 90/90',reps:'2×45s',rest:0,notes:'Sentado, ambas as pernas a 90°. Rotar o tronco sobre cada perna. Excelente para anca e piriforme.',muscles:['glutes','adductors'],yt:YT('90 90 hip stretch piriforme form benefits')},
+          {id:'c_calf_stretch',name:'Push-up Calf Stretch',namePT:'Stretch Gémeos',reps:'2×30s',rest:0,notes:'Posição de push-up. Puxar um calcanhar ao chão alternando. Sentir o gastrocnémio.',muscles:['calves'],yt:YT('calf stretch push up position downward dog')}
+        ]
+      },
+      D: {
+        name: 'Session D — FULL BODY',
+        day: 'Sábado', duration: '~95 min',
+        focus: 'Full Body · Running Key · Ombros · Potência',
+        muscles: ['hamstrings','glutes','chest','back','quads','front_delt','side_delt','abs'],
+        warmup: [
+          {id:'w_cardio_d',name:'Light Cardio',namePT:'Cardio Leve',reps:'5 min',rest:0,notes:'5 minutos leve.',muscles:[],yt:YT('cardio warm up 5 minutes')},
+          {id:'w_worlds_greatest',name:"World's Greatest Stretch",namePT:'Stretch Mundial',reps:'×5 cada',rest:0,notes:'O melhor exercício de mobilidade. Avanço + rotação torácica + braço ao céu. Cada lado.',muscles:['quads','back','front_delt'],yt:YT("world's greatest stretch mobility full body")},
+          {id:'w_bw_rdl_d',name:'Bodyweight Romanian Deadlift',namePT:'RDL Peso Corporal',reps:'×12',rest:0,notes:'Activação posterior. Bisagra controlada.',muscles:['hamstrings','glutes'],yt:YT('bodyweight RDL hinge form activation')},
+          {id:'w_arm_swing',name:'Arm Swing',namePT:'Balanço de Braços',reps:'×20',rest:0,notes:'Braços para frente e para trás com amplitude total. Mobilidade ombros.',muscles:['front_delt','back'],yt:YT('arm swing shoulder warm up dynamic')},
+          {id:'w_dyn_lat_lunge',name:'Dynamic Lateral Lunge',namePT:'Avanço Lateral Dinâmico',reps:'×8 cada',rest:0,notes:'Passo lateral amplo, joelho flectido, outro esticado. Mobilidade anca.',muscles:['adductors','quads'],yt:YT('dynamic lateral lunge hip mobility warm up')},
+          {id:'w_bw_hip_thrust_d',name:'Bodyweight Hip Thrust',namePT:'Hip Thrust Peso Corporal',reps:'×15',rest:0,notes:'Activação glúteos. Apertar no topo.',muscles:['glutes'],yt:YT('bodyweight hip thrust glute activation')}
+        ],
+        workout: [
+          {id:'db_rdl_d',name:'Dumbbell Romanian Deadlift',namePT:'RDL com Halteres',group:'SS1',isMain:true,sets:4,reps:'8-10',rir:1,rest:120,notes:'POTÊNCIA ⭐ — bisagra explosiva. Concêntrico explosivo, excêntrico controlado 3s. Base do treino.',muscles:['hamstrings','glutes','lower_back'],yt:YT('dumbbell romanian deadlift explosive power form')},
+          {id:'db_incline_press_d',name:'Dumbbell Incline Press',namePT:'Press Inclinado Halteres',group:'SS1',sets:4,reps:'10-12',rir:0,rest:120,notes:'Peito superior + deltóide anterior. Banco inclinado ou encosto de cadeira a 45°.',muscles:['upper_chest','front_delt','triceps'],yt:YT('dumbbell incline press technique upper chest form')},
+          {id:'goblet_squat_d',name:'Dumbbell Goblet Squat',namePT:'Agachamento Goblet',group:'SS2',sets:3,reps:'10-12',rir:1,rest:90,notes:'Profundidade total. Mobilidade anca. Pés largos. Halter ao peito.',muscles:['quads','glutes','adductors'],yt:YT('goblet squat depth mobility technique')},
+          {id:'single_arm_row_d',name:'Single-Arm Dumbbell Row',namePT:'Remada Unilateral',group:'SS2',sets:3,reps:'10-12',rir:0,rest:90,notes:'Apoio na cadeira. Puxar ao quadril. Foco no dorsal.',muscles:['lats','back','biceps'],yt:YT('single arm dumbbell row technique form athleanx')},
+          {id:'db_lunge_d',name:'Dumbbell Lunge',namePT:'Avanço com Halteres',group:'SS3',sets:3,reps:'10-12/leg',rir:1,rest:90,notes:'🏃 RUNNING KEY — alternado. Passada longa. Joelho a 90°. Tronco erecto.',muscles:['quads','glutes','hamstrings'],yt:YT('dumbbell lunge alternating technique proper form')},
+          {id:'seated_ohp',name:'Seated Dumbbell Overhead Press',namePT:'Press Ombros Sentado',group:'SS3',sets:3,reps:'8-10',rir:0,rest:90,notes:'Ombros completo. Sentado, banco/cadeira a 90°. Press acima da cabeça completo.',muscles:['front_delt','side_delt','triceps'],yt:YT('seated dumbbell overhead press shoulder technique form')},
+          {id:'db_step_up_d',name:'Dumbbell Step-Up',namePT:'Step-Up com Halteres',group:'SS4',sets:3,reps:'10/leg',rir:1,rest:90,notes:'🏃 RUNNING KEY — cadeira/step. Drive máximo do joelho. Controlar descida.',muscles:['quads','glutes'],yt:YT('dumbbell step up knee drive technique form')},
+          {id:'rear_delt_fly_d',name:'Dumbbell Bent-Over Rear Delt Fly',namePT:'Fly Posterior Deltóide',group:'SS4',sets:3,reps:'15',rir:0,rest:90,notes:'Deltóide posterior. Inclinado 45°. Equilíbrio muscular do ombro.',muscles:['rear_delt','traps'],yt:YT('rear delt fly dumbbell bent over technique')},
+          {id:'single_leg_hip_thrust_d',name:'Single-Leg Dumbbell Hip Thrust',namePT:'Hip Thrust Unipodal',group:'SS5',sets:3,reps:'12/leg',rir:0,rest:90,notes:'🏃 RUNNING KEY — glúteo máximo unilateral. Apertar 1s no topo. Banco ou cama. DB no quadril.',muscles:['glutes','hamstrings'],yt:YT('single leg hip thrust dumbbell glute technique')},
+          {id:'upright_row',name:'Dumbbell Upright Row',namePT:'Remada Alta',group:'SS5',sets:3,reps:'10-12',rir:0,rest:90,notes:'Trapézio + deltóide. Cotovelos sempre acima dos pulsos. Puxar ao queixo.',muscles:['traps','side_delt'],yt:YT('dumbbell upright row technique form trapezius')},
+          {id:'db_shrug',name:'Dumbbell Shrug',namePT:'Encolher Ombros',group:'SS5b',sets:3,reps:'12-15',rir:0,rest:60,notes:'Trapézio superior. Squeeze no topo, manter 1s. Sem rodar os ombros.',muscles:['traps'],yt:YT('dumbbell shrug trapezius technique proper form')},
+          {id:'bird_dog',name:'Bird Dog',namePT:'Cão Caçador',group:'SS5b',sets:3,reps:'8/lado',rir:0,rest:60,notes:'LOMBAR + CORE PROFUNDO — braço e perna opostos. Costas neutras. Lombar colada ao chão. Expirar.',muscles:['core','lower_back'],yt:YT('bird dog exercise lower back core form technique')},
+          {id:'decline_situp',name:'Decline Weighted Sit-Up',namePT:'Sit-Up Declinado com Peso',group:'SS6',sets:3,reps:'12-15',rir:0,rest:60,notes:'ABS — com halter ao peito. Pés fixos na cama/banco declinado.',muscles:['abs'],yt:YT('decline weighted sit up abs technique form')},
+          {id:'incline_db_fly_d',name:'45° Incline Dumbbell Fly',namePT:'Fly Inclinado 45°',group:'SS7',sets:3,reps:'12-15',rir:0,rest:90,notes:'🆕 Peito superior — amplitude máxima. Banco inclinado ou almofada/mochila.',muscles:['upper_chest','front_delt'],yt:YT('incline dumbbell fly upper chest 45 degrees technique')},
+          {id:'bench_dip',name:'Bench Dip',namePT:'Dip na Cadeira',group:'SS7',sets:3,reps:'10-12',rir:0,rest:90,notes:'Tríceps. Mãos na cadeira/cama, costas verticais. Descer até cotovelos a 90°.',muscles:['triceps','front_delt'],yt:YT('bench dip triceps technique proper form chair')},
+          {id:'preacher_curl',name:'Dumbbell Preacher Curl',namePT:'Curl Preacher',group:'SS8',sets:3,reps:'10-12',rir:0,rest:75,notes:'🆕 Bíceps cabeça curta — cotovelo apoiado no joelho. Amplitude completa.',muscles:['biceps'],yt:YT('dumbbell preacher curl short head biceps technique')},
+          {id:'spider_curl',name:'Dumbbell Spider Curl',namePT:'Spider Curl',group:'SS8',sets:3,reps:'10-12',rir:0,rest:75,notes:'🆕 Prone na cama/banco. Pico de contracção máxima no topo. Excelente isolamento.',muscles:['biceps'],yt:YT('spider curl dumbbell biceps peak contraction technique')}
+        ],
+        cooldown: [
+          {id:'c_hip_flexor_d',name:'Kneeling Hip Flexor Stretch',namePT:'Stretch Flexor Anca',reps:'2×30s',rest:0,notes:'Psoas alongado. Anca empurrada para a frente.',muscles:['quads'],yt:YT('kneeling hip flexor stretch form')},
+          {id:'c_hamstring_d',name:'Hamstring Stretch',namePT:'Stretch Isquiotibiais',reps:'2×30s',rest:0,notes:'Perna estendida, costas rectas. Sentir esticamento posterior.',muscles:['hamstrings'],yt:YT('hamstring stretch proper form')},
+          {id:'c_quad_d',name:'Standing Quad Stretch',namePT:'Stretch Quadríceps',reps:'2×30s',rest:0,notes:'Puxar pé ao glúteo. Equilíbrio.',muscles:['quads'],yt:YT('quad stretch standing form')},
+          {id:'c_lat_shoulder',name:'Lat & Shoulder Stretch',namePT:'Stretch Dorsal + Ombro',reps:'2×30s',rest:0,notes:'Braço sobre a cabeça, outro puxa o cotovelo. Sentir dorsal e deltóide.',muscles:['lats','side_delt'],yt:YT('lat shoulder stretch overhead cross form')},
+          {id:'c_chest_d',name:'Chest Stretch',namePT:'Stretch Peitoral',reps:'2×30s',rest:0,notes:'Braço contra porta. Rodar tronco para afastar peito.',muscles:['chest'],yt:YT('chest stretch doorway pec form')},
+          {id:'c_child_d',name:'Child Pose',namePT:'Posição Criança',reps:'60s',rest:0,notes:'Relaxar completamente. Respiração profunda.',muscles:['back','lats'],yt:YT('childs pose yoga back relaxation')}
+        ]
+      }
+    }
+  }
+};
+// ═══════════════════════════════════════════════════════
+// APP STATE
+// ═══════════════════════════════════════════════════════
+let state = {
+  screen: 'home-screen',
+  logMode: false,
+  pendingType: null,
+  pendingSession: null,
+  workoutType: 'hotel',
+  workoutSession: null,
+  workout: null,        // flat array of all exercises in current workout
+  currentIdx: 0,        // index in workout array
+  currentSection: 'warmup', // warmup | workout | cooldown
+  sets: {},             // exerciseId -> [{weight, reps, rir, done}]
+  startTime: null,
+  timerInterval: null,
+  restInterval: null,
+  restTotal: 0,
+  restRemaining: 0,
+  histTab: 'log'
+};
+
+// ── Storage ──────────────────────────────────────────
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem('vw_history') || '[]'); } catch(e) { return []; }
+}
+function saveHistory(h) {
+  localStorage.setItem('vw_history', JSON.stringify(h));
+}
+function loadPrefs() {
+  try { return JSON.parse(localStorage.getItem('vw_prefs') || '{}'); } catch(e) { return {}; }
+}
+function savePrefs(p) {
+  localStorage.setItem('vw_prefs', JSON.stringify(p));
+}
+
+// ── Helpers ───────────────────────────────────────────
+function fmtTime(secs) {
+  const h=Math.floor(secs/3600), m=Math.floor((secs%3600)/60), s=secs%60;
+  if(h>0) return `${h}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`;
+  return `${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`;
+}
+function fmtDate(ts) {
+  const d = new Date(ts);
+  return d.toLocaleDateString('pt-PT',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+}
+// Retorna timestamp válido — tenta date, _dateStr, _ts (3 fontes independentes)
+function entryDate(e) {
+  if(!e) return 0;
+  // 1. Campo date directo (timestamp Unix ms)
+  if(e.date && e.date > 1000000000000 && !isNaN(e.date)) return Number(e.date);
+  // 2. _dateStr: "YYYY-MM-DD" enviado pelo Apps Script v4
+  if(e._dateStr && /^\d{4}-\d{2}-\d{2}$/.test(e._dateStr)) {
+    const ts = new Date(e._dateStr + 'T12:00:00Z').getTime();
+    if(ts > 1000000000000) return ts;
+  }
+  // 3. _ts: ISO string raw do Timestamp do Sheets (Apps Script v4)
+  if(e._ts && String(e._ts).length > 8) {
+    const ts = new Date(String(e._ts)).getTime();
+    if(ts > 1000000000000 && !isNaN(ts)) return ts;
+  }
+  return 0;
+}
+function fmtEntryDate(e) {
+  const ts = entryDate(e);
+  return ts > 0 ? fmtDate(ts) : 'Data desconhecida';
+}
+function showToast(msg, dur=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), dur);
+}
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  state.screen = id;
+  const nav = document.getElementById('bottomnav');
+  const hideNav = ['workout-screen','hist-detail-screen','settings-screen'];
+  nav.style.display = hideNav.includes(id) ? 'none' : 'flex';
+  ['nav-home','nav-hist'].forEach(n=>document.getElementById(n).classList.remove('active'));
+  if(id==='home-screen') document.getElementById('nav-home').classList.add('active');
+  if(id==='history-screen') document.getElementById('nav-hist').classList.add('active');
+}
+function navTo(dest) {
+  if(dest==='home') { showScreen('home-screen'); renderHome(); }
+  if(dest==='history') { showScreen('history-screen'); renderHistory(); }
+}
+
+// ── Home Screen ───────────────────────────────────────
+function renderHome() {
+  const d = new Date();
+  document.getElementById('home-date').textContent = d.toLocaleDateString('pt-PT',{weekday:'long',day:'numeric',month:'long'});
+  const history = loadHistory();
+  const qs = document.getElementById('quick-stats');
+  if(history.length===0) {
+    qs.textContent = 'Nenhum treino ainda. Começa já! 💪';
+  } else {
+    const total = history.length;
+    const weekAgo = Date.now()-7*86400000;
+    const thisWeek = history.filter(h=>entryDate(h) > weekAgo).length;
+    const totalVol = history.reduce((a,h)=>{
+      const vol = h.totalVolume > 0 ? h.totalVolume : (h.exercises||[]).reduce((s,e)=>s+(e.volume||0),0);
+      return a + vol;
+    }, 0);
+    qs.innerHTML = `<b>${total}</b> treinos · <b>${thisWeek}</b> esta semana · <b>${Math.round(totalVol/1000)}t</b> volume total`;
+  }
+  const lw = document.getElementById('last-workout-summary');
+  const card = document.getElementById('last-workout-card');
+  if(history.length>0) {
+    const last = history[history.length-1];
+    const sess = SESSIONS[last.type]?.sessions[last.session];
+    const vol = last.totalVolume > 0 ? last.totalVolume :
+      (last.exercises||[]).reduce((a,e)=>a+(e.volume||0),0);
+    const dateStr = fmtEntryDate(last);
+    lw.innerHTML = `<b>${sess?sess.name:'?'}</b> — ${dateStr}<br>⏱ ${fmtTime(last.duration||0)} · 🏋️ ${Math.round(vol)}kg vol · ${(last.exercises||[]).length} exercícios`;
+    if(card) card.style.display = '';
+  } else {
+    if(card) card.style.display = 'none';
+  }
+}
+
+function openLastWorkout() {
+  const history = loadHistory();
+  if(history.length > 0) openHistDetail(history.length - 1);
+}
+
+// ── Sessions Screen ──────────────────────────────────
+function goSessions(type) {
+  state.workoutType = type;
+  document.getElementById('sessions-title').textContent = 'Hotel — Escolhe a Sessão';
+  const list = document.getElementById('sessions-list');
+  const sessions = SESSIONS[type].sessions;
+  list.innerHTML = Object.entries(sessions).map(([key,s])=>{
+    const history = loadHistory();
+    const lastDone = history.filter(h=>h.type===type&&h.session===key).slice(-1)[0];
+    const lastStr = lastDone ? `Último: ${fmtEntryDate(lastDone)}` : 'Nunca feito';
+    const chips = s.muscles.slice(0,4).map(m=>`<span class="chip chip-accent">${MUSCLE_PT[m]||m}</span>`).join('');
+    return `<button class="session-card" data-action="showModePicker" data-type="${type}" data-key="${key}" onclick="showModePicker('${type}','${key}')" style="width:100%;text-align:left;font-family:inherit;cursor:pointer;-webkit-appearance:none;">
+      <div class="sess-head">
+        <div class="sess-letter">${key}</div>
+        <div class="sess-info">
+          <h3>${s.name}</h3>
+          <p>${s.day} · ${s.duration} · ${s.focus}</p>
+          <p style="margin-top:3px;font-size:11px;color:var(--text3)">${lastStr}</p>
+        </div>
+      </div>
+      <div class="sess-muscles">${chips}</div>
+    </button>`;
+  }).join('');
+  showScreen('sessions-screen');
+}
+
+// ── Build flat workout array ─────────────────────────
+function buildWorkoutArray(type, session) {
+  const s = SESSIONS[type].sessions[session];
+  const arr = [];
+  s.warmup.forEach(e=>arr.push({...e, section:'warmup'}));
+  s.workout.forEach(e=>arr.push({...e, section:'workout'}));
+  s.cooldown.forEach(e=>arr.push({...e, section:'cooldown'}));
+  return arr;
+}
+
+// ── Init sets for all exercises ──────────────────────
+function initSets(exercises) {
+  const sets = {};
+  const prefs = loadPrefs();
+  // Look up last recorded sets for this session
+  const history = loadHistory();
+  const lastEntry = history.filter(h=>h.session===state.workoutSession&&h.type===state.workoutType).slice(-1)[0];
+  const lastExMap = {};
+  if(lastEntry) lastEntry.exercises.forEach(e=>{ lastExMap[e.id]=e.sets; });
+
+  exercises.forEach(e=>{
+    if(e.section==='warmup'||e.section==='cooldown') {
+      sets[e.id] = [{weight:0,reps:e.reps||'',rir:0,done:false}];
+    } else {
+      const n = e.sets||1;
+      const lastPref = prefs[e.id];
+      const lastSets = lastExMap[e.id]||[];
+      sets[e.id] = Array.from({length:n},(_,i)=>{
+        const prev = lastSets[i]||lastSets[0]||null;
+        return {
+          weight: prev?.weight ?? lastPref?.weight ?? 0,
+          reps:   prev?.reps   ?? lastPref?.reps   ?? (parseInt(e.reps)||0),
+          rir:    prev?.rir    ?? e.rir ?? 0,
+          done: false
+        };
+      });
+    }
+  });
+  return sets;
+}
+
+// ── Start Workout ──────────────────────────────────────
+function showModePicker(type, session) {
+  state.pendingType = type;
+  state.pendingSession = session;
+  const s = SESSIONS[type].sessions[session];
+  document.getElementById('mp-title').textContent = `${session} — ${s.name}`;
+  document.getElementById('mode-picker-overlay').style.display = 'flex';
+}
+function hideModePicker() {
+  document.getElementById('mode-picker-overlay').style.display = 'none';
+}
+function beginWorkout(mode) {
+  hideModePicker();
+  state.logMode = (mode === 'log');
+  const type = state.pendingType;
+  const session = state.pendingSession;
+  state.workoutType = type;
+  state.workoutSession = session;
+  state.workout = buildWorkoutArray(type, session);
+  state.sets = initSets(state.workout);
+  state.currentIdx = 0;
+  state.startTime = Date.now();
+  state.currentSection = 'warmup';
+  const s = SESSIONS[type].sessions[session];
+  document.getElementById('wk-title').textContent = `${session} — ${type==='hotel'?'Hotel':''}`;
+  showScreen('workout-screen');
+  startWorkoutTimer();
+  renderSectionPills();
+  if(state.logMode) {
+    renderLogMode();
+  } else {
+    renderExercise(0);
+  }
+}
+
+function startWorkoutTimer() {
+  if(state.timerInterval) clearInterval(state.timerInterval);
+  state.timerInterval = setInterval(()=>{
+    const elapsed = Math.floor((Date.now()-state.startTime)/1000);
+    document.getElementById('wk-timer').textContent = fmtTime(elapsed);
+  },1000);
+}
+
+// ── Section Pills ─────────────────────────────────────
+function renderSectionPills() {
+  const sections = [
+    {id:'warmup',label:'🔥 Aquecimento'},
+    {id:'workout',label:'💪 Treino'},
+    {id:'cooldown',label:'🧘 Alongamento'}
+  ];
+  document.getElementById('section-pills').innerHTML = sections.map(s=>`
+    <div class="section-pill" id="pill-${s.id}" onclick="jumpToSection('${s.id}')">${s.label}</div>
+  `).join('');
+}
+
+function updateSectionPills() {
+  ['warmup','workout','cooldown'].forEach(s=>{
+    const pill = document.getElementById('pill-'+s);
+    if(!pill) return;
+    pill.className = 'section-pill';
+    if(s===state.currentSection) pill.classList.add('active-pill');
+    // check if all done
+    const exs = state.workout.filter(e=>e.section===s);
+    const allDone = exs.length>0 && exs.every(e=>state.sets[e.id]?.every(st=>st.done));
+    if(allDone && s!==state.currentSection) pill.classList.add('done-pill');
+  });
+}
+
+function jumpToSection(section) {
+  const idx = state.workout.findIndex(e=>e.section===section);
+  if(idx>=0) { state.currentIdx=idx; renderExercise(idx); }
+}
+// ── Render Exercise ──────────────────────────────────
+function buildMiniMuscle(muscles) {
+  if(!muscles||muscles.length===0) return '<div style="width:70px;height:80px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">💪</div>';
+  const hi = m => muscles.includes(m) ? `fill:${M[m]||'#FF6B35'};opacity:0.9` : 'fill:var(--bg3);opacity:0.35';
+  return `<svg width="70" height="90" viewBox="0 0 100 130" style="flex-shrink:0" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="50" cy="9" rx="9" ry="9" fill="var(--bg3)" opacity="0.5"/>
+    <rect style="${hi('chest')}" x="30" y="20" width="40" height="20" rx="5"/>
+    <ellipse style="${hi('front_delt')}" cx="24" cy="25" rx="9" ry="10"/>
+    <ellipse style="${hi('front_delt')}" cx="76" cy="25" rx="9" ry="10"/>
+    <ellipse style="${hi('side_delt')}" cx="19" cy="22" rx="6" ry="8"/>
+    <ellipse style="${hi('side_delt')}" cx="81" cy="22" rx="6" ry="8"/>
+    <rect style="${hi('biceps')}" x="13" y="32" width="8" height="22" rx="4"/>
+    <rect style="${hi('biceps')}" x="79" y="32" width="8" height="22" rx="4"/>
+    <rect style="${hi('triceps')}" x="11" y="34" width="7" height="20" rx="3"/>
+    <rect style="${hi('triceps')}" x="82" y="34" width="7" height="20" rx="3"/>
+    <rect style="${hi('abs')}" x="34" y="40" width="32" height="26" rx="4"/>
+    <rect style="${hi('core')}" x="36" y="42" width="28" height="18" rx="3"/>
+    <rect style="${hi('lats')}" x="22" y="28" width="14" height="28" rx="5"/>
+    <rect style="${hi('lats')}" x="64" y="28" width="14" height="28" rx="5"/>
+    <rect style="${hi('back')}" x="30" y="22" width="40" height="32" rx="5"/>
+    <rect style="${hi('traps')}" x="28" y="18" width="44" height="12" rx="5"/>
+    <rect style="${hi('quads')}" x="33" y="66" width="14" height="32" rx="6"/>
+    <rect style="${hi('quads')}" x="53" y="66" width="14" height="32" rx="6"/>
+    <rect style="${hi('hamstrings')}" x="33" y="66" width="14" height="32" rx="6"/>
+    <rect style="${hi('hamstrings')}" x="53" y="66" width="14" height="32" rx="6"/>
+    <rect style="${hi('glutes')}" x="30" y="60" width="40" height="18" rx="7"/>
+    <rect style="${hi('adductors')}" x="42" y="66" width="16" height="30" rx="5"/>
+    <rect style="${hi('calves')}" x="34" y="99" width="12" height="26" rx="5"/>
+    <rect style="${hi('calves')}" x="54" y="99" width="12" height="26" rx="5"/>
+    <rect style="${hi('tibialis')}" x="35" y="100" width="5" height="18" rx="3"/>
+    <rect style="${hi('tibialis')}" x="60" y="100" width="5" height="18" rx="3"/>
+    <rect style="${hi('rear_delt')}" cx="76" cy="25" rx="8" ry="9" x="70" y="18" width="16" height="16"/>
+    <rect style="${hi('lower_back')}" x="34" y="55" width="32" height="12" rx="4"/>
+    <rect style="${hi('forearms')}" x="12" y="53" width="8" height="20" rx="3"/>
+    <rect style="${hi('forearms')}" x="80" y="53" width="8" height="20" rx="3"/>
+  </svg>`;
+}
+
+function renderExercise(idx) {
+  state.currentIdx = idx;
+  const ex = state.workout[idx];
+  state.currentSection = ex.section;
+  updateSectionPills();
+  updateProgress();
+  updateNavBar(idx);
+
+  // Superset indicator
+  const ssInd = document.getElementById('superset-indicator');
+  if(ex.group && ex.section==='workout') {
+    const groupExs = state.workout.filter(e=>e.group===ex.group && e.section==='workout');
+    if(groupExs.length>1) {
+      const pos = groupExs.findIndex(e=>e.id===ex.id)+1;
+      ssInd.style.display='block';
+      ssInd.innerHTML = `<div style="font-size:11px;font-weight:700;letter-spacing:0.3px">⚡ ${ex.group} · Exercício ${pos} de ${groupExs.length}</div><div style="font-size:12px;margin-top:2px;font-weight:600">${groupExs.map(e=>`<span style="opacity:${e.id===ex.id?1:0.5}">${e.name}</span>`).join(' + ')}</div>`;
+    } else { ssInd.style.display='none'; }
+  } else { ssInd.style.display='none'; }
+
+  const isWarmCool = ex.section==='warmup'||ex.section==='cooldown';
+  const muscleTags = (ex.muscles||[]).map(m=>`<span class="muscle-tag" style="background:${M[m]}22;color:${M[m]}">${MUSCLE_PT[m]||m}</span>`).join('');
+  const sectionLabel = {warmup:'🔥 Aquecimento',workout:'💪 Treino',cooldown:'🧘 Alongamento'}[ex.section]||'';
+  const allSetsDone = state.sets[ex.id]?.every(s=>s.done);
+  const miniSvg = buildMiniMuscle(ex.muscles||[]);
+
+  // ── Sets block ─────────────────────────────────────
+  let setsHTML = '';
+  if(isWarmCool) {
+    setsHTML = `
+    <div style="padding:14px;background:var(--bg3);border-top:1px solid var(--border);">
+      <div style="text-align:center;margin-bottom:12px">
+        <span style="font-size:28px;font-weight:800;color:var(--accent)">${ex.reps||''}</span>
+      </div>
+      <button class="btn ${allSetsDone?'btn-green':'btn-primary'}" style="width:100%;font-size:16px" onclick="markWarmupDone('${ex.id}')">
+        ${allSetsDone?'✓ Feito!':'✓ Marcar como Feito'}
+      </button>
+    </div>`;
+  } else {
+    const sets = state.sets[ex.id]||[];
+    setsHTML = `
+    <div style="overflow-x:auto;border-top:1px solid var(--border);">
+    <table class="sets-table" style="min-width:300px">
+      <thead><tr>
+        <th>Set</th>
+        <th>Peso (kg)</th>
+        <th>${isTimeBased(ex)?'Tempo (s)':'Reps'}</th>
+        <th>RIR</th>
+        <th>✓</th>
+      </tr></thead>
+      <tbody id="sets-tbody-${ex.id}">
+        ${sets.map((s,i)=>renderSetRow(ex,i,s)).join('')}
+      </tbody>
+    </table>
+    </div>
+    <div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px;">
+      <button class="btn btn-secondary btn-sm" onclick="addSet('${ex.id}')" style="flex:1">+ Série</button>
+      ${sets.length>1?`<button class="btn btn-outline btn-sm" onclick="removeSet('${ex.id}')" style="flex:1">− Série</button>`:''}
+    </div>`;
+  }
+
+  document.getElementById('workout-content').innerHTML = `
+  <div class="exercise-card fadein">
+    <div class="ex-top">
+      <!-- Chips: section + badges -->
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">
+        <span class="chip chip-gray" style="font-size:10px">${sectionLabel}</span>
+        ${ex.isMain?'<span class="chip chip-accent">⭐ Principal</span>':''}
+        ${ex.group&&ex.section==='workout'?`<span class="chip chip-blue">${ex.group}</span>`:''}
+        ${allSetsDone?'<span class="chip chip-green">✓ Feito</span>':''}
+      </div>
+      <!-- Exercise name: English above, Portuguese below -->
+      <div class="ex-name" style="font-size:18px;line-height:1.2;margin-bottom:2px">${ex.name}</div>
+      <div class="ex-name-pt" style="font-size:13px;margin-bottom:10px">${ex.namePT}</div>
+      <!-- Image — full width (apenas no treino principal) -->
+      ${(()=>{
+        if(isWarmCool) return ''; // sem imagem no aquecimento/alongamento
+        const imgs = EX_IMGS[ex.id];
+        if(imgs) {
+          return `<div class="ex-img-wrap" style="margin-bottom:12px">
+            <img class="img0" src="${imgs[0]}" loading="lazy" alt="${ex.name}">
+            <img class="img1" src="${imgs[1]}" loading="lazy" alt="${ex.name}">
+            <div class="img-badge">▶ DEMO</div>
+          </div>`;
+        }
+        return miniSvg ? `<div class="ex-img-wrap" style="margin-bottom:12px">${miniSvg}</div>` : '';
+      })()}
+      <!-- Sets / meta info -->
+      ${!isWarmCool?`
+      <div class="ex-meta" style="margin-bottom:10px">
+        <span class="chip chip-accent">${ex.sets}× ${ex.reps} reps</span>
+        <span class="chip chip-gray">RIR ${ex.rir}</span>
+        ${ex.rest?`<span class="chip chip-gray">⏱ ${ex.rest}s</span>`:''}
+      </div>`:`
+      <div style="margin-bottom:10px"><span class="chip chip-accent" style="font-size:14px">${ex.reps||''}</span></div>`}
+      <!-- Muscle tags -->
+      ${muscleTags?`<div class="muscle-tags" style="margin-bottom:10px">${muscleTags}</div>`:''}
+      <!-- Notes / Technique -->
+      ${isWarmCool ? `
+      <div style="background:var(--bg3);border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:3px solid var(--accent)">
+        <div style="font-size:15px;color:var(--text);line-height:1.6;font-weight:500">${ex.notes}</div>
+      </div>` : `
+      <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;margin-bottom:10px">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:0.5px;margin-bottom:4px;text-transform:uppercase">Técnica</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.5">${ex.notes}</div>
+      </div>`}
+      <!-- YouTube button — full width, prominent -->
+      <a href="${ex.yt}" target="_blank" style="text-decoration:none;display:block;margin-bottom:4px">
+        <div style="display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(255,0,0,0.12);color:#ff3333;border-radius:10px;padding:12px;font-size:14px;font-weight:700">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M21.8 8s-.2-1.4-.8-2a2.9 2.9 0 00-2-1C17.3 4.9 12 4.9 12 4.9s-5.3 0-7 .1c-.9.1-1.6.5-2 1C2.4 6.6 2.2 8 2.2 8S2 9.6 2 11.2v1.5c0 1.6.2 3.2.2 3.2s.2 1.4.8 2c.8.8 1.8.8 2.3.9C7 18.9 12 19 12 19s5.3 0 7-.2a2.9 2.9 0 002-1c.6-.6.8-2 .8-2s.2-1.6.2-3.2v-1.5C22 9.6 21.8 8 21.8 8zM10 15V9l6 3-6 3z"/></svg>
+          ▶ Ver Tutorial no YouTube
+        </div>
+      </a>
+    </div>
+    ${setsHTML}
+  </div>`;
+}
+
+function isTimeBased(ex) {
+  return /\d+s/.test(ex.reps||'');
+}
+function renderSetRow(ex, i, s) {
+  const timeBased = isTimeBased(ex);
+  const repsStep = timeBased ? 5 : 1;
+  const repsVal = s.reps || (timeBased ? 45 : 0);
+  // Bodyweight exercises: hide weight stepper
+  const isBW = BODYWEIGHT_EX.includes(ex.id);
+  return `<tr class="${s.done?'set-done':''}" id="set-row-${ex.id}-${i}">
+    <td><span class="set-num">S${i+1}</span></td>
+    <td>
+      ${isBW ? `<span style="font-size:11px;color:var(--text3)">PC</span>` : `<div class="stepper">
+        <button onclick="adjustSet('${ex.id}',${i},'weight',-0.5)">−</button>
+        <input type="number" id="w-${ex.id}-${i}" value="${s.weight}" min="0" step="0.5"
+          onchange="updateSetField('${ex.id}',${i},'weight',this.value)"
+          onfocus="this.select()">
+        <button onclick="adjustSet('${ex.id}',${i},'weight',0.5)">+</button>
+      </div>`}
+    </td>
+    <td>
+      <div class="stepper">
+        <button onclick="adjustSet('${ex.id}',${i},'reps',-${repsStep})">−</button>
+        <input type="number" id="r-${ex.id}-${i}" value="${repsVal}" min="0" step="${repsStep}"
+          onchange="updateSetField('${ex.id}',${i},'reps',this.value)"
+          onfocus="this.select()">
+        <button onclick="adjustSet('${ex.id}',${i},'reps',${repsStep})">+</button>
+      </div>
+    </td>
+    <td>
+      <select class="rir-select" onchange="updateSetField('${ex.id}',${i},'rir',this.value)">
+        ${[0,1,2,3,4].map(r=>`<option value="${r}" ${s.rir==r?'selected':''}>${r}</option>`).join('')}
+      </select>
+    </td>
+    <td>
+      <button class="done-set-btn ${s.done?'active':''}" onclick="toggleSetDone('${ex.id}',${i})">
+        ${s.done?'✓':'○'}
+      </button>
+    </td>
+  </tr>`;
+}
+
+function adjustSet(id, i, field, delta) {
+  const s = state.sets[id][i];
+  const cur = parseFloat(s[field])||0;
+  const nv = Math.max(0, cur+delta);
+  s[field] = field==='weight'?nv:Math.round(nv);
+  const pfx = field==='weight'?'w':'r';
+  const el = document.getElementById(`${pfx}-${id}-${i}`);
+  if(el) el.value = s[field];
+  // Auto-copy to subsequent sets
+  state.sets[id].forEach((set,j)=>{ if(j>i){ set[field]=s[field]; const e2=document.getElementById(`${pfx}-${id}-${j}`); if(e2) e2.value=s[field]; }});
+}
+
+function updateSetField(id, i, field, val) {
+  const parsed = field==='rir'?parseInt(val):parseFloat(val)||0;
+  state.sets[id][i][field] = parsed;
+  // Auto-copy to subsequent sets
+  state.sets[id].forEach((set,j)=>{
+    if(j>i){
+      set[field] = parsed;
+      if(field==='weight'){ const e=document.getElementById(`w-${id}-${j}`); if(e) e.value=parsed; }
+      else if(field==='reps'){ const e=document.getElementById(`r-${id}-${j}`); if(e) e.value=parsed; }
+      else if(field==='rir'){ const sel=document.querySelector(`#set-row-${id}-${j} .rir-select`); if(sel) sel.value=parsed; }
+    }
+  });
+}
+
+function toggleSetDone(id, i) {
+  const s = state.sets[id][i];
+  s.done = !s.done;
+  // Read current input values before re-render
+  const w = document.getElementById(`w-${id}-${i}`);
+  const r = document.getElementById(`r-${id}-${i}`);
+  if(w) s.weight = parseFloat(w.value)||0;
+  if(r) s.reps = parseInt(r.value)||0;
+  // Save prefs
+  if(s.done && s.weight>0) {
+    const prefs = loadPrefs();
+    prefs[id] = {weight:s.weight, reps:s.reps};
+    savePrefs(prefs);
+  }
+  const ex = state.workout.find(e=>e.id===id) || state.workout[state.currentIdx];
+  const row = document.getElementById(`set-row-${id}-${i}`);
+  if(row) {
+    row.className = s.done?'set-done':'';
+    const btn = row.querySelector('.done-set-btn');
+    if(btn){btn.textContent=s.done?'✓':'○';btn.className='done-set-btn'+(s.done?' active':'');}
+  }
+  // Check sets done → superset auto-advance or rest timer (skip in log mode)
+  if(s.done && !state.logMode) {
+    const groupExs = (ex.group && ex.section==='workout')
+      ? state.workout.filter(e=>e.group===ex.group && e.section==='workout')
+      : [];
+
+    if(groupExs.length > 1) {
+      // ── Superset: avançar para o próximo exercício após cada série ──
+      const posInGroup = groupExs.findIndex(e=>e.id===ex.id);
+      const nextInGroup = groupExs[posInGroup + 1];
+      if(nextInGroup) {
+        // Existe próximo no superset → avançar
+        setTimeout(()=>navigateEx(1), 450);
+      } else {
+        // Último exercício do superset — ver se ainda há séries por fazer
+        const allGroupDone = groupExs.every(e=>(state.sets[e.id]||[]).every(st=>st.done));
+        if(!allGroupDone) {
+          // Voltar ao primeiro do superset para nova ronda
+          const firstIdx = state.workout.findIndex(e=>e.id===groupExs[0].id);
+          setTimeout(()=>renderExercise(firstIdx), 450);
+        } else {
+          // Superset completo → descanso
+          const nextOverallEx = state.workout[state.currentIdx+1];
+          if(ex.rest>0) startRestTimer(ex.rest, nextOverallEx);
+        }
+      }
+    } else {
+      // ── Exercício normal: descanso quando todas as séries feitas ──
+      const allDone = state.sets[id].every(st=>st.done);
+      if(allDone) {
+        const nextEx = state.workout[state.currentIdx+1];
+        if(ex.rest>0) startRestTimer(ex.rest, nextEx);
+      }
+    }
+  }
+  updateProgress();
+}
+
+function markWarmupDone(id) {
+  state.sets[id][0].done = true;
+  renderExercise(state.currentIdx);
+  // Auto-advance after short delay
+  setTimeout(()=>{
+    if(state.currentIdx < state.workout.length-1) navigateEx(1);
+  },600);
+}
+
+function renderLogMode() {
+  state.currentSection = 'workout';
+  // Hide section pills and nav bar in log mode
+  const pills = document.getElementById('section-pills');
+  if(pills) pills.style.display = 'none';
+  const ssInd = document.getElementById('superset-indicator');
+  if(ssInd) ssInd.style.display = 'none';
+  // Hide nav bar, show log footer
+  const nav = document.getElementById('ex-nav-bar');
+  if(nav) nav.style.display = 'none';
+  const logFooter = document.getElementById('log-footer');
+  if(logFooter) logFooter.style.display = 'flex';
+  // Render all workout exercises at once
+  const workoutExs = state.workout.filter(e=>e.section==='workout');
+  document.getElementById('workout-content').innerHTML = workoutExs.map(ex=>{
+    const muscleTags = (ex.muscles||[]).map(m=>`<span class="muscle-tag" style="background:${M[m]}22;color:${M[m]}">${MUSCLE_PT[m]||m}</span>`).join('');
+    const sets = state.sets[ex.id]||[];
+    const imgs = EX_IMGS[ex.id];
+    const imgHTML = imgs ? `<div class="ex-img-wrap" style="width:64px;height:64px;flex-shrink:0">
+      <img class="img0" src="${imgs[0]}" loading="lazy" alt="${ex.name}" style="width:64px;height:64px;object-fit:cover;border-radius:8px">
+      <img class="img1" src="${imgs[1]}" loading="lazy" alt="${ex.name}" style="width:64px;height:64px;object-fit:cover;border-radius:8px">
+    </div>` : '';
+    const setsHTML = `<div style="overflow-x:auto;border-top:1px solid var(--border)">
+    <table class="sets-table" style="min-width:300px">
+      <thead><tr><th>Set</th><th>Peso (kg)</th><th>${isTimeBased(ex)?'Tempo (s)':'Reps'}</th><th>RIR</th><th>✓</th></tr></thead>
+      <tbody id="sets-tbody-${ex.id}">${sets.map((s,i)=>renderSetRow(ex,i,s)).join('')}</tbody>
+    </table></div>
+    <div style="padding:8px 14px;border-top:1px solid var(--border);display:flex;gap:8px">
+      <button class="btn btn-secondary btn-sm" onclick="addSetLog('${ex.id}')" style="flex:1">+ Série</button>
+      ${sets.length>1?`<button class="btn btn-outline btn-sm" onclick="removeSetLog('${ex.id}')" style="flex:1">− Série</button>`:''}
+    </div>`;
+    return `<div class="exercise-card" style="margin-bottom:12px" id="log-card-${ex.id}">
+      <div class="ex-top" style="padding:12px">
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+          ${imgHTML}
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px">
+              ${ex.isMain?'<span class="chip chip-accent">⭐ Principal</span>':''}
+              ${ex.group?`<span class="chip chip-blue">${ex.group}</span>`:''}
+            </div>
+            <div class="ex-name" style="font-size:15px">${ex.name}</div>
+            <div class="ex-name-pt">${ex.namePT}</div>
+            <div class="ex-meta" style="margin-top:5px">
+              <span class="chip chip-accent">${ex.sets}× ${ex.reps} reps</span>
+              <span class="chip chip-gray">RIR ${ex.rir}</span>
+            </div>
+          </div>
+        </div>
+        ${muscleTags?`<div class="muscle-tags">${muscleTags}</div>`:''}
+      </div>
+      ${setsHTML}
+    </div>`;
+  }).join('');
+}
+
+function addSetLog(id) {
+  const last = state.sets[id].slice(-1)[0]||{};
+  state.sets[id].push({weight:last.weight||0,reps:last.reps||0,rir:last.rir||0,done:false});
+  const tbody = document.getElementById('sets-tbody-'+id);
+  const ex = state.workout.find(e=>e.id===id);
+  if(tbody && ex) {
+    const i = state.sets[id].length-1;
+    tbody.insertAdjacentHTML('beforeend', renderSetRow(ex, i, state.sets[id][i]));
+  }
+}
+function removeSetLog(id) {
+  if(state.sets[id].length>1) {
+    state.sets[id].pop();
+    // re-render just the card
+    const ex = state.workout.find(e=>e.id===id);
+    const card = document.getElementById('log-card-'+id);
+    if(card && ex) {
+      const tbody = card.querySelector('tbody');
+      if(tbody) tbody.innerHTML = state.sets[id].map((s,i)=>renderSetRow(ex,i,s)).join('');
+    }
+  }
+}
+
+function addSet(id) {
+  const last = state.sets[id].slice(-1)[0]||{};
+  state.sets[id].push({weight:last.weight||0,reps:last.reps||0,rir:last.rir||0,done:false});
+  renderExercise(state.currentIdx);
+}
+
+function removeSet(id) {
+  if(state.sets[id].length>1) state.sets[id].pop();
+  renderExercise(state.currentIdx);
+}
+
+function updateProgress() {
+  const total = state.workout.length;
+  const done = state.workout.filter(e=>state.sets[e.id]?.every(s=>s.done)).length;
+  document.getElementById('wk-progress').style.width = `${(done/total)*100}%`;
+}
+
+function updateNavBar(idx) {
+  const total = state.workout.length;
+  document.getElementById('ex-progress-label').textContent = `${idx+1} / ${total}`;
+  const next = state.workout[idx+1];
+  document.getElementById('ex-nav-name').textContent = next?`Próximo: ${next.name.split(' ').slice(0,3).join(' ')}...`:'Último exercício';
+  document.getElementById('prev-ex-btn').disabled = idx===0;
+  document.getElementById('next-ex-btn').disabled = idx===total-1;
+}
+
+function navigateEx(dir) {
+  const newIdx = state.currentIdx + dir;
+  if(newIdx>=0 && newIdx<state.workout.length) renderExercise(newIdx);
+}
+// ── Rest Timer ──────────────────────────────────────
+function startRestTimer(seconds, nextEx) {
+  state.restTotal = seconds;
+  state.restRemaining = seconds;
+  const overlay = document.getElementById('rest-overlay');
+  const arc = document.getElementById('rest-arc');
+  const circumference = 2*Math.PI*70; // r=70
+  const nextLabel = document.getElementById('rest-next-ex');
+  nextLabel.textContent = nextEx ? `A seguir: ${nextEx.name}` : 'Último exercício!';
+  overlay.classList.add('show');
+  if(state.restInterval) clearInterval(state.restInterval);
+  function tick() {
+    document.getElementById('rest-secs').textContent = state.restRemaining;
+    const progress = state.restRemaining/state.restTotal;
+    arc.style.strokeDashoffset = circumference*(1-progress);
+    if(state.restRemaining<=0) {
+      clearInterval(state.restInterval);
+      overlay.classList.remove('show');
+      // Vibrate
+      if(navigator.vibrate) navigator.vibrate([200,100,200]);
+    } else {
+      state.restRemaining--;
+    }
+  }
+  tick();
+  state.restInterval = setInterval(tick,1000);
+}
+
+function skipRest() {
+  if(state.restInterval) clearInterval(state.restInterval);
+  document.getElementById('rest-overlay').classList.remove('show');
+}
+function addRestTime(s) { state.restRemaining = Math.min(state.restRemaining+s, state.restTotal+s); }
+
+
+// ── Google Sheets Sync ──────────────────────────────
+function loadSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem('vw_settings')||'{}');
+    // Pre-configure Sheets URL if not yet set
+    if(!s.sheetsUrl) {
+      s.sheetsUrl = 'https://script.google.com/macros/s/AKfycbw5v1UnDF28OUnkzCR88PEoJf98oGPh0NNhH6iTO9CLMcrYY3eHD8tFMB4peBLQhqCDzw/exec';
+      localStorage.setItem('vw_settings', JSON.stringify(s));
+    }
+    return s;
+  } catch(e) { return {sheetsUrl:'https://script.google.com/macros/s/AKfycbw5v1UnDF28OUnkzCR88PEoJf98oGPh0NNhH6iTO9CLMcrYY3eHD8tFMB4peBLQhqCDzw/exec'}; }
+}
+function saveSettings(s) { localStorage.setItem('vw_settings', JSON.stringify(s)); }
+
+function sendToSheets(entry) {
+  const settings = loadSettings();
+  const url = settings.sheetsUrl;
+  if(!url || url.trim()==='') return; // not configured, skip silently
+  // Build flat rows: one per set (most analysis-friendly)
+  const rows = [];
+  const dateISO = new Date(entry.date).toISOString().slice(0,10);
+  const durationMin = Math.round(entry.duration/60);
+  entry.exercises.forEach(ex => {
+    (ex.sets||[]).forEach((s,si) => {
+      const weightKG = parseFloat(s.weight)||0;
+      const reps = parseInt(s.reps)||0;
+      const setVolume = weightKG * reps;
+      rows.push([
+        new Date(entry.date).toISOString(),  // Timestamp
+        dateISO,                              // Date
+        entry.session,                        // Session (A/B/C/D)
+        entry.type,                           // Type (hotel/gym)
+        entry.mode||'workout',                // Mode (workout/log)
+        durationMin,                          // Duration_Min
+        'workout',                            // Section
+        ex.id,                                // Exercise_ID
+        ex.name,                              // Exercise_Name_EN
+        ex.namePT||ex.name,                   // Exercise_Name_PT
+        ex.group||'',                         // Superset_Group
+        ex.isMain?'Sim':'Não',                // Is_Main
+        (ex.muscles||[]).join(', '),          // Muscles
+        si+1,                                 // Set_Number
+        weightKG,                             // Weight_KG
+        reps,                                 // Reps
+        parseInt(s.rir)||0,                   // RIR
+        s.done?'Sim':'Não',                   // Set_Done
+        Math.round(setVolume),                // Set_Volume_KG
+        Math.round(entry.volume||0)           // Total_Workout_Volume_KG
+      ]);
+    });
+  });
+  if(rows.length===0) return;
+  fetch(url, {
+    method:'POST',
+    mode:'no-cors',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({rows, meta:{
+      date: dateISO,
+      session: entry.session,
+      type: entry.type,
+      mode: entry.mode||'workout',
+      duration_min: durationMin,
+      total_volume_kg: Math.round(entry.totalVolume||0),
+      muscles_worked: entry.musclesWorked||[]
+    }})
+  }).catch(()=>{}); // silent fail — local history always saved regardless
+}
+
+// ── End Workout ─────────────────────────────────────
+function confirmEndWorkout() {
+  const done = state.workout.filter(e=>state.sets[e.id]?.every(s=>s.done)).length;
+  const total = state.workout.length;
+  if(done===0) { if(!confirm('Sair sem registar nenhum exercício?')) return; clearWorkout(); return; }
+  if(done<total) {
+    if(!confirm(`Terminar treino? (${done}/${total} exercícios completos)`)) return;
+  }
+  finishWorkout();
+}
+
+function clearWorkout() {
+  if(state.timerInterval) clearInterval(state.timerInterval);
+  if(state.restInterval) clearInterval(state.restInterval);
+  state.logMode = false;
+  const lf = document.getElementById('log-footer');
+  if(lf) lf.style.display = 'none';
+  const nav = document.getElementById('ex-nav-bar');
+  if(nav) nav.style.display = '';
+  skipRest();
+  showScreen('home-screen');
+  renderHome();
+}
+
+function finishWorkout() {
+  if(state.timerInterval) clearInterval(state.timerInterval);
+  if(state.restInterval) clearInterval(state.restInterval);
+  skipRest();
+  let duration;
+  if(state.logMode) {
+    const input = prompt('⏱ Quanto tempo durou o treino?\nFormato: H:MM (ex: 1:35 para 1h 35min)', '1:00');
+    if(input === null) return;
+    if(input.includes(':')) {
+      const p = input.split(':');
+      duration = (parseInt(p[0])||0)*3600 + (parseInt(p[1]||0))*60 + (parseInt(p[2]||0));
+    } else {
+      duration = (parseInt(input)||60)*60;
+    }
+  } else {
+    duration = Math.floor((Date.now()-state.startTime)/1000);
+  }
+  const history = loadHistory();
+  // Build exercise summary — include all workout exercises attempted
+  const exercises = [];
+  let totalVolume = 0;
+  state.workout.filter(e=>e.section==='workout').forEach(e=>{
+    const allSets = state.sets[e.id]||[];
+    // Include if: any set is done, OR any set has weight/reps data entered
+    const doneSets = allSets.filter(s=>s.done);
+    const attemptedSets = allSets.filter(s=>s.done || parseFloat(s.weight)>0 || parseInt(s.reps)>0);
+    const setsToRecord = doneSets.length>0 ? doneSets : attemptedSets;
+    if(setsToRecord.length===0) return; // truly empty, skip
+    const bwEx = BODYWEIGHT_EX.includes(e.id);
+    const vol = setsToRecord.reduce((a,s)=>{
+      const reps = parseInt(s.reps)||0;
+      const w = bwEx ? getBodyweight() : (parseFloat(s.weight)||0);
+      return a + (w>0 ? w*reps : 0);
+    }, 0);
+    totalVolume += vol;
+    exercises.push({
+      id:e.id, name:e.name, namePT:e.namePT, muscles:e.muscles||[],
+      sets:setsToRecord, volume:Math.round(vol),
+      allDone: doneSets.length===allSets.length
+    });
+  });
+  // If NO exercises at all were attempted, include all (to show the plan)
+  if(exercises.length===0) {
+    state.workout.filter(e=>e.section==='workout').forEach(e=>{
+      const allSets = state.sets[e.id]||[];
+      exercises.push({id:e.id,name:e.name,namePT:e.namePT,muscles:e.muscles||[],sets:allSets,volume:0,allDone:false});
+    });
+  }
+  // Collect all muscles worked
+  const musclesWorked = [...new Set(exercises.flatMap(e=>e.muscles))];
+  const entry = {
+    date: Date.now(),
+    type: state.workoutType,
+    mode: state.logMode ? 'log' : 'workout',
+    session: state.workoutSession,
+    duration,
+    totalVolume: Math.round(totalVolume),
+    exercises,
+    musclesWorked
+  };
+  history.push(entry);
+  saveHistory(history);
+  sendToSheets(entry); // sync to Google Sheets
+  renderSummary(entry);
+  showScreen('summary-screen');
+}
+
+// ── Summary Screen ───────────────────────────────────
+function renderSummary(entry) {
+  const sess = SESSIONS[entry.type]?.sessions[entry.session];
+  const setsTotal = entry.exercises.reduce((a,e)=>a+e.sets.length,0);
+  const muscleHTML = renderBodyDiagram(entry.musclesWorked);
+
+  const exRows = entry.exercises.length>0 ? entry.exercises.map(e=>{
+    const doneSets = e.sets.filter(s=>s.done||parseFloat(s.weight)>0);
+    const setsStr = doneSets.length>0
+      ? doneSets.map(s=>`${parseFloat(s.weight)||0}kg × ${parseInt(s.reps)||0} reps`).join(' · ')
+      : 'Não registado';
+    const statusIcon = e.allDone ? '✅' : doneSets.length>0 ? '🔶' : '⬜';
+    return `<div class="ex-summary-row">
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:16px">${statusIcon}</span>
+          <div class="ex-s-name">${e.name}</div>
+        </div>
+        <div class="ex-s-sets" style="font-size:11px;color:var(--text3);margin-top:3px;padding-left:22px">${setsStr}</div>
+      </div>
+      <div class="ex-s-vol" style="text-align:right;flex-shrink:0">${e.volume>0?'<span style="color:var(--accent);font-weight:700">'+e.volume+'kg</span>':''}</div>
+    </div>`;
+  }).join('') : '<div style="color:var(--text2);text-align:center;padding:20px">Nenhum exercício registado neste treino.</div>';
+
+  document.getElementById('summary-content').innerHTML = `
+  <div style="padding:16px" class="fadein">
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:700;color:var(--text2)">${sess?.name||'Treino'}</div>
+      <div style="font-size:12px;color:var(--text3)">${fmtDate(entry.date)}</div>
+    </div>
+    <div class="summary-stat-grid">
+      <div class="stat-box"><div class="s-val">${fmtTime(entry.duration)}</div><div class="s-lbl">Duração</div></div>
+      <div class="stat-box"><div class="s-val">${entry.totalVolume>0?entry.totalVolume+'kg':'—'}</div><div class="s-lbl">Volume Total</div></div>
+      <div class="stat-box"><div class="s-val">${entry.exercises.length}</div><div class="s-lbl">Exercícios</div></div>
+      <div class="stat-box"><div class="s-val">${setsTotal}</div><div class="s-lbl">Séries Totais</div></div>
+    </div>
+    <div class="card">
+      <div class="section-header"><h2>💪 Músculos Trabalhados</h2></div>
+      ${muscleHTML}
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+        ${entry.musclesWorked.map(m=>`<span class="chip" style="background:${M[m]}22;color:${M[m]}">${MUSCLE_PT[m]||m}</span>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-header"><h2>📋 Exercícios</h2></div>
+      ${exRows}
+    </div>
+    <div class="share-btns">
+      <button class="btn btn-primary" onclick="shareWorkout()">📤 Partilhar Resumo (WhatsApp)</button>
+      <button class="btn btn-secondary" onclick="exportCSV()">📊 Exportar para Excel (CSV)</button>
+      <button class="btn btn-outline" onclick="navTo('home')">🏠 Voltar ao Início</button>
+    </div>
+  </div>`;
+}
+
+// ── Body Diagram SVG (detailed anatomical) ───────────
+function renderBodyDiagram(worked, opts) {
+  return renderBodyDiagramFull(worked, opts);
+}
+function renderBodyDiagramFull(worked, opts={}) {
+  const w = worked||[];
+  const interactive = opts.interactive||false;
+  const diagramId = opts.id||('bd_'+Math.random().toString(36).slice(2,7));
+  const ACCENT = '#FF6B35';
+  // Non-interactive (summary): cor única para todos os músculos trabalhados
+  // Interactive (histórico de músculos): cor individual por músculo
+  const col = m => w.includes(m) ? (interactive ? (M[m]||ACCENT) : ACCENT) : '#9e9e9e';
+  const op  = m => w.includes(m) ? (interactive ? '0.88' : '0.82') : '0.13';
+  const base = 'var(--text2)';
+  const skin = 'var(--bg2)';
+  // Helper: data-worked para highlight interactivo externo
+  const ms = (muscle, tag) => `<g class="ms-shape" data-muscle="${muscle}" data-diagram="${diagramId}" data-worked="${w.includes(muscle)?'1':'0'}" style="fill:${col(muscle)};opacity:${op(muscle)};cursor:${interactive?'pointer':'default'};transition:fill .3s,opacity .3s,filter .3s" ${interactive?`onclick="highlightMuscleOnDiagram('${diagramId}','${muscle}')"`:''}>${tag}</g>`;
+
+  const front = `<svg class="body-svg" viewBox="0 0 120 290" xmlns="http://www.w3.org/2000/svg">
+    <!-- BODY SILHOUETTE -->
+    <g fill="${skin}" stroke="${base}" stroke-width="0.8" stroke-opacity="0.35">
+      <ellipse cx="60" cy="17" rx="13" ry="15" stroke-opacity="0.4"/>
+      <path d="M47 30 Q44 32 40 34 L28 38 Q20 42 18 52 L16 70 Q15 76 18 80 L22 110 L26 130 L30 200 L34 250 L38 280 L42 280 L44 250 L46 200 L48 160 L50 145 L52 160 L54 200 L56 250 L58 280 L62 280 L66 250 L70 200 L74 130 L78 110 L82 80 Q85 76 84 70 L82 52 Q80 42 72 38 L60 34 Q56 32 53 30 Z" opacity="0.55"/>
+      <path d="M18 52 L8 56 L4 90 L8 130 L14 150 L18 130 L22 110 L18 52" opacity="0.55"/>
+      <path d="M82 52 L92 56 L96 90 L92 130 L86 150 L82 130 L78 110 L82 52" opacity="0.55"/>
+    </g>
+    <!-- MUSCLES FRONT -->
+    ${ms('chest','<path d="M42 44 Q42 38 52 37 L60 37 Q60 68 52 68 Q46 68 42 65 Z"/><path d="M60 37 Q68 37 78 44 L76 65 Q70 68 60 68 Z"/>')}
+    ${ms('upper_chest','<path d="M44 38 Q52 33 60 33 Q68 33 76 38 L74 46 Q68 40 60 40 Q52 40 46 46 Z"/>')}
+    ${ms('front_delt','<ellipse cx="36" cy="50" rx="9" ry="13"/><ellipse cx="84" cy="50" rx="9" ry="13"/>')}
+    ${ms('side_delt','<ellipse cx="27" cy="50" rx="6" ry="9"/><ellipse cx="93" cy="50" rx="6" ry="9"/>')}
+    ${ms('biceps','<path d="M22 60 Q18 65 17 76 Q16 87 21 93 Q25 97 27 90 Q29 82 28 70 Q27 62 22 60Z"/><path d="M98 60 Q102 65 103 76 Q104 87 99 93 Q95 97 93 90 Q91 82 92 70 Q93 62 98 60Z"/>')}
+    ${ms('forearms','<path d="M18 94 Q14 104 14 116 Q14 126 17 131 Q21 133 23 128 Q25 120 25 108 Q24 98 20 94Z"/><path d="M102 94 Q106 104 106 116 Q106 126 103 131 Q99 133 97 128 Q95 120 95 108 Q96 98 100 94Z"/>')}
+    ${ms('abs','<rect x="46" y="70" width="12" height="13" rx="3"/><rect x="62" y="70" width="12" height="13" rx="3"/><rect x="46" y="85" width="12" height="12" rx="3"/><rect x="62" y="85" width="12" height="12" rx="3"/><rect x="46" y="99" width="12" height="10" rx="3"/><rect x="62" y="99" width="12" height="10" rx="3"/>')}
+    ${ms('core','<rect x="46" y="70" width="28" height="38" rx="4"/>')}
+    ${ms('lats','<path d="M32 58 Q27 65 27 82 Q29 97 36 107 Q40 109 42 101 Q44 89 42 73 Q40 61 32 58Z"/><path d="M88 58 Q93 65 93 82 Q91 97 84 107 Q80 109 78 101 Q76 89 78 73 Q80 61 88 58Z"/>')}
+    ${ms('quads','<path d="M36 128 Q32 139 32 159 Q32 180 36 196 Q40 206 44 201 Q48 193 48 173 Q48 149 44 132 Q42 126 36 128Z"/><path d="M84 128 Q88 139 88 159 Q88 180 84 196 Q80 206 76 201 Q72 193 72 173 Q72 149 76 132 Q78 126 84 128Z"/>')}
+    ${ms('adductors','<path d="M48 133 Q46 149 46 169 Q48 189 52 201 Q56 207 60 201 Q64 189 62 169 Q62 149 72 133 Q68 124 60 122 Q52 124 48 133Z"/>')}
+    ${ms('calves','<path d="M36 201 Q33 213 33 229 Q33 245 37 253 Q40 257 43 251 Q46 241 46 223 Q46 209 42 201Z"/><path d="M78 201 Q81 213 81 229 Q81 245 77 253 Q74 257 71 251 Q68 241 68 223 Q68 209 72 201Z"/>')}
+    ${ms('tibialis','<path d="M44 207 Q41 219 42 235 Q43 245 45 249 Q47 245 47 233 Q47 217 45 207Z"/><path d="M70 207 Q73 219 72 235 Q71 245 69 249 Q67 245 67 233 Q67 217 69 207Z"/>')}
+  </svg>`;
+
+  const back = `<svg class="body-svg" viewBox="0 0 120 290" xmlns="http://www.w3.org/2000/svg">
+    <g fill="${skin}" stroke="${base}" stroke-width="0.8" stroke-opacity="0.35">
+      <ellipse cx="60" cy="17" rx="13" ry="15" stroke-opacity="0.4"/>
+      <path d="M47 30 Q44 32 40 34 L28 38 Q20 42 18 52 L16 70 Q15 76 18 80 L22 110 L26 130 L30 200 L34 250 L38 280 L42 280 L44 250 L46 200 L48 160 L50 145 L52 160 L54 200 L56 250 L58 280 L62 280 L66 250 L70 200 L74 130 L78 110 L82 80 Q85 76 84 70 L82 52 Q80 42 72 38 L60 34 Q56 32 53 30 Z" opacity="0.55"/>
+      <path d="M18 52 L8 56 L4 90 L8 130 L14 150 L18 130 L22 110 L18 52" opacity="0.55"/>
+      <path d="M82 52 L92 56 L96 90 L92 130 L86 150 L82 130 L78 110 L82 52" opacity="0.55"/>
+    </g>
+    ${ms('traps','<path d="M42 36 Q50 33 60 33 Q70 33 78 36 L82 50 Q73 56 60 58 Q47 56 38 50 Z"/>')}
+    ${ms('rear_delt','<ellipse cx="31" cy="50" rx="10" ry="12"/><ellipse cx="89" cy="50" rx="10" ry="12"/>')}
+    ${ms('lats','<path d="M31 56 Q23 67 22 83 Q22 97 28 107 Q36 113 40 105 Q44 93 44 77 Q44 61 31 56Z"/><path d="M89 56 Q97 67 98 83 Q98 97 92 107 Q84 113 80 105 Q76 93 76 77 Q76 61 89 56Z"/>')}
+    ${ms('back','<rect x="44" y="52" width="32" height="36" rx="6"/>')}
+    ${ms('triceps','<path d="M22 59 Q17 67 16 79 Q16 91 20 97 Q24 101 27 95 Q29 85 29 73 Q28 63 22 59Z"/><path d="M98 59 Q103 67 104 79 Q104 91 100 97 Q96 101 93 95 Q91 85 91 73 Q92 63 98 59Z"/>')}
+    ${ms('lower_back','<rect x="49" y="88" width="10" height="25" rx="5"/><rect x="61" y="88" width="10" height="25" rx="5"/>')}
+    ${ms('glutes','<path d="M38 118 Q36 127 36 139 Q36 151 44 159 Q52 163 60 163 Q68 163 76 159 Q84 151 84 139 Q84 127 82 118 Q76 110 60 108 Q44 110 38 118Z"/>')}
+    ${ms('hamstrings','<path d="M38 163 Q34 175 34 195 Q34 211 38 221 Q42 229 46 223 Q50 213 50 195 Q50 175 46 163Z"/><path d="M82 163 Q86 175 86 195 Q86 211 82 221 Q78 229 74 223 Q70 213 70 195 Q70 175 74 163Z"/>')}
+    ${ms('calves','<path d="M36 223 Q33 235 33 249 Q33 261 37 267 Q40 269 43 265 Q46 257 46 241 Q46 229 42 223Z"/><path d="M78 223 Q81 235 81 249 Q81 261 77 267 Q74 269 71 265 Q68 257 68 241 Q68 229 72 223Z"/>')}
+  </svg>`;
+
+  return `<div class="muscle-diagram-wrap" id="${diagramId}">
+    <div class="body-fig">${front}<div class="body-fig-label">FRENTE</div></div>
+    <div class="body-fig">${back}<div class="body-fig-label">COSTAS</div></div>
+  </div>`;
+}
+// ── Share / Export ──────────────────────────────────
+function shareWorkout() {
+  const h = loadHistory();
+  const entry = h[h.length-1];
+  if(!entry) return;
+  const sess = SESSIONS[entry.type]?.sessions[entry.session];
+  const lines = [
+    `💪 *Treino Completo!*`,
+    `📅 ${fmtDate(entry.date)}`,
+    `🏋️ ${sess?.name||'Treino'} — ${entry.type.toUpperCase()}`,
+    `⏱ Duração: ${fmtTime(entry.duration)}`,
+    `📊 Volume Total: ${entry.totalVolume}kg`,
+    ``,
+    `*Exercícios:*`,
+    ...entry.exercises.map(e=>{
+      const best = e.sets.reduce((b,s)=>parseFloat(s.weight)>parseFloat(b?.weight||0)?s:b,e.sets[0]);
+      return `• ${e.name}: ${e.sets.length}×${best?.reps||'?'} @ ${best?.weight||0}kg (vol: ${e.volume}kg)`;
+    }),
+    ``,
+    `*Músculos:* ${entry.musclesWorked.map(m=>MUSCLE_PT[m]||m).join(', ')}`,
+    ``,
+    `_Registado em Vitor Workout_`
+  ];
+  const text = lines.join('\n');
+  if(navigator.share) {
+    navigator.share({title:'Treino Vitor',text}).catch(()=>{});
+  } else {
+    const wa = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(wa,'_blank');
+  }
+}
+
+function exportCSV() {
+  const history = loadHistory();
+  if(history.length===0) { showToast('Sem histórico para exportar'); return; }
+  const rows = [['Data','Tipo','Sessão','Duração(s)','Volume(kg)','Exercício','Série','Peso(kg)','Reps','RIR','Volume Série']];
+  history.forEach(entry=>{
+    const sess = SESSIONS[entry.type]?.sessions[entry.session];
+    entry.exercises.forEach(ex=>{
+      ex.sets.forEach((s,i)=>{
+        const vol = (parseFloat(s.weight)||0)*(parseInt(s.reps)||0);
+        rows.push([
+          (() => { const ts=entryDate(entry); return ts>0?new Date(ts).toLocaleDateString('pt-PT'):'?'; })(),
+          entry.type, entry.session,
+          entry.duration, entry.totalVolume,
+          ex.name, i+1, s.weight, s.reps, s.rir, Math.round(vol)
+        ]);
+      });
+    });
+  });
+  const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=`VitorWorkout_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  showToast('✅ CSV exportado!');
+}
+
+// ── History Screen ────────────────────────────────────
+function switchHistTab(tab) {
+  state.histTab = tab;
+  document.querySelectorAll('#history-screen .tab').forEach((t,i)=>{
+    t.classList.toggle('active',['log','charts','muscles'][i]===tab);
+  });
+  renderHistory();
+}
+
+function renderHistory() {
+  const history = loadHistory();
+  const content = document.getElementById('history-content');
+  if(state.histTab==='log') renderHistLog(history, content);
+  else if(state.histTab==='charts') renderHistCharts(history, content);
+  else renderHistMuscles(history, content);
+}
+
+async function syncFromCloud() {
+  const btn = document.getElementById('cloud-sync-btn');
+  const settings = loadSettings();
+  const url = settings.sheetsUrl;
+  if(!url || url.trim()==='') { showToast('Configura o URL do Google Sheets primeiro (⚙️)'); return; }
+
+  btn.textContent = '⏳ A carregar…';
+  btn.disabled = true;
+
+  try {
+    const fetchUrl = url + '?action=history&limit=100&t=' + Date.now();
+    const res = await fetch(fetchUrl, { method:'GET', cache:'no-store' });
+    const data = await res.json();
+    if(data.status !== 'ok') throw new Error(data.msg || 'Erro desconhecido');
+
+    const cloudEntries = data.entries || [];
+    if(cloudEntries.length === 0) { showToast('Sem treinos na cloud'); return; }
+
+    // Normalizar datas usando todos os fallbacks disponíveis
+    cloudEntries.forEach(e => {
+      const resolved = entryDate(e);
+      if(resolved > 0) e.date = resolved; // garantir que e.date está sempre preenchido
+    });
+    // Diagnóstico: contar entradas sem data válida
+    const semData = cloudEntries.filter(e => !entryDate(e)).length;
+    if(semData > 0) {
+      const temV4 = cloudEntries.some(e => e._dateStr || e._ts);
+      if(!temV4) {
+        showToast(`⚠️ Apps Script desactualizado — ver instruções em ⚙️`, 5000);
+      }
+    }
+
+    // Merge: use cloud entries, dedup with local by date+session+type
+    const local = loadHistory();
+    const safeDate = d => (d && d > 0 && !isNaN(d)) ? new Date(d).toISOString().slice(0,10) : '0000-00-00';
+    const localKeys = new Set(local.map(h => `${h.type}|${h.session}|${safeDate(h.date)}`));
+
+    let added = 0;
+    cloudEntries.forEach(e => {
+      const k = `${e.type}|${e.session}|${safeDate(e.date)}`;
+      if(!localKeys.has(k)) {
+        local.push(e);
+        localKeys.add(k);
+        added++;
+      }
+    });
+
+    // Sort by date ascending
+    local.sort((a,b) => a.date - b.date);
+    saveHistory(local);
+    renderHistory();
+    showToast(added > 0 ? `☁️ ${added} treino(s) importado(s) da cloud` : '✓ Já tens tudo actualizado');
+  } catch(err) {
+    showToast('Erro ao ligar à cloud: ' + err.message);
+  } finally {
+    btn.textContent = '☁️ Sync';
+    btn.disabled = false;
+  }
+}
+
+function renderHistLog(history, content) {
+  if(history.length===0){
+    content.innerHTML=`<div class="hist-empty"><div style="font-size:48px">🏋️</div><p>Ainda sem treinos registados.</p><p style="margin-top:8px;font-size:13px;color:var(--text3)">Começa o teu primeiro treino<br>ou toca em ☁️ Sync para carregar da cloud.</p></div>`;
+    return;
+  }
+  const items = [...history].reverse().map(entry=>{
+    const sess = SESSIONS[entry.type]?.sessions[entry.session];
+    const idx = history.length - 1 - [...history].reverse().indexOf(entry);
+    const cloudBadge = entry._fromCloud ? '<span style="font-size:10px;color:var(--text3);margin-left:4px">☁️</span>' : '';
+    return `<button onclick="openHistDetail(${idx})" style="width:100%;text-align:left;font-family:inherit;cursor:pointer;-webkit-appearance:none;background:none;border:none;padding:0;display:block;margin-bottom:10px;touch-action:manipulation">
+      <div class="hist-entry" style="margin-bottom:0">
+        <div class="h-head">
+          <div>
+            <div class="h-date">${fmtEntryDate(entry)}${cloudBadge}</div>
+            <div class="h-sess">${sess?.name||'Treino'} · ${entry.type==='hotel'?'Hotel':entry.type} ${entry.mode==='log'?'· 📋 Log':''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="chip chip-accent">${entry.session}</span>
+            <span style="color:var(--text3);font-size:18px">›</span>
+          </div>
+        </div>
+        <div class="h-stats">
+          <div class="h-stat">⏱ <span>${fmtTime(entry.duration||0)}</span></div>
+          <div class="h-stat">🏋️ <span>${entry.totalVolume||0}kg</span></div>
+          <div class="h-stat">💪 <span>${entry.exercises?.length||0} ex.</span></div>
+        </div>
+      </div>
+    </button>`;
+  }).join('');
+  content.innerHTML = items + `<div style="text-align:center;padding:20px"><button class="btn btn-outline btn-sm" onclick="clearAllHistory()">🗑️ Limpar Histórico Local</button></div>`;
+}
+
+
+// ── History Detail ───────────────────────────────────
+function openHistDetail(idx) {
+  const history = loadHistory();
+  const entry = history[idx];
+  if(!entry) return;
+  const sess = SESSIONS[entry.type]?.sessions[entry.session];
+  const el = document.getElementById('hist-detail-content');
+  const musclesWorked = (entry.musclesWorked||[]).length > 0
+    ? entry.musclesWorked
+    : [...new Set((entry.exercises||[]).flatMap(e=>e.muscles||[]))];
+  const calcVol = entry.totalVolume > 0 ? entry.totalVolume :
+    (entry.exercises||[]).reduce((a,e)=>a+(e.volume||0),0);
+  const dateStr = fmtEntryDate(entry);
+  const totalSets = (entry.exercises||[]).reduce((a,e)=>a+(e.sets||[]).length,0);
+
+  const exHTML = (entry.exercises||[]).map((ex,xi)=>{
+    const imgs = EX_IMGS[ex.id];
+    const imgEl = imgs
+      ? `<img class="hd-ex-img" src="${imgs[0]}" loading="lazy" alt="${ex.name}" onerror="this.style.display='none'">`
+      : `<div class="hd-ex-img-placeholder">💪</div>`;
+    const exVol = ex.volume || ex.sets?.reduce((a,s)=>{
+      const w=parseFloat(s.weight)||0; const r=parseInt(s.reps)||0; return a+w*r;
+    },0) || 0;
+    const setsTable = `
+      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:2px">
+        <thead><tr style="color:var(--text3)">
+          <th style="text-align:left;padding:4px 6px;font-weight:600">Set</th>
+          <th style="padding:4px 6px;font-weight:600">Peso</th>
+          <th style="padding:4px 6px;font-weight:600">Reps</th>
+          <th style="padding:4px 6px;font-weight:600">RIR</th>
+        </tr></thead>
+        <tbody>${(ex.sets||[]).map((s,i)=>`
+          <tr style="background:${s.done?'var(--accentbg)':'transparent'};border-radius:4px">
+            <td style="padding:5px 6px;color:var(--text3);font-weight:600">S${i+1}</td>
+            <td style="padding:5px 6px;text-align:center;font-weight:700">${s.weight||0}kg</td>
+            <td style="padding:5px 6px;text-align:center">${s.reps||0}</td>
+            <td style="padding:5px 6px;text-align:center;color:var(--text3)">${s.rir??'-'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+    return `
+    <div class="hd-ex-row">
+      <div class="hd-ex-header" onclick="toggleHdEx(${xi})">
+        ${imgEl}
+        <div class="hd-ex-info">
+          <div class="hd-ex-name">${ex.name}</div>
+          <div class="hd-ex-sub">${ex.namePT||''}</div>
+          <div class="hd-ex-vol">${exVol>0?Math.round(exVol)+'kg vol. · ':''}${(ex.sets||[]).length} set${(ex.sets||[]).length!==1?'s':''}</div>
+        </div>
+        <span class="hd-ex-chevron" id="chev${xi}">▼</span>
+      </div>
+      <div class="hd-ex-sets" id="hdex${xi}">${setsTable}</div>
+    </div>`;
+  }).join('');
+
+  const diagramId = 'hd_' + idx;
+  el.innerHTML = `
+    <div style="padding:16px;padding-bottom:40px">
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="font-size:20px;font-weight:800">${sess?.name||'Treino'}</div>
+        <div style="color:var(--text3);font-size:13px;margin-top:3px">${dateStr}</div>
+      </div>
+      <!-- Muscle diagram — cor única, clicável via chips abaixo -->
+      ${renderBodyDiagram(musclesWorked, {id: diagramId})}
+      <!-- Chips de músculos — toca para realçar 3s -->
+      <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:4px 0 16px">
+        ${musclesWorked.map(m=>`<span class="chip" style="background:var(--accentbg);color:var(--accent);cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="highlightMuscleTemp('${diagramId}','${m}')">${MUSCLE_PT[m]||m}</span>`).join('')}
+      </div>
+      <!-- Stats -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+        <div class="card" style="text-align:center;padding:14px">
+          <div style="font-size:22px;font-weight:800;color:var(--accent)">${fmtTime(entry.duration||0)}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px">Duração</div>
+        </div>
+        <div class="card" style="text-align:center;padding:14px">
+          <div style="font-size:22px;font-weight:800;color:var(--accent)">${Math.round(calcVol)}kg</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px">Volume Total</div>
+        </div>
+      </div>
+      <!-- Exercise count chip -->
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <span class="chip chip-gray">💪 ${(entry.exercises||[]).length} exercícios</span>
+        <span class="chip chip-gray">📋 ${totalSets} séries</span>
+        ${entry.mode==='log'?'<span class="chip chip-blue">📝 Modo Log</span>':''}
+      </div>
+      <!-- Exercises list -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="padding:14px 16px 10px;font-weight:700;border-bottom:1px solid var(--border)">💪 Exercícios</div>
+        <div style="padding:0 16px">${exHTML}</div>
+      </div>
+    </div>`;
+  showScreen('hist-detail-screen');
+}
+
+function toggleHdEx(xi) {
+  const sets = document.getElementById('hdex'+xi);
+  const chev = document.getElementById('chev'+xi);
+  if(!sets) return;
+  const open = sets.classList.toggle('open');
+  if(chev) chev.classList.toggle('open', open);
+}
+
+function clearAllHistory() {
+  if(confirm('Apagar TODO o histórico? Esta acção não pode ser desfeita.')) {
+    localStorage.removeItem('vw_history');
+    renderHistory();
+    showToast('Histórico apagado');
+  }
+}
+
+function renderHistCharts(history, content) {
+  if(history.length<2){
+    content.innerHTML=`<div class="hist-empty"><div style="font-size:48px">📈</div><p>Faz pelo menos 2 treinos para ver a evolução.</p></div>`;
+    return;
+  }
+  // Volume over time
+  const last10 = history.slice(-10);
+  const labels = last10.map(h=>{ const ts=entryDate(h); return ts>0?new Date(ts).toLocaleDateString('pt-PT',{day:'numeric',month:'short'}):'?'; });
+  const volumes = last10.map(h=>h.totalVolume||0);
+  const durations = last10.map(h=>Math.round((h.duration||0)/60));
+  // Exercise progress — find exercises done ≥2 times
+  const exMap = {};
+  history.forEach(entry=>{
+    (entry.exercises||[]).forEach(e=>{
+      if(!exMap[e.id]) exMap[e.id] = {name:e.name, data:[]};
+      const best = e.sets.reduce((b,s)=>parseFloat(s.weight)>parseFloat(b?.weight||0)?s:b,e.sets[0]);
+      exMap[e.id].data.push({date:entry.date, weight:parseFloat(best?.weight||0), reps:parseInt(best?.reps||0)});
+    });
+  });
+  const progExs = Object.values(exMap).filter(e=>e.data.length>=2).slice(0,6);
+  const progressHTML = progExs.map(e=>{
+    const first = e.data[0].weight, last = e.data[e.data.length-1].weight;
+    const pct = first>0?Math.round(((last-first)/first)*100):0;
+    const max = Math.max(...e.data.map(d=>d.weight));
+    const bar = max>0?Math.round((last/max)*100):0;
+    return `<div class="ex-progress-item">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="ep-name">${e.name}</div>
+        <span class="chip ${pct>=0?'chip-green':'chip-accent'}">${pct>=0?'+':''}${pct}%</span>
+      </div>
+      <div class="ep-bar-wrap"><div class="ep-bar" style="width:${bar}%"></div></div>
+      <div class="ep-stats"><span>Início: ${first}kg</span><span>Melhor: ${max}kg</span><span>Actual: ${last}kg</span></div>
+    </div>`;
+  }).join('');
+  content.innerHTML = `
+  <div class="card">
+    <div class="section-header"><h2>📊 Volume por Treino</h2></div>
+    <div class="chart-wrap"><canvas id="chart-vol"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="section-header"><h2>⏱ Duração (min)</h2></div>
+    <div class="chart-wrap"><canvas id="chart-dur"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="section-header"><h2>🏋️ Evolução por Exercício</h2></div>
+    ${progExs.length>0?progressHTML:'<p style="color:var(--text2);font-size:13px">Faz mais treinos para ver a evolução por exercício.</p>'}
+  </div>`;
+  // Render charts after DOM update
+  setTimeout(()=>{
+    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const gridColor = isDark?'rgba(255,255,255,0.1)':'rgba(0,0,0,0.1)';
+    const textColor = isDark?'#888':'#666';
+    const chartDefaults = {
+      type:'line',
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{
+          x:{grid:{color:gridColor},ticks:{color:textColor,font:{size:10}}},
+          y:{grid:{color:gridColor},ticks:{color:textColor,font:{size:10}}}
+        }
+      }
+    };
+    new Chart(document.getElementById('chart-vol'),{...chartDefaults,data:{labels,datasets:[{data:volumes,borderColor:'#FF6B35',backgroundColor:'rgba(255,107,53,0.1)',fill:true,tension:0.4,pointBackgroundColor:'#FF6B35'}]}});
+    new Chart(document.getElementById('chart-dur'),{...chartDefaults,data:{labels,datasets:[{data:durations,borderColor:'#3498DB',backgroundColor:'rgba(52,152,219,0.1)',fill:true,tension:0.4,pointBackgroundColor:'#3498DB'}]}});
+  },100);
+}
+
+function highlightMuscleOnDiagram(diagramId, muscle) {
+  // Usado no ecrã de histórico de músculos (cor individual por músculo, toggle)
+  const wrap = document.getElementById(diagramId);
+  if(!wrap) return;
+  const already = wrap.dataset.active === muscle;
+  wrap.dataset.active = already ? '' : muscle;
+  wrap.querySelectorAll(`.ms-shape[data-diagram="${diagramId}"]`).forEach(el => {
+    const m = el.dataset.muscle;
+    const wasWorked = el.dataset.worked === '1';
+    el.style.fill = wasWorked ? (M[m]||'#FF6B35') : '#9e9e9e';
+    el.style.opacity = wasWorked ? '0.88' : '0.13';
+    el.style.filter = '';
+  });
+  if(!already) {
+    wrap.querySelectorAll(`.ms-shape[data-diagram="${diagramId}"][data-muscle="${muscle}"]`).forEach(el => {
+      el.style.fill = M[muscle]||'#FF6B35';
+      el.style.opacity = '1';
+      el.style.filter = 'drop-shadow(0 0 6px ' + (M[muscle]||'#FF6B35') + ')';
+    });
+  }
+  document.querySelectorAll(`.muscle-list-item[data-diagram="${diagramId}"]`).forEach(el => {
+    el.classList.toggle('active', !already && el.dataset.muscle === muscle);
+  });
+}
+
+function highlightMuscleTemp(diagramId, muscle) {
+  // Usado no detalhe do treino — realça o músculo 3s e volta ao estado base
+  const wrap = document.getElementById(diagramId);
+  if(!wrap) return;
+  const ACCENT = '#FF6B35';
+  if(wrap._hlTimeout) clearTimeout(wrap._hlTimeout);
+  // Repor tudo ao estado base (cor única)
+  wrap.querySelectorAll(`.ms-shape[data-diagram="${diagramId}"]`).forEach(el => {
+    const wasWorked = el.dataset.worked === '1';
+    el.style.fill   = wasWorked ? ACCENT : '#9e9e9e';
+    el.style.opacity = wasWorked ? '0.82' : '0.13';
+    el.style.filter  = '';
+  });
+  // Realçar o músculo seleccionado com glow
+  wrap.querySelectorAll(`.ms-shape[data-diagram="${diagramId}"][data-muscle="${muscle}"]`).forEach(el => {
+    el.style.fill    = ACCENT;
+    el.style.opacity = '1';
+    el.style.filter  = `drop-shadow(0 0 8px ${ACCENT})`;
+  });
+  // Auto-reset ao fim de 3s
+  wrap._hlTimeout = setTimeout(() => {
+    wrap.querySelectorAll(`.ms-shape[data-diagram="${diagramId}"]`).forEach(el => {
+      const wasWorked = el.dataset.worked === '1';
+      el.style.fill    = wasWorked ? ACCENT : '#9e9e9e';
+      el.style.opacity = wasWorked ? '0.82' : '0.13';
+      el.style.filter  = '';
+    });
+  }, 3000);
+}
+
+function renderHistMuscles(history, content) {
+  if(history.length===0){content.innerHTML=`<div class="hist-empty"><p>Sem dados de treino ainda.</p></div>`;return;}
+  // Count muscle frequency
+  const freq = {};
+  history.forEach(entry=>{
+    const muscles = (entry.musclesWorked||[]).length > 0
+      ? entry.musclesWorked
+      : [...new Set((entry.exercises||[]).flatMap(e=>e.muscles||[]))];
+    muscles.forEach(m=>{freq[m]=(freq[m]||0)+1;});
+  });
+  const sorted = Object.entries(freq).sort((a,b)=>b[1]-a[1]);
+  const max = sorted[0]?.[1]||1;
+  // Last session muscle diagram
+  const last = history[history.length-1];
+  const lastMuscles = (last.musclesWorked||[]).length > 0
+    ? last.musclesWorked
+    : [...new Set((last.exercises||[]).flatMap(e=>e.muscles||[]))];
+  const lastDate = fmtEntryDate(last);
+  const diagId = 'diag_hist';
+  content.innerHTML = `
+  <div class="card">
+    <div class="section-header"><h2>💪 Último Treino</h2></div>
+    ${renderBodyDiagramFull(lastMuscles, {interactive:true, id:diagId})}
+    <div style="font-size:12px;color:var(--text2);text-align:center;margin-top:4px">${lastDate} · ${SESSIONS[last.type]?.sessions[last.session]?.name||''}</div>
+  </div>
+  <div class="card">
+    <div class="section-header"><h2>📊 Músculos Mais Treinados</h2></div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px">Toca num músculo para o realçar no diagrama ↑</div>
+    ${sorted.map(([m,n])=>`
+      <div class="muscle-list-item" data-muscle="${m}" data-diagram="${diagId}" onclick="highlightMuscleOnDiagram('${diagId}','${m}')">
+        <span class="ml-label" style="color:${M[m]||'var(--accent)'}">${MUSCLE_PT[m]||m}</span>
+        <div class="ml-bar-wrap"><div class="ml-bar" style="width:${Math.round((n/max)*100)}%;background:${M[m]||'var(--accent)'}"></div></div>
+        <span class="ml-count">${n}×</span>
+      </div>`).join('')}
+  </div>`;
+  // Mark worked muscles on SVG elements
+  setTimeout(()=>{
+    const wrap = document.getElementById(diagId);
+    if(!wrap) return;
+    wrap.querySelectorAll('.ms-shape').forEach(el => {
+      el.dataset.worked = lastMuscles.includes(el.dataset.muscle) ? '1' : '0';
+    });
+  }, 50);
+}
+
+// ── History Tab (calendar) in log tab ─────────────────
+// ── Init ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', ()=>{
+  renderHome();
+  document.getElementById('home-date').textContent = new Date().toLocaleDateString('pt-PT',{weekday:'long',day:'numeric',month:'long'});
+});
+
+// ── Settings ────────────────────────────────────────
+function openSettings() {
+  const s = loadSettings();
+  const el = document.getElementById('sheets-url-input');
+  if(el) el.value = s.sheetsUrl||'';
+  const bw = document.getElementById('bw-input');
+  if(bw) bw.value = s.bodyweight||80;
+  showScreen('settings-screen');
+}
+function saveBW() {
+  const val = parseFloat(document.getElementById('bw-input').value)||80;
+  const s = loadSettings(); s.bodyweight=val; saveSettings(s);
+  showToast('Peso corporal: '+val+'kg guardado');
+}
+function saveSheetUrl() {
+  const url = document.getElementById('sheets-url-input').value.trim();
+  const s = loadSettings();
+  s.sheetsUrl = url;
+  saveSettings(s);
+  const st = document.getElementById('sheets-status');
+  if(url) {
+    st.textContent = '✓ URL guardado!';
+    st.style.color = 'var(--green)';
+  } else {
+    st.textContent = 'URL removido — sync desactivado';
+    st.style.color = 'var(--text3)';
+  }
+  setTimeout(()=>{ st.textContent=''; }, 3000);
+}
+function copyAppsScript() {
+  const el = document.getElementById('apps-script-code');
+  el.select();
+  el.setSelectionRange(0, 99999); // iOS
+  let copied = false;
+  try {
+    copied = document.execCommand('copy');
+  } catch(e) {}
+  if(!copied && navigator.clipboard) {
+    navigator.clipboard.writeText(el.value).catch(()=>{});
+  }
+  showToast(copied ? '✓ Código copiado!' : 'Código seleccionado — agora copia (⌘C ou Copiar)');
+}
+function confirmClearHistory() {
+  if(confirm('Apagar todo o histórico local? Esta acção não pode ser desfeita.')) {
+    localStorage.removeItem('vw_history');
+    showToast('Histórico limpo');
+  }
+}
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if(!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:600;z-index:999;opacity:0;transition:opacity .3s';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  setTimeout(()=>{ t.style.opacity='0'; }, 2500);
+}
+
+
+// ── iOS Touch Fix ─────────────────────────────────────
+function bindTouch(el, fn) {
+  if(!el) return;
+  let moved = false;
+  el.addEventListener('touchstart', function(e){ moved=false; }, {passive:true});
+  el.addEventListener('touchmove',  function(e){ moved=true;  }, {passive:true});
+  el.addEventListener('touchend',   function(e){
+    if(!moved){ e.preventDefault(); fn(e); }
+  }, {passive:false});
+  el.addEventListener('click', fn); // desktop fallback
+}
+
+function initTouchBindings() {
+  // Hotel button
+  const hotelBtn = document.getElementById('btn-hotel');
+  if(hotelBtn) bindTouch(hotelBtn, function(){ goSessions('hotel'); });
+
+  // Session list — event delegation
+  const sessList = document.getElementById('sessions-list');
+  if(sessList) {
+    let moved = false;
+    sessList.addEventListener('touchstart', function(e){ moved=false; }, {passive:true});
+    sessList.addEventListener('touchmove',  function(e){ moved=true;  }, {passive:true});
+    sessList.addEventListener('touchend', function(e){
+      if(moved) return;
+      const card = e.target.closest('[data-action="showModePicker"]');
+      if(card){ e.preventDefault(); showModePicker(card.dataset.type, card.dataset.key); }
+    }, {passive:false});
+  }
+
+  // Mode picker buttons — already <button>, but add touch for safety
+  document.querySelectorAll('[onclick*="beginWorkout"]').forEach(btn => {
+    const mode = btn.getAttribute('onclick').includes("'workout'") ? 'workout' : 'log';
+    bindTouch(btn, function(){ beginWorkout(mode); });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initTouchBindings);
+
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</div>
+
+<!-- ── Mode Picker Overlay ───────────────────────────────── -->
+<div id="mode-picker-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:300;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--card);border-radius:22px;padding:28px 20px;width:100%;max-width:400px">
+    <div id="mp-title" style="font-size:18px;font-weight:800;color:var(--text1);margin-bottom:6px;text-align:center"></div>
+    <div style="font-size:13px;color:var(--text3);text-align:center;margin-bottom:24px">O que queres fazer?</div>
+    <button onclick="beginWorkout('workout')" style="display:flex;align-items:center;gap:14px;width:100%;padding:18px;margin-bottom:12px;background:var(--bg2);border:2px solid var(--border);border-radius:16px;cursor:pointer;text-align:left;transition:border-color .2s" ontouchstart="this.style.borderColor='var(--accent)'" ontouchend="this.style.borderColor='var(--border)'">
+      <span style="font-size:36px;line-height:1">💪</span>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:var(--text1);margin-bottom:3px">Fazer Treino</div>
+        <div style="font-size:12px;color:var(--text3)">Timer de descanso · Guia exercício a exercício · Vibração</div>
+      </div>
+    </button>
+    <button onclick="beginWorkout('log')" style="display:flex;align-items:center;gap:14px;width:100%;padding:18px;margin-bottom:20px;background:var(--bg2);border:2px solid var(--border);border-radius:16px;cursor:pointer;text-align:left;transition:border-color .2s" ontouchstart="this.style.borderColor='var(--accent)'" ontouchend="this.style.borderColor='var(--border)'">
+      <span style="font-size:36px;line-height:1">📋</span>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:var(--text1);margin-bottom:3px">Registar Log</div>
+        <div style="font-size:12px;color:var(--text3)">Já fiz · Sem timers · Ver todos os exercícios de uma vez</div>
+      </div>
+    </button>
+    <button onclick="hideModePicker()" style="width:100%;padding:12px;background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer">← Cancelar</button>
+  </div>
+</div>
+
+
+<!-- ── Settings Screen ──────────────────────────────── -->
+<div id="settings-screen" class="screen">
+  <div class="topbar">
+    <button class="btn-back" onclick="showScreen('home-screen')">←</button>
+    <div class="top-title">⚙️ Definições</div>
+    <div style="width:40px"></div>
+  </div>
+  <div style="padding:20px;max-width:500px;margin:0 auto;padding-bottom:calc(40px + env(safe-area-inset-bottom))"
+    <div style="background:var(--card);border-radius:16px;padding:20px;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:700;color:var(--accent);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:4px">Google Sheets Sync</div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.5">Cola aqui o URL do teu Google Apps Script para guardar o histórico na cloud automaticamente após cada treino.</div>
+      <div style="margin-bottom:18px;padding:14px;background:var(--bg3);border-radius:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px">⚖️ Peso Corporal (kg)</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px">Usado para calcular volume em exercícios de peso corporal (flexões, pranchas, etc.)</div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <input type="number" id="bw-input" placeholder="80" inputmode="decimal" style="width:80px;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text1);font-size:18px;text-align:center;font-weight:700">
+          <button class="btn btn-primary" onclick="saveBW()" style="flex:1;padding:12px">Guardar</button>
+        </div>
+      </div>
+      <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Apps Script Web App URL</label>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;padding:8px;background:var(--bg3);border-radius:8px">💡 Código para copiar: abre o ficheiro <strong>VitorWorkout_AppsScript.gs</strong> na pasta do projecto</div>
+      <textarea id="sheets-url-input" placeholder="https://script.google.com/macros/s/..." 
+        style="width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--text1);font-size:13px;resize:vertical;min-height:80px;font-family:monospace"></textarea>
+      <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="saveSheetUrl()">💾 Guardar URL</button>
+      <div id="sheets-status" style="margin-top:10px;font-size:13px;text-align:center;color:var(--text3)"></div>
+    </div>
+
+    <div style="background:var(--card);border-radius:16px;padding:20px;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:700;color:var(--accent);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:12px">Como configurar (1×)</div>
+      <ol style="font-size:13px;color:var(--text2);line-height:1.8;padding-left:20px;margin:0">
+        <li>Vai a <strong>sheets.google.com</strong> → cria folha nova: <em>"Vitor Workout History"</em></li>
+        <li>Menu <strong>Extensões → Apps Script</strong></li>
+        <li>Apaga o código existente e cola o código abaixo</li>
+        <li><strong>Implementar → Nova implementação → Aplicação web</strong></li>
+        <li>Acesso: <strong>Qualquer pessoa</strong> → Implementar → copia o URL</li>
+        <li>Cola o URL no campo acima e guarda</li>
+      </ol>
+    </div>
+
+    <div style="background:var(--card);border-radius:16px;padding:20px;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:700;color:var(--accent);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:4px">Código Apps Script</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:8px">↕ Faz scroll no ecrã para ver o código abaixo</div>
+      <textarea id="apps-script-code" readonly onclick="this.select()" style="width:100%;box-sizing:border-box;background:var(--bg3);border-radius:10px;padding:14px;font-family:monospace;font-size:11px;color:var(--text2);white-space:pre;line-height:1.6;border:1px solid var(--border);resize:none;height:220px;-webkit-user-select:text;user-select:text">// ═══════════════════════════════════════════════
+// VITOR WORKOUT — Google Apps Script v3
+// Executar como: Eu | Acesso: Qualquer pessoa
+// ═══════════════════════════════════════════════
+function json_(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName('Historico');
+    if(!sheet) {
+      sheet = ss.insertSheet('Historico');
+      sheet.appendRow(['Timestamp','Date','Session','Type','Mode',
+        'Duration_Min','Section','Exercise_ID','Exercise_Name_EN',
+        'Exercise_Name_PT','Superset_Group','Is_Main','Muscles',
+        'Set_Number','Weight_KG','Reps','RIR','Set_Done',
+        'Set_Volume_KG','Total_Workout_Vol_KG']);
+      sheet.setFrozenRows(1);
+      sheet.getRange(1,1,1,20).setBackground('#1a1a2e')
+        .setFontColor('#ffffff').setFontWeight('bold');
+    }
+    let summSheet = ss.getSheetByName('Sumarios');
+    if(!summSheet) {
+      summSheet = ss.insertSheet('Sumarios');
+      summSheet.appendRow(['Timestamp','Date','Session','Type','Mode',
+        'Duration_Min','Total_Volume_KG','Muscles_Worked',
+        'Num_Exercises','Num_Sets']);
+      summSheet.setFrozenRows(1);
+      summSheet.getRange(1,1,1,10).setBackground('#1a1a2e')
+        .setFontColor('#ffffff').setFontWeight('bold');
+    }
+    const data = JSON.parse(e.postData.contents);
+    if(data.rows && data.rows.length>0)
+      data.rows.forEach(row => sheet.appendRow(row));
+    if(data.meta) {
+      const m = data.meta;
+      summSheet.appendRow([new Date().toISOString(),m.date,m.session,
+        m.type,m.mode||'workout',m.duration_min,m.total_volume_kg,
+        (m.muscles_worked||[]).join(', '),
+        data.rows?[...new Set(data.rows.map(r=>r[7]))].length:0,
+        data.rows?data.rows.length:0]);
+    }
+    return json_({status:'ok',rows:data.rows?data.rows.length:0});
+  } catch(err) {
+    return json_({status:'error',msg:err.toString()});
+  }
+}
+
+function doGet(e) {
+  if(e && e.parameter && e.parameter.action==='history') {
+    try { return getHistory_(e); }
+    catch(err) { return json_({status:'error',msg:err.toString()}); }
+  }
+  return ContentService.createTextOutput('Vitor Workout Sync — OK')
+    .setMimeType(ContentService.MimeType.TEXT);
+}
+
+function getHistory_(e) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const limit = Math.min(parseInt(e.parameter.limit)||100, 200);
+  const summSheet = ss.getSheetByName('Sumarios');
+  if(!summSheet) return json_({status:'ok',entries:[]});
+  const summData = summSheet.getDataRange().getValues();
+  if(summData.length<=1) return json_({status:'ok',entries:[]});
+  const histSheet = ss.getSheetByName('Historico');
+  const exMap = {};
+  if(histSheet) {
+    const hd = histSheet.getDataRange().getValues();
+    for(let i=1;i<hd.length;i++){
+      const r=hd[i], d=(r[1] instanceof Date)?Utilities.formatDate(r[1],'UTC','yyyy-MM-dd'):String(r[1]), key=d+'|'+r[2]+'|'+r[3], exId=String(r[7]);
+      if(!exMap[key]) exMap[key]={};
+      if(!exMap[key][exId]) exMap[key][exId]={id:exId,name:r[8],
+        namePT:r[9],muscles:(r[12]||'').split(', ').filter(Boolean),sets:[]};
+      exMap[key][exId].sets.push({weight:parseFloat(r[14])||0,
+        reps:parseInt(r[15])||0,rir:parseInt(r[16])||0,done:r[17]==='Sim'});
+    }
+  }
+  const entries=[];
+  for(let i=summData.length-1;i>=1&&entries.length<limit;i--){
+    const r=summData[i];
+    const ds=(r[1] instanceof Date)?Utilities.formatDate(r[1],'UTC','yyyy-MM-dd'):String(r[1]);
+    const key=ds+'|'+r[2]+'|'+r[3];
+    const exData=exMap[key]?Object.values(exMap[key]):[];
+    exData.forEach(ex=>{ex.volume=Math.round(ex.sets.reduce((a,s)=>a+s.weight*s.reps,0));});
+    const calcVol=exData.reduce((a,ex)=>a+ex.volume,0);
+    const totalVol=calcVol>0?calcVol:(parseFloat(r[6])||0);
+    const mSumm=(r[7]||'').split(', ').filter(Boolean);
+    const mEx=[...new Set(exData.flatMap(ex=>ex.muscles))];
+    entries.push({date:new Date(ds+'T12:00:00Z').getTime(),
+      session:r[2],type:r[3],mode:r[4]||'workout',
+      duration:Math.round(parseFloat(r[5]||0)*60),
+      totalVolume:totalVol,
+      musclesWorked:mSumm.length>0?mSumm:mEx,
+      exercises:exData,_fromCloud:true});
+  }
+  return json_({status:'ok',entries:entries});
+}</textarea>
+      <button class="btn btn-secondary" style="width:100%;margin-top:10px;font-size:13px" onclick="copyAppsScript()">📋 Seleccionar e Copiar Código</button>
+      <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:6px">No iPhone: toca no código → Seleccionar Tudo → Copiar</div>
+    </div>
+
+    <div style="background:var(--card);border-radius:16px;padding:20px;margin-bottom:32px">
+      <div style="font-size:13px;font-weight:700;color:var(--accent);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:12px">Dados Locais</div>
+      <button class="btn btn-secondary" style="width:100%;margin-bottom:10px" onclick="exportCSV()">📊 Exportar CSV</button>
+      <button class="btn btn-outline" style="width:100%;color:#e74c3c;border-color:#e74c3c" onclick="confirmClearHistory()">🗑️ Limpar Histórico Local</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── History Detail Screen ─────────────────────────── -->
+<div id="hist-detail-screen" class="screen">
+  <div class="topbar" style="position:sticky;top:0;z-index:50;background:var(--bg);">
+    <button ontouchend="event.preventDefault();showScreen('history-screen');renderHistory();" onclick="showScreen('history-screen');renderHistory();" style="display:flex;align-items:center;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:8px 16px;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;touch-action:manipulation;font-family:inherit;-webkit-appearance:none;">← Voltar</button>
+    <div style="font-weight:700;font-size:16px">Detalhe do Treino</div>
+    <div style="width:80px"></div>
+  </div>
+  <div id="hist-detail-content"></div>
+</div>
+
+</body>
+</html>

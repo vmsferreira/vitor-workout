@@ -1,0 +1,15 @@
+{
+  "name": "Vitor Workout",
+  "short_name": "Workout",
+  "display": "standalone",
+  "background_color": "#0d0d0d",
+  "theme_color": "#FF6B35",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
