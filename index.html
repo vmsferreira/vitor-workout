@@ -294,18 +294,16 @@ canvas{max-width:100%;}
         <div class="type-name">Hotel</div>
         <div class="type-sub">Halteres · Cadeira · Chão</div>
       </button>
-      <div class="workout-type-card soon">
-        <div class="soon-badge">Em Breve</div>
+      <button class="workout-type-card" id="btn-gym" data-action="goSessions" data-arg="gym" onclick="goSessions('gym')" style="cursor:pointer;font-family:inherit;display:flex;-webkit-appearance:none;">
         <div class="type-icon">🏋️</div>
         <div class="type-name">Ginásio</div>
         <div class="type-sub">Angola · Full Gym</div>
-      </div>
-      <div class="workout-type-card soon">
-        <div class="soon-badge">Em Breve</div>
+      </button>
+      <button class="workout-type-card" id="btn-speediance" data-action="goSessions" data-arg="speediance" onclick="goSessions('speediance')" style="cursor:pointer;font-family:inherit;display:flex;-webkit-appearance:none;">
         <div class="type-icon">⚙️</div>
         <div class="type-name">Speediance</div>
         <div class="type-sub">Portugal · Casa</div>
-      </div>
+      </button>
       <div class="workout-type-card soon">
         <div class="soon-badge">Em Breve</div>
         <div class="type-icon">🏃</div>
@@ -486,6 +484,51 @@ const EX_IMGS = {
   'bench_dip': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bench_Dips/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bench_Dips/1.jpg'],
   'preacher_curl': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One_Arm_Dumbbell_Preacher_Curl/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One_Arm_Dumbbell_Preacher_Curl/1.jpg'],
   'spider_curl': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Spider_Curl/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Spider_Curl/1.jpg'],
+
+  'gm_a_bench': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bench_Press/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bench_Press/1.jpg'],
+  'gm_a_incl_press': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Press/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Press/1.jpg'],
+  'gm_a_lat_raise': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Lateral_Raise/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Lateral_Raise/1.jpg'],
+  'gm_a_tri_ext': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Seated_Triceps_Extension/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Seated_Triceps_Extension/1.jpg'],
+  'gm_a_arnold': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Arnold_Dumbbell_Press/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Arnold_Dumbbell_Press/1.jpg'],
+  'gm_a_bss': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Split_Squat_with_Dumbbells/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Split_Squat_with_Dumbbells/1.jpg'],
+  'gm_a_calf': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Calf_Raise_On_A_Dumbbell/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Calf_Raise_On_A_Dumbbell/1.jpg'],
+  'gm_a_situp': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/3_4_Sit-Up/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/3_4_Sit-Up/1.jpg'],
+  'gm_a_plank': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plank/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plank/1.jpg'],
+  'gm_a_decline_press': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Dumbbell_Bench_Press/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Dumbbell_Bench_Press/1.jpg'],
+  'gm_b_bicep_curl': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bicep_Curl/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bicep_Curl/1.jpg'],
+  'gm_b_hammer': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Alternate_Hammer_Curl/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Alternate_Hammer_Curl/1.jpg'],
+  'gm_b_db_row': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bent_Over_Two-Dumbbell_Row/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bent_Over_Two-Dumbbell_Row/1.jpg'],
+  'gm_b_incline_curl': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Hammer_Curls/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Hammer_Curls/1.jpg'],
+  'gm_b_conc_curl': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Concentration_Curls/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Concentration_Curls/1.jpg'],
+  'gm_b_pushup': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Push-Up_off_of_a_Dumbbell/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Push-Up_off_of_a_Dumbbell/1.jpg'],
+  'gm_b_slrdl': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Single_Leg_Glute_Bridge/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Single_Leg_Glute_Bridge/1.jpg'],
+  'gm_b_step_up': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Step_Ups/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Step_Ups/1.jpg'],
+  'gm_b_side_plank': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Push_Up_to_Side_Plank/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Push_Up_to_Side_Plank/1.jpg'],
+  'gm_b_dead_bug': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dead_Bug/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dead_Bug/1.jpg'],
+  'gm_b_zottman': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Zottman_Curl/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Zottman_Curl/1.jpg'],
+  'gm_b_pullover': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Straight-Arm_Dumbbell_Pullover/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Straight-Arm_Dumbbell_Pullover/1.jpg'],
+  'gm_c_rdl': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Romanian_Deadlift/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Romanian_Deadlift/1.jpg'],
+  'gm_c_bss': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Split_Squat_with_Dumbbells/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Split_Squat_with_Dumbbells/1.jpg'],
+  'gm_c_hip_thrust': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Hip_Thrust/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Hip_Thrust/1.jpg'],
+  'gm_c_tibialis': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Anterior_Tibialis-SMR/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Anterior_Tibialis-SMR/1.jpg'],
+  'gm_c_tke': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bodyweight_Squat/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bodyweight_Squat/1.jpg'],
+  'gm_c_cable_crunch': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Kneeling_Cable_Crunch/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Kneeling_Cable_Crunch/1.jpg'],
+  'gm_c_knee_raise_c': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hanging_Leg_Raise/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hanging_Leg_Raise/1.jpg'],
+  'gm_c_copenhagen': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Push_Up_to_Side_Plank/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Push_Up_to_Side_Plank/1.jpg'],
+  'gm_d_rdl': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Romanian_Deadlift/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Romanian_Deadlift/1.jpg'],
+  'gm_d_goblet_squat': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Goblet_Squat/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Goblet_Squat/1.jpg'],
+  'gm_d_lunge': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Lunges/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Lunges/1.jpg'],
+  'gm_d_ohp': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Shoulder_Press/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Shoulder_Press/1.jpg'],
+  'gm_d_step_up': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Step_Ups/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Step_Ups/1.jpg'],
+  'gm_d_rear_fly': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Bent-Over_Rear_Delt_Raise/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Bent-Over_Rear_Delt_Raise/1.jpg'],
+  'gm_d_sl_hip_thrust': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Single_Leg_Glute_Bridge/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Single_Leg_Glute_Bridge/1.jpg'],
+  'gm_d_upright_row': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Dumbbell_Upright_Row/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Dumbbell_Upright_Row/1.jpg'],
+  'gm_d_shrug': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Shrug/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Shrug/1.jpg'],
+  'gm_d_situp': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/3_4_Sit-Up/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/3_4_Sit-Up/1.jpg'],
+  'gm_d_incline_fly': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Flyes/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Flyes/1.jpg'],
+  'gm_d_bench_dip': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bench_Dips/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bench_Dips/1.jpg'],
+  'gm_d_preacher': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One_Arm_Dumbbell_Preacher_Curl/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One_Arm_Dumbbell_Preacher_Curl/1.jpg'],
+  'gm_d_spider': ['https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Spider_Curl/0.jpg','https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Spider_Curl/1.jpg'],
 };
 
 // ── Bodyweight exercises (use bodyweight for volume) ──
@@ -685,6 +728,336 @@ const SESSIONS = {
       }
     }
   }
+
+  gym: {
+    name: 'Ginásio Angola',
+    sessions: {
+      A: {
+        name: 'Session A — PUSH',
+        day: '2ª Feira', duration: '~95 min',
+        focus: 'Peito ⭐ · Tríceps · Ombros · Pernas',
+        muscles: ['chest','triceps','front_delt','side_delt'],
+        warmup: [
+          {id:'gm_w_cardio_a',name:'Light Cardio',namePT:'Cardio Leve',reps:'5 min',rest:0,notes:'Elíptica, bicicleta ou marcha rápida. FC 50-60% FCmax.',muscles:[],yt:YT('cardio warm up 5 minutes gym')},
+          {id:'gm_w_arm_swings',name:'Arm Cross Swings',namePT:'Braços Cruzados',reps:'×20',rest:0,notes:'Braços estendidos, cruzar e abrir. Mobilidade peitoral.',muscles:['front_delt','chest'],yt:YT('cross body arm swings warm up shoulders')},
+          {id:'gm_w_shoulder_circles',name:'Shoulder Circles',namePT:'Círculos de Ombros',reps:'×20',rest:0,notes:'Círculos amplos para a frente e para trás.',muscles:['front_delt','side_delt'],yt:YT('dynamic shoulder circles warm up')},
+          {id:'gm_w_chest_opener',name:'Chest Opener Reach',namePT:'Abertura Peitoral',reps:'×10',rest:0,notes:'Braços atrás, abrir peito ao máximo.',muscles:['chest'],yt:YT('chest opener stretch warm up')},
+          {id:'gm_w_pushup_a',name:'Bodyweight Push-Up',namePT:'Flexões (Aquecimento)',reps:'×12',rest:0,notes:'Activação de peito e tríceps.',muscles:['chest','triceps'],yt:YT('perfect push up form jeff nippard')},
+          {id:'gm_w_lat_act',name:'Lateral Raise Activation',namePT:'Activação Lateral',reps:'×15',rest:0,notes:'Peso muito leve — sentir o deltóide lateral.',muscles:['side_delt'],yt:YT('lateral raise proper form technique')}
+        ],
+        workout: [
+          {id:'gm_a_bench',name:'Dumbbell Bench Press',namePT:'Press Halteres Plano',group:'SS1',isMain:true,sets:4,reps:'6-8',rir:0,rest:120,notes:'PRINCIPAL ⭐ — peito horizontal | escápulas retraídas | descida controlada 2-3s | pés no chão',muscles:['chest','front_delt','triceps'],yt:YT('dumbbell bench press proper form jeff nippard')},
+          {id:'gm_a_tricep_pushdown',name:'Cable Rope Triceps Pushdown',namePT:'Extensão Tríceps Cabo',group:'SS1',sets:4,reps:'10-12',rir:0,rest:120,notes:'SS1 — cabo alto | cotovelos fixos junto ao tronco | extensão completa | aperto na contracção',muscles:['triceps'],yt:YT('cable rope triceps pushdown proper form')},
+          {id:'gm_a_incline_press',name:'45° Incline Dumbbell Press',namePT:'Press Inclinado 45°',group:'SS2',sets:3,reps:'8-10',rir:1,rest:90,notes:'Peito clavicular — ângulo diferente do banco plano | cotovelos a 45° do tronco',muscles:['upper_chest','front_delt','triceps'],yt:YT('incline dumbbell press 45 degrees form jeff nippard')},
+          {id:'gm_a_lat_raise',name:'Standing Dumbbell Lateral Raise',namePT:'Elevação Lateral Halteres',group:'SS2',sets:3,reps:'13-15',rir:0,rest:90,notes:'SS2 — deltóide lateral | cotovelo ligeiramente flectido | 2s subida, 3s descida',muscles:['side_delt'],yt:YT('lateral raise technique jeff nippard deltoid')},
+          {id:'gm_a_cable_fly_hl',name:'High-To-Low Cable Fly',namePT:'Fly Cabo Alto→Baixo',group:'SS3',sets:3,reps:'12-15',rir:0,rest:90,notes:'SS3 — peito inferior | cabo alto, puxar em diagonal descendente | esticamento máximo',muscles:['chest'],yt:YT('high to low cable fly chest form technique')},
+          {id:'gm_a_tri_ext',name:'Seated Dumbbell Overhead Triceps Extension',namePT:'Extensão Tríceps Sentado',group:'SS3',sets:3,reps:'10-12',rir:0,rest:90,notes:'SS3 — cabeça longa do tríceps | cotovelos apontados para cima | halter com as duas mãos',muscles:['triceps'],yt:YT('seated overhead dumbbell triceps extension form')},
+          {id:'gm_a_arnold',name:'Seated Dumbbell Arnold Press',namePT:'Press Arnold Sentado',group:'SS4',sets:3,reps:'10',rir:1,rest:90,notes:'SS4 — ombros completo | começa com palmas para dentro, roda para fora ao subir',muscles:['front_delt','side_delt','triceps'],yt:YT('arnold press technique proper form athleanx')},
+          {id:'gm_a_face_pull',name:'Cable Face Pull',namePT:'Face Pull Cabo',group:'SS4',sets:3,reps:'15',rir:0,rest:90,notes:'SS4 — cabo ao nível dos olhos | deltóide posterior + manguito rotador | EQUILÍBRIO ARTICULAR',muscles:['rear_delt','traps'],yt:YT('cable face pull technique rear deltoid form')},
+          {id:'gm_a_bss',name:'Bulgarian Split Squat',namePT:'Agachamento Búlgaro',group:'SS5',sets:3,reps:'8-10/leg',rir:1,rest:90,notes:'🏃 RUNNING KEY — pé traseiro no banco | profundidade máxima | joelho dianteiro alinhado',muscles:['quads','glutes','hamstrings'],yt:YT('bulgarian split squat technique jeff nippard')},
+          {id:'gm_a_calf',name:'Standing on Step Single-Leg Dumbbell Calf Raise',namePT:'Elevação Gémeos Unipodal',group:'SS5',sets:3,reps:'15/leg',rir:0,rest:90,notes:'🏃 RUNNING KEY — borda do degrau | amplitude total: descer talão abaixo do nível | pausa 1s no topo',muscles:['calves'],yt:YT('single leg calf raise on step technique form')},
+          {id:'gm_a_situp',name:'Decline Weighted Sit-Up',namePT:'Sit-Up Declinado Lastrado',group:'SS6',sets:3,reps:'15',rir:0,rest:60,notes:'SS6 ABS — banco declinado | halter ou disco ao peito | foco na parte inferior dos abdominais',muscles:['abs','core'],yt:YT('decline weighted sit up abs technique form')},
+          {id:'gm_a_plank',name:'Forearm Plank',namePT:'Prancha Antebraços',group:'SS6',sets:3,reps:'45-60s',rir:0,rest:60,notes:'SS6 ABS — glúteos contraídos, coluna neutra, não deixar cair as ancas | respiração controlada',muscles:['core','abs'],yt:YT('forearm plank proper form core technique')},
+          {id:'gm_a_decline_press',name:'Decline Dumbbell Press',namePT:'Press Halteres Declinado',group:'SS7',sets:3,reps:'8-10',rir:1,rest:90,notes:'SS7 — peito inferior | cabeça mais baixa que as ancas | cotovelos a 45° do corpo',muscles:['chest','triceps'],yt:YT('decline dumbbell press lower chest technique')},
+          {id:'gm_a_crossover',name:'Horizontal Cable Crossover',namePT:'Cruzamento Horizontal Cabo',group:'SS7',sets:3,reps:'12-15',rir:1,rest:150,notes:'SS7 — cruzamento médio/interno | aperto máximo no pico 1s | linha central do peito',muscles:['chest'],yt:YT('cable crossover horizontal chest technique form')},
+          {id:'gm_a_fly_lh',name:'Cable Low-to-High Fly',namePT:'Fly Cabo Baixo→Alto',group:'SS8',sets:3,reps:'12-15',rir:1,rest:150,notes:'SS8 — peito clavicular ⭐ | cabo em baixo, fly ascendente | esticamento máximo no fundo',muscles:['upper_chest','front_delt'],yt:YT('cable low to high fly upper chest technique')}
+        ],
+        cooldown: [
+          {id:'gm_c_chest_a',name:'Chest Stretch',namePT:'Stretch Peitoral',reps:'2×30s',rest:0,notes:'Braço em L contra parede. Rodar tronco para afastar o peito.',muscles:['chest'],yt:YT('chest stretch doorway proper form')},
+          {id:'gm_c_tri_a',name:'Triceps Stretch',namePT:'Stretch Tríceps',reps:'2×30s',rest:0,notes:'Mão atrás do pescoço, cotovelo ao tecto.',muscles:['triceps'],yt:YT('triceps stretch overhead form')},
+          {id:'gm_c_delt_a',name:'Cross-Body Shoulder Stretch',namePT:'Stretch Deltóide',reps:'2×30s',rest:0,notes:'Braço em cruz ao peito, outra mão puxa o cotovelo.',muscles:['side_delt'],yt:YT('lateral deltoid shoulder stretch form')},
+          {id:'gm_c_thoracic_a',name:'Thoracic Rotation',namePT:'Rotação Torácica',reps:'×10',rest:0,notes:'Pés largos, mãos na cabeça, rotar o torso lentamente.',muscles:['back'],yt:YT('thoracic rotation exercise form')},
+          {id:'gm_c_child_a',name:'Child's Pose',namePT:'Posição Criança',reps:'45-60s',rest:0,notes:'Joelhos no chão, braços esticados à frente.',muscles:['back','lats'],yt:YT('childs pose yoga back relaxation')}
+        ]
+      },
+      B: {
+        name: 'Session B — PULL',
+        day: '4ª Feira', duration: '~95 min',
+        focus: 'Costas ⭐ · Bíceps · Core · Corrida',
+        muscles: ['lats','back','biceps','core','hamstrings'],
+        warmup: [
+          {id:'gm_w_cardio_b',name:'Light Cardio',namePT:'Cardio Leve',reps:'5 min',rest:0,notes:'Elíptica ou bicicleta. Ritmo suave, FC 50-60%.',muscles:[],yt:YT('cardio warm up 5 minutes gym')},
+          {id:'gm_w_cat_cow',name:'Cat & Cow',namePT:'Gato e Vaca',reps:'×12',rest:0,notes:'4 apoios — arquear e curvar a coluna lentamente.',muscles:['back'],yt:YT('cat cow stretch mobility spine')},
+          {id:'gm_w_arm_circles',name:'Arm Circles',namePT:'Circulos de Braço',reps:'×20',rest:0,notes:'Circulos completos — lubrificar articulação do ombro.',muscles:['front_delt','side_delt'],yt:YT('arm circles warm up shoulder mobility')},
+          {id:'gm_w_scap_ret',name:'Scapular Retraction',namePT:'Retracção Escapular',reps:'×15',rest:0,notes:'Juntar omoplatas sem dobrar cotovelos.',muscles:['back','rear_delt'],yt:YT('scapular retraction exercise form')},
+          {id:'gm_w_hip_hinge_b',name:'Hip Hinge BW',namePT:'Bisagra Anca',reps:'×12',rest:0,notes:'Bisagra sem carga — activar glúteos e isquiotibiais.',muscles:['hamstrings','glutes'],yt:YT('hip hinge bodyweight form rdl')},
+          {id:'gm_w_lat_act_b',name:'Lat Pulldown Activation',namePT:'Activação Pulldown',reps:'×15',rest:0,notes:'30% da carga normal — activar grande dorsal.',muscles:['lats'],yt:YT('lat pulldown activation warm up')}
+        ],
+        workout: [
+          {id:'gm_b_pulldown',name:'Neutral Grip Cable Lat Pulldown',namePT:'Pulldown Cabo Pega Neutra',group:'SS1',isMain:true,sets:4,reps:'8-10',rir:0,rest:120,notes:'PRINCIPAL ⭐ — grande dorsal | pegar a clavícula | escápulas para baixo e para trás | excêntrico 2s',muscles:['lats','back','biceps'],yt:YT('neutral grip lat pulldown cable technique jeff nippard')},
+          {id:'gm_b_bicep_curl',name:'Standing Dumbbell Biceps Curl',namePT:'Curl Bíceps em Pé',group:'SS1',sets:4,reps:'8-10',rir:0,rest:120,notes:'SS1 — supinação completa no topo | cotovelos fixos junto ao tronco | excêntrico 3s',muscles:['biceps'],yt:YT('dumbbell biceps curl form supination jeff nippard')},
+          {id:'gm_b_cable_row',name:'Seated Neutral Grip Cable Row',namePT:'Remada Cabo Sentado',group:'SS2',sets:4,reps:'10-12',rir:0,rest:90,notes:'SS2 — costas médias | puxar ao umbigo | sem balanço do tronco | apertar escápulas no topo',muscles:['back','lats','rear_delt'],yt:YT('seated cable row neutral grip technique form')},
+          {id:'gm_b_hammer',name:'Standing Dumbbell Hammer Curl',namePT:'Hammer Curl em Pé',group:'SS2',sets:3,reps:'10-12',rir:0,rest:90,notes:'SS2 — braquiorradial + braquial | pega neutra | cotovelos fixos',muscles:['biceps','forearms'],yt:YT('hammer curl technique jeff nippard biceps')},
+          {id:'gm_b_db_row',name:'Bent-Over Dumbbell Row',namePT:'Remada Halteres Inclinado',group:'SS3',sets:3,reps:'10-12',rir:0,rest:90,notes:'SS3 — costas superior | cotovelo junto ao tronco | puxar ao quadril',muscles:['back','lats','rear_delt'],yt:YT('bent over dumbbell row technique jeff nippard')},
+          {id:'gm_b_incline_curl',name:'Incline Dumbbell Biceps Curl',namePT:'Curl Inclinado Bíceps',group:'SS3',sets:3,reps:'10-12',rir:0,rest:90,notes:'SS3 — cabeça longa do bíceps | banco inclinado ~60° | cotovelo atrás do tronco',muscles:['biceps'],yt:YT('incline dumbbell bicep curl long head jeff nippard')},
+          {id:'gm_b_str_arm_pull',name:'Cable Straight Arm Lat Pulldown',namePT:'Pulldown Braço Direito',group:'SS4',sets:3,reps:'12-15',rir:0,rest:90,notes:'SS4 — grande dorsal em alongamento máximo | braços quase rectos | cabo alto',muscles:['lats'],yt:YT('cable straight arm lat pulldown form technique')},
+          {id:'gm_b_conc_curl',name:'Dumbbell Concentration Curl',namePT:'Curl Concentrado',group:'SS4',sets:3,reps:'12-15',rir:0,rest:90,notes:'SS4 — pico do bíceps | cotovelo apoiado no joelho interior | DROPSET na última série -30%',muscles:['biceps'],yt:YT('concentration curl technique jeff nippard dropset')},
+          {id:'gm_b_pushup',name:'Push-Up',namePT:'Flexões',group:'SS5',sets:2,reps:'até falha',rir:0,rest:90,notes:'SS5 — push secundário | até falha com boa técnica | cotovelos a 45° do corpo',muscles:['chest','triceps','front_delt'],yt:YT('push up perfect form jeff nippard')},
+          {id:'gm_b_slrdl',name:'Single-Leg Romanian Deadlift',namePT:'RDL Unipodal',group:'SS5',sets:3,reps:'8-10/leg',rir:1,rest:90,notes:'🏃 SS5 RUNNING KEY — DB | estabilidade unilateral | anca nivelada | costas neutras',muscles:['hamstrings','glutes','lower_back'],yt:YT('single leg romanian deadlift technique jeff nippard')},
+          {id:'gm_b_step_up',name:'Dumbbell Step-Up',namePT:'Step-Up com Halteres',group:'SS6',sets:3,reps:'10/leg',rir:1,rest:90,notes:'🏃 SS6 RUNNING KEY — cadeira ou step | drive do joelho no topo | controlar descida',muscles:['quads','glutes'],yt:YT('dumbbell step up technique knee drive athleanx')},
+          {id:'gm_b_knee_raise',name:'Captain's Chair Knee Raise',namePT:'Elevação Joelhos Cadeirão',group:'SS7',sets:3,reps:'10-12',rir:0,rest:60,notes:'SS7 ABS — lento e controlado | joelhos ao peito | lombar estabilizada',muscles:['abs','core'],yt:YT('captains chair knee raise abs technique form')},
+          {id:'gm_b_side_plank',name:'Side Plank',namePT:'Prancha Lateral',group:'SS7',sets:3,reps:'30s/leg',rir:0,rest:60,notes:'SS7 ABS — corpo em linha recta | quadril não cair | 30s cada lado',muscles:['core','abs'],yt:YT('side plank proper form progression technique')},
+          {id:'gm_b_dead_bug',name:'Dead Bug',namePT:'Insecto Morto',group:'SS7',sets:1,reps:'8/lado',rir:0,rest:60,notes:'SS7 ABS CORE PROFUNDO ⭐ — TVA | lombar colada ao chão | braço + perna opostos | expirar no esforço',muscles:['core','abs'],yt:YT('dead bug exercise proper form core TVA')},
+          {id:'gm_b_cable_curl',name:'Cable Straight Bar Biceps Curl',namePT:'Curl Barra Cabo',group:'SS8',sets:2,reps:'10-12',rir:1,rest:90,notes:'SS8 Finisher — tensão constante do cabo | contracção máxima | excêntrico 3s',muscles:['biceps'],yt:YT('cable curl straight bar biceps tension technique')},
+          {id:'gm_b_zottman',name:'Zottman Curl',namePT:'Curl Zottman',group:'SS8',sets:2,reps:'10-12',rir:1,rest:150,notes:'SS8 — supinação na subida (bíceps) | pronação na descida (braquiorradial)',muscles:['biceps','forearms'],yt:YT('zottman curl technique proper form biceps')},
+          {id:'gm_b_pullover',name:'Dumbbell Pullover',namePT:'Pullover com Halter',group:'SS9',sets:1,reps:'12-15',rir:1,rest:90,notes:'SS9 — grande dorsal + serrátil | arco acima da cabeça | esticamento máximo',muscles:['lats','chest'],yt:YT('dumbbell pullover technique chest lats athleanx')}
+        ],
+        cooldown: [
+          {id:'gm_c_lat_b',name:'Lat Stretch',namePT:'Stretch Dorsal',reps:'2×30s',rest:0,notes:'Braço sobre a cabeça, inclinar para o lado.',muscles:['lats'],yt:YT('lat stretch overhead side bend form')},
+          {id:'gm_c_bicep_b',name:'Biceps Wall Stretch',namePT:'Stretch Bíceps',reps:'30s',rest:0,notes:'Mão na parede polegar baixo, rotar o corpo.',muscles:['biceps'],yt:YT('biceps stretch wall form')},
+          {id:'gm_c_child_b',name:'Child's Pose with Arm Reach',namePT:'Criança com Alcance',reps:'45s',rest:0,notes:'Posição criança, estender braços alternadamente.',muscles:['back','lats'],yt:YT('childs pose arm reach stretch')},
+          {id:'gm_c_neck_b',name:'Neck Side Stretch',namePT:'Stretch Cervical',reps:'30s',rest:0,notes:'Inclinar a cabeça para o lado, segurar com a mão.',muscles:['traps'],yt:YT('neck side stretch trapezius form')}
+        ]
+      },
+      C: {
+        name: 'Session C — LEGS',
+        day: '6ª Feira', duration: '~115 min',
+        focus: 'Pernas ⭐ · Adutores · Glúteos · Joelho',
+        muscles: ['quads','hamstrings','glutes','adductors','calves'],
+        warmup: [
+          {id:'gm_w_cardio_c',name:'Light Cardio (Bike)',namePT:'Cardio Leve (Bicicleta)',reps:'5 min',rest:0,notes:'Bicicleta estática preferencial — lubrifica o joelho.',muscles:[],yt:YT('stationary bike warm up low impact knee')},
+          {id:'gm_w_hip_circles',name:'Hip Circles',namePT:'Círculos de Anca',reps:'×20',rest:0,notes:'Circulos de anca em pé, 10 para cada lado.',muscles:['glutes'],yt:YT('hip circles warm up exercise mobility')},
+          {id:'gm_w_leg_swing_fb',name:'Leg Swing Forward-Backward',namePT:'Balanço Perna Frente-Trás',reps:'×10',rest:0,notes:'Apoio na parede, balançar a perna para frente e trás.',muscles:['hamstrings','quads'],yt:YT('leg swing forward backward warm up')},
+          {id:'gm_w_leg_swing_lat',name:'Leg Swing Lateral',namePT:'Balanço Perna Lateral',reps:'×10',rest:0,notes:'Apoio na parede, balançar a perna de lado.',muscles:['adductors','glutes'],yt:YT('lateral leg swing warm up hip mobility')},
+          {id:'gm_w_bw_squat',name:'Bodyweight Squat (Slow)',namePT:'Agachamento Lento',reps:'×15',rest:0,notes:'Descer em 3s, pausar em baixo — activar quadricípite.',muscles:['quads','glutes'],yt:YT('bodyweight squat slow controlled form')},
+          {id:'gm_w_glute_bridge',name:'Glute Bridge Activation',namePT:'Ponte Glúteo',reps:'×15',rest:0,notes:'Apertar glúteo no topo 1 segundo.',muscles:['glutes'],yt:YT('glute bridge activation exercise form')},
+          {id:'gm_w_lunge_twist',name:'Lunge with Torso Rotation',namePT:'Avanço com Rotação',reps:'×5',rest:0,notes:'Avanço + rotar o torso para o lado da perna da frente.',muscles:['quads','glutes'],yt:YT('lunge with rotation warm up mobility')}
+        ],
+        workout: [
+          {id:'gm_c_leg_press',name:'Plate-Loaded Leg Press',namePT:'Leg Press com Peso',group:'SS1',isMain:true,sets:4,reps:'8-10',rir:1,rest:120,notes:'BASE ⭐ — pés largos para activar adutores | amplitude total | não travar os joelhos',muscles:['quads','glutes','hamstrings','adductors'],yt:YT('leg press wide stance form technique')},
+          {id:'gm_c_hip_adduction',name:'Machine Hip Adduction',namePT:'Adução Anca Máquina',group:'SS1',sets:4,reps:'12-15',rir:0,rest:120,notes:'SS1 PRIORIDADE — adutores | lento na descida (3s excêntrico) | squeeze no pico',muscles:['adductors'],yt:YT('hip adduction machine form technique')},
+          {id:'gm_c_rdl',name:'Dumbbell Romanian Deadlift',namePT:'RDL com Halteres',group:'SS2',sets:3,reps:'10-12',rir:1,rest:90,notes:'SS2 — posterior coxa + glúteos | bisagra controlada | excêntrico 3s | halteres pelas pernas',muscles:['hamstrings','glutes','lower_back'],yt:YT('dumbbell romanian deadlift proper form jeff nippard')},
+          {id:'gm_c_bss',name:'Bulgarian Split Squat',namePT:'Agachamento Búlgaro',group:'SS2',sets:3,reps:'8-10/leg',rir:1,rest:90,notes:'🏃 SS2 RUNNING KEY — unilateral pesado | profundidade máxima | joelho quase toca no chão',muscles:['quads','glutes','hamstrings'],yt:YT('bulgarian split squat depth technique jeff nippard')},
+          {id:'gm_c_leg_ext',name:'Machine Leg Extension',namePT:'Extensão Pernas Máquina',group:'SS3',sets:3,reps:'12-15',rir:0,rest:90,notes:'SS3 — quadricípite | extensão completa no topo | pausa 1s | 1s pausa no pico',muscles:['quads'],yt:YT('leg extension machine proper form technique')},
+          {id:'gm_c_hamstring_curl',name:'Lying Machine Hamstring Curl',namePT:'Curl Isquiotibiais Máquina',group:'SS3',sets:3,reps:'12-15',rir:0,rest:90,notes:'SS3 — curl completo | controlar a descida 3s | não usar momentum',muscles:['hamstrings'],yt:YT('lying leg curl machine proper form technique')},
+          {id:'gm_c_hip_abduction',name:'Machine Hip Abduction',namePT:'Abdução Anca Máquina',group:'SS4',sets:3,reps:'15',rir:0,rest:90,notes:'SS4 — glúteo médio + TFL | estabilidade da anca | movimento controlado',muscles:['glutes','adductors'],yt:YT('hip abduction machine glute medius form')},
+          {id:'gm_c_calf_raise_sl',name:'Single-Leg Calf Raise',namePT:'Elevação Gémeos Unipodal',group:'SS4',sets:3,reps:'15/leg',rir:0,rest:90,notes:'🏃 SS4 RUNNING KEY — Aquiles + gastrocnémio | amplitude total | pausa 1s no topo',muscles:['calves'],yt:YT('single leg calf raise machine form technique')},
+          {id:'gm_c_tibialis',name:'Tibialis Raise',namePT:'Tibial Anterior',group:'SS5',sets:3,reps:'15-20',rir:0,rest:90,notes:'🏃 SS5 RUNNING KEY — prevenção shin splints | costas na parede | elevar pontas dos pés | lento',muscles:['tibialis'],yt:YT('tibialis anterior raise shin splints prevention technique')},
+          {id:'gm_c_hip_thrust',name:'Barbell Hip Thrust',namePT:'Hip Thrust Barra',group:'SS5',sets:3,reps:'12-15',rir:0,rest:90,notes:'🏃 SS5 RUNNING KEY — barra no quadril | banco plano | apertar glúteo máximo 1s no topo',muscles:['glutes','hamstrings'],yt:YT('barbell hip thrust glute technique athleanx')},
+          {id:'gm_c_calf_raise',name:'Standing Calf Raise',namePT:'Elevação Gémeos em Pé',group:'SS6',sets:3,reps:'15-20',rir:0,rest:90,notes:'SS6 — máquina ou barra | amplitude total | pausa 1s no topo e 1s em baixo',muscles:['calves'],yt:YT('standing calf raise machine full range form')},
+          {id:'gm_c_lat_walk',name:'Banded Lateral Walk',namePT:'Caminhada Lateral com Banda',group:'SS6',sets:3,reps:'15/lado',rir:0,rest:90,notes:'SS6 — banda acima dos joelhos | 15 passos para cada lado | glúteo médio activo',muscles:['glutes','adductors'],yt:YT('banded lateral walk glute medius form technique')},
+          {id:'gm_c_cable_crunch',name:'Kneeling Cable Crunch',namePT:'Crunch Cabo Ajoelhado',group:'SS7',sets:3,reps:'12-15',rir:0,rest:60,notes:'SS7 ABS — peso progressivo | puxar com o abdómen | aperto máximo no fundo',muscles:['abs'],yt:YT('kneeling cable crunch abs technique form jeff nippard')},
+          {id:'gm_c_knee_raise_c',name:'Captain's Chair Knee Raise',namePT:'Elevação Joelhos Cadeirão',group:'SS7',sets:3,reps:'10-12',rir:0,rest:60,notes:'SS7 ABS — lento e controlado | joelhos ao peito | lombar estabilizada',muscles:['abs','core'],yt:YT('captains chair knee raise abs technique form')},
+          {id:'gm_c_copenhagen',name:'Copenhagen Plank',namePT:'Prancha Copenhagen',group:'SS8',sets:3,reps:'30s/leg',rir:0,rest:60,notes:'🏃 SS8 RUNNING KEY — adutores funcionais | pé superior no banco | corpo em linha recta',muscles:['adductors','core'],yt:YT('copenhagen plank adductors technique form jeff nippard')},
+          {id:'gm_c_tke',name:'Terminal Knee Extension (TKE)',namePT:'Extensão Terminal Joelho',group:'SS8',sets:3,reps:'15-20/leg',rir:0,rest:60,notes:'🦵 SS8 JOELHO — VMO | cabo baixo + ankle strap | extensão final do joelho | prevenção lesões',muscles:['quads'],yt:YT('terminal knee extension TKE band VMO knee rehab technique')}
+        ],
+        cooldown: [
+          {id:'gm_c_quad_c',name:'Standing Quad Stretch',namePT:'Stretch Quadríceps',reps:'2×30s',rest:0,notes:'Tornozelo ao glúteo em pé. Joelhos juntos.',muscles:['quads'],yt:YT('quad stretch standing form')},
+          {id:'gm_c_hip_flex_c',name:'Kneeling Hip Flexor Stretch',namePT:'Stretch Flexor Anca',reps:'2×30s',rest:0,notes:'Joelho traseiro no chão, quadril para a frente.',muscles:['quads'],yt:YT('kneeling hip flexor stretch iliopsoas form')},
+          {id:'gm_c_hamstring_c',name:'Hamstring Stretch',namePT:'Stretch Isquiotibiais',reps:'2×30s',rest:0,notes:'Perna esticada, dobrar sobre ela.',muscles:['hamstrings'],yt:YT('hamstring stretch proper form')},
+          {id:'gm_c_adductor_c',name:'Adductor Sumo Stretch',namePT:'Stretch Adutores',reps:'2×30s',rest:0,notes:'Pés muito largos, cotovelos nos joelhos.',muscles:['adductors'],yt:YT('adductor sumo stretch groin form')},
+          {id:'gm_c_pigeon',name:'Pigeon Pose / Figure-4',namePT:'Pombo / Figura 4',reps:'2×45s',rest:0,notes:'Glúteo profundo (piriformis). Deitado ou em pé.',muscles:['glutes'],yt:YT('pigeon pose figure 4 piriformis stretch form')},
+          {id:'gm_c_calf_c',name:'Calf Wall Stretch',namePT:'Stretch Gémeos Parede',reps:'2×30s',rest:0,notes:'Mãos na parede, calcanhar no chão, perna traseira.',muscles:['calves'],yt:YT('calf stretch wall achilles form')}
+        ]
+      },
+      D: {
+        name: 'Session D — FULL BODY ATHLETIC',
+        day: 'Sábado', duration: '~100 min',
+        focus: 'Full Body ⭐ · Potência · Running Keys',
+        muscles: ['hamstrings','glutes','chest','lats','quads'],
+        warmup: [
+          {id:'gm_w_cardio_d',name:'Light Cardio',namePT:'Cardio Leve',reps:'5 min',rest:0,notes:'Elíptica ou bicicleta — ritmo suave.',muscles:[],yt:YT('cardio warm up 5 minutes gym')},
+          {id:'gm_w_worlds_str',name:'World's Greatest Stretch',namePT:'Maior Stretch do Mundo',reps:'×5',rest:0,notes:'Lunge + mão no chão + rotação torácica. 5 cada lado.',muscles:['quads','glutes','back'],yt:YT('worlds greatest stretch mobility exercise')},
+          {id:'gm_w_hip_hinge_d',name:'Hip Hinge BW',namePT:'Bisagra Anca',reps:'×12',rest:0,notes:'Activar glúteos e isquiotibiais antes dos compostos.',muscles:['hamstrings','glutes'],yt:YT('hip hinge bodyweight form rdl')},
+          {id:'gm_w_arm_swing_d',name:'Arm Swings',namePT:'Balanços de Braços',reps:'×20',rest:0,notes:'Braços em pêndulo para frente e para os lados.',muscles:['front_delt','side_delt'],yt:YT('arm swings warm up shoulder mobility')},
+          {id:'gm_w_lat_lunge_d',name:'Lateral Lunge BW',namePT:'Avanço Lateral',reps:'×8',rest:0,notes:'Passo lateral amplo — adutores e glúteo médio.',muscles:['adductors','glutes'],yt:YT('lateral lunge warm up mobility exercise')},
+          {id:'gm_w_glute_bridge_d',name:'Glute Bridge',namePT:'Ponte Glúteo',reps:'×15',rest:0,notes:'Apertar glúteo 1s no topo.',muscles:['glutes'],yt:YT('glute bridge activation exercise form')}
+        ],
+        workout: [
+          {id:'gm_d_rdl',name:'Dumbbell Romanian Deadlift',namePT:'RDL com Halteres',group:'SS1',isMain:true,sets:4,reps:'8-10',rir:1,rest:120,notes:'POTÊNCIA ⭐ — bisagra explosiva | concêntrico explosivo, excêntrico controlado 3s | halteres pelas pernas',muscles:['hamstrings','glutes','lower_back'],yt:YT('dumbbell romanian deadlift explosive power form')},
+          {id:'gm_d_incline_press',name:'Low Incline Dumbbell Press',namePT:'Press Inclinado Baixo',group:'SS1',sets:4,reps:'8-10',rir:1,rest:120,notes:'SS1 — peito inferior + deltóide anterior | inclinação 15-30° | amplitude máxima',muscles:['chest','front_delt','triceps'],yt:YT('low incline dumbbell press chest front delt form')},
+          {id:'gm_d_goblet_squat',name:'Goblet Squat',namePT:'Agachamento Goblet',group:'SS2',sets:3,reps:'10-12',rir:1,rest:90,notes:'SS2 — profundidade total | mobilidade anca | pés largos | halter ao peito',muscles:['quads','adductors','glutes'],yt:YT('goblet squat depth mobility technique jeff nippard')},
+          {id:'gm_d_pulldown',name:'Overhand Grip Cable Lat Pulldown',namePT:'Pulldown Pega Pronada',group:'SS2',sets:3,reps:'10-12',rir:0,rest:90,notes:'SS2 — grande dorsal | amplitude total | excêntrico controlado 2s',muscles:['lats','back'],yt:YT('overhand grip lat pulldown cable technique form')},
+          {id:'gm_d_lunge',name:'Dumbbell Forward Lunge',namePT:'Avanço com Halteres',group:'SS3',sets:3,reps:'10-12/leg',rir:1,rest:90,notes:'🏃 SS3 RUNNING KEY — passada alternada | joelho a 90° | tronco erecto',muscles:['quads','glutes','hamstrings'],yt:YT('dumbbell lunge alternating technique proper form')},
+          {id:'gm_d_ohp',name:'Seated Dumbbell Overhead Press',namePT:'Press Ombros Sentado',group:'SS3',sets:3,reps:'8-10',rir:1,rest:90,notes:'SS3 — ombros completo | banco/cadeira a 90° | press acima da cabeça',muscles:['front_delt','side_delt','triceps'],yt:YT('seated dumbbell overhead press shoulder technique form')},
+          {id:'gm_d_step_up',name:'Step-Up with Knee Drive',namePT:'Step-Up Drive do Joelho',group:'SS4',sets:3,reps:'10/leg',rir:1,rest:90,notes:'🏃 SS4 RUNNING KEY — drive máximo do joelho no topo | controlar a descida',muscles:['quads','glutes'],yt:YT('dumbbell step up knee drive technique form')},
+          {id:'gm_d_rear_fly',name:'Bent-Over Rear Delt Fly',namePT:'Fly Deltóide Posterior',group:'SS4',sets:3,reps:'15',rir:0,rest:90,notes:'SS4 — deltóide posterior | inclinado 45° | equilíbrio articular do ombro',muscles:['rear_delt','traps'],yt:YT('rear delt fly dumbbell bent over technique')},
+          {id:'gm_d_sl_hip_thrust',name:'Single-Leg Hip Thrust',namePT:'Hip Thrust Unipodal',group:'SS5',sets:3,reps:'12/leg',rir:0,rest:90,notes:'🏃 SS5 RUNNING KEY — DB no quadril | banco | apertar glúteo máximo 1s no topo',muscles:['glutes','hamstrings'],yt:YT('single leg hip thrust dumbbell glute technique')},
+          {id:'gm_d_upright_row',name:'Dumbbell Upright Row',namePT:'Remada Alta Halteres',group:'SS5',sets:3,reps:'10-12',rir:0,rest:90,notes:'SS5 — trapézio + deltóide | cotovelos sempre acima dos pulsos | puxar ao queixo',muscles:['traps','side_delt'],yt:YT('dumbbell upright row technique form trapezius')},
+          {id:'gm_d_shrug',name:'Dumbbell Shrug',namePT:'Encolher Ombros',sets:3,reps:'12-15',rir:0,rest:90,notes:'Trapézio superior — squeeze no topo 1s | sem rodar os ombros',muscles:['traps'],yt:YT('dumbbell shrug trapezius technique proper form')},
+          {id:'gm_d_back_ext',name:'45° Back Extension',namePT:'Extensão Lombar 45°',sets:1,reps:'15-20',rir:0,rest:90,notes:'LOMBAR DIRECTO — banco de hiperextensão | costas neutras no topo | activar lombar + glúteos',muscles:['lower_back','glutes','hamstrings'],yt:YT('45 degree back extension lower back hyperextension form')},
+          {id:'gm_d_situp',name:'Decline Weighted Sit-Up',namePT:'Sit-Up Declinado Lastrado',group:'SS6',sets:3,reps:'15',rir:0,rest:60,notes:'SS6 ABS — disco ao peito | banco declinado | foco na parte inferior dos abdominais',muscles:['abs','core'],yt:YT('decline weighted sit up abs technique form')},
+          {id:'gm_d_incline_fly',name:'45° Incline Dumbbell Fly',namePT:'Fly Inclinado 45°',group:'SS7',sets:2,reps:'12-15',rir:1,rest:90,notes:'SS7 — isolamento peito superior | amplitude máxima | cotovelos ligeiramente flectidos',muscles:['upper_chest','front_delt'],yt:YT('incline dumbbell fly upper chest technique jeff nippard')},
+          {id:'gm_d_bench_dip',name:'Bench Dip',namePT:'Dip na Cadeira',group:'SS7',sets:2,reps:'10-12',rir:1,rest:150,notes:'SS7 — tríceps + peito inferior | descer até 90° | costas verticais',muscles:['triceps','front_delt'],yt:YT('bench dip triceps technique proper form chair')},
+          {id:'gm_d_preacher',name:'Dumbbell Preacher Curl',namePT:'Curl Preacher Haltere',group:'SS8',sets:2,reps:'10-12',rir:1,rest:90,notes:'SS8 — cabeça curta do bíceps | cotovelo fixo no suporte | amplitude completa',muscles:['biceps'],yt:YT('dumbbell preacher curl short head biceps technique')},
+          {id:'gm_d_spider',name:'Spider Curl',namePT:'Spider Curl',group:'SS8',sets:2,reps:'10-12',rir:1,rest:150,notes:'SS8 — prone no banco inclinado | pico de contracção máxima no topo',muscles:['biceps'],yt:YT('spider curl dumbbell biceps peak contraction technique')}
+        ],
+        cooldown: [
+          {id:'gm_c_hip_flex_d',name:'Hip Flexor Stretch',namePT:'Stretch Flexor Anca',reps:'2×30s',rest:0,notes:'Joelho no chão, quadril para a frente.',muscles:['quads'],yt:YT('kneeling hip flexor stretch form')},
+          {id:'gm_c_hamstring_d',name:'Hamstring Stretch',namePT:'Stretch Isquiotibiais',reps:'2×30s',rest:0,notes:'Perna esticada, dobrar sobre ela.',muscles:['hamstrings'],yt:YT('hamstring stretch proper form')},
+          {id:'gm_c_quad_d',name:'Standing Quad Stretch',namePT:'Stretch Quadríceps',reps:'2×30s',rest:0,notes:'Tornozelo ao glúteo em pé.',muscles:['quads'],yt:YT('quad stretch standing form')},
+          {id:'gm_c_lat_d',name:'Lat & Shoulder Stretch',namePT:'Stretch Dorsal + Ombro',reps:'2×30s',rest:0,notes:'Braço sobre a cabeça, outro puxa o cotovelo.',muscles:['lats','side_delt'],yt:YT('lat shoulder stretch overhead cross form')},
+          {id:'gm_c_chest_d',name:'Chest Stretch',namePT:'Stretch Peitoral',reps:'2×30s',rest:0,notes:'Braço em L contra porta.',muscles:['chest'],yt:YT('chest stretch doorway pec form')},
+          {id:'gm_c_child_d',name:'Child's Pose',namePT:'Posição Criança',reps:'60s',rest:0,notes:'Relaxar completamente. Respiração profunda.',muscles:['back','lats'],yt:YT('childs pose yoga back relaxation')}
+        ]
+      },
+    }
+  },
+  speediance: {
+    name: 'Speediance',
+    sessions: {
+      A: {
+        name: 'Session A — PUSH',
+        day: '2ª Feira', duration: '~95 min',
+        focus: 'Peito ⭐ · Tríceps · Ombros · Core',
+        muscles: ['chest','triceps','front_delt','side_delt','abs'],
+        warmup: [
+          {id:'sp_w_cardio_a',name:'Light Cardio',namePT:'Cardio Leve',reps:'5 min',rest:0,notes:'Elíptica ou marcha rápida. FC 50-60% FCmax.',muscles:[],yt:YT('cardio warm up 5 minutes')},
+          {id:'sp_w_arm_swings',name:'Straight-Arm Cross Swings',namePT:'Braços Cruzados',reps:'×20',rest:0,notes:'Mobilidade peitoral e ombro.',muscles:['front_delt','chest']},
+          {id:'sp_w_sh_circles',name:'Dynamic Shoulder Circles',namePT:'Círculos de Ombros',reps:'×20',rest:0,notes:'Circulos completos para a frente e para trás.',muscles:['front_delt','side_delt']},
+          {id:'sp_w_chest_open',name:'Chest Opener Reach',namePT:'Abertura Peitoral',reps:'×10',rest:0,notes:'Braços atrás, abrir peito, olhar para cima.',muscles:['chest']},
+          {id:'sp_w_pushup_a',name:'Bodyweight Push-Up',namePT:'Flexões (Aquecimento)',reps:'×12',rest:0,notes:'Activação peito e tríceps.',muscles:['chest','triceps']},
+          {id:'sp_w_lat_act_a',name:'Standing Dual-Handle Lateral Raise (Warm-Up)',namePT:'Activação Lateral Speediance',reps:'×15',rest:0,notes:'30% da carga — activar deltóide lateral.',muscles:['side_delt']}
+        ],
+        workout: [
+          {id:'sp_a_bench',name:'Dual-Handle Bench Press',namePT:'Press Pega Dupla Plano',isMain:true,sets:4,reps:'6-8',rir:0,rest:120,notes:'PRINCIPAL ⭐ — escápulas retraídas | cabos baixos | descida controlada 2-3s',muscles:['chest','front_delt','triceps']},
+          {id:'sp_a_tri_push',name:'Standing Tricep Rope Triceps Pushdown',namePT:'Extensão Tríceps Corda',sets:4,reps:'10-12',rir:0,rest:120,notes:'Corda Speediance — cotovelos fixos junto ao tronco | contracção máxima no topo',muscles:['triceps']},
+          {id:'sp_a_incl_press',name:'Incline Dual-Handle Chest Press',namePT:'Press Pega Dupla Inclinado',sets:3,reps:'8-10',rir:1,rest:90,notes:'Banco inclinado 45° + cabos baixos | peito clavicular | amplitude total',muscles:['upper_chest','front_delt','triceps']},
+          {id:'sp_a_lat_raise',name:'Standing Dual-Handle Lateral Raise',namePT:'Elevação Lateral Dupla',sets:3,reps:'13-15',rir:0,rest:90,notes:'Cotovelo ligeiramente flectido | 2s subida, 3s descida | não usar trapézio',muscles:['side_delt']},
+          {id:'sp_a_fly_hl',name:'Standing Dual-Handle High-to-Low Chest Fly',namePT:'Fly Alto→Baixo Duplo',sets:3,reps:'12-15',rir:0,rest:90,notes:'Peito inferior — cabos altos, fly descendente | esticamento máximo no fundo',muscles:['chest']},
+          {id:'sp_a_tri_ext',name:'Kneeling Tricep Rope Overhead Triceps Extension',namePT:'Extensão Tríceps Ajoelhado',sets:3,reps:'10-12',rir:0,rest:90,notes:'Joelhos no chão, corda atrás | cabeça longa do tríceps | cotovelos altos',muscles:['triceps']},
+          {id:'sp_a_arnold',name:'Seated Dual-Handle Arnold Press',namePT:'Press Arnold Sentado',sets:3,reps:'10',rir:1,rest:90,notes:'Rotação completa | começa com palmas para dentro | ombros completo',muscles:['front_delt','side_delt','triceps']},
+          {id:'sp_a_face_pull',name:'Standing Tricep Rope Face Pull (Rear Delts)',namePT:'Face Pull Corda Speediance',sets:3,reps:'15',rir:0,rest:90,notes:'Corda ao nível dos olhos | deltóide posterior + manguito rotador | EQUILÍBRIO ARTICULAR',muscles:['rear_delt','traps']},
+          {id:'sp_a_bss',name:'Belt Bulgarian Split Squat',namePT:'Agachamento Búlgaro com Cinto',sets:3,reps:'8-10/leg',rir:1,rest:90,notes:'🏃 RUNNING KEY — cinto Speediance | pé traseiro elevado no banco | profundidade máxima',muscles:['quads','glutes','hamstrings']},
+          {id:'sp_a_calf',name:'Standing on Step Single-Leg Dumbbell Calf Raise',namePT:'Elevação Gémeos Unipodal',sets:3,reps:'15/leg',rir:0,rest:90,notes:'🏃 RUNNING KEY — degrau | amplitude total: descer talão abaixo | pausa 1s no topo',muscles:['calves']},
+          {id:'sp_a_crunch',name:'Kneeling Tricep Rope Crunch',namePT:'Crunch Corda Ajoelhado',sets:3,reps:'15',rir:0,rest:60,notes:'ABS — joelhos no chão | puxar com o abdómen | aperto máximo no fundo',muscles:['abs','core']},
+          {id:'sp_a_plank',name:'Plank',namePT:'Prancha',sets:3,reps:'45-60s',rir:0,rest:60,notes:'Core activo — glúteos contraídos | coluna neutra | não deixar cair as ancas',muscles:['core','abs']},
+          {id:'sp_a_hl_press',name:'Kneeling Dual-Handle High-to-Low Chest Press',namePT:'Press Descente Ajoelhado',sets:3,reps:'8-10',rir:1,rest:90,notes:'Peito inferior ⭐ — cabos altos, press descendente de joelhos | cotovelos a 45°',muscles:['chest','triceps']},
+          {id:'sp_a_h_fly',name:'Standing Dual-Handle Chest Fly',namePT:'Fly Horizontal Duplo',sets:3,reps:'12-15',rir:1,rest:90,notes:'Cruzamento médio/interno em pé | aperto máximo 1s no pico | linha central',muscles:['chest']},
+          {id:'sp_a_lh_fly',name:'Standing Dual-Handle Low-to-High Chest Fly',namePT:'Fly Baixo→Alto Duplo',sets:3,reps:'12-15',rir:1,rest:150,notes:'PEITO CLAVICULAR ⭐ — cabos em baixo, fly ascendente | esticamento máximo no fundo',muscles:['upper_chest','front_delt']}
+        ],
+        cooldown: [
+          {id:'sp_c_chest_a',name:'Chest Stretch',namePT:'Stretch Peitoral',reps:'2×30s',rest:0,notes:'Braço em L contra parede.',muscles:['chest']},
+          {id:'sp_c_tri_a',name:'Triceps Stretch',namePT:'Stretch Tríceps',reps:'2×30s',rest:0,notes:'Mão atrás do pescoço, cotovelo ao tecto.',muscles:['triceps']},
+          {id:'sp_c_delt_a',name:'Lateral Deltoid Stretch',namePT:'Stretch Deltóide',reps:'2×30s',rest:0,notes:'Braço em cruz ao peito.',muscles:['side_delt']},
+          {id:'sp_c_thoracic_a',name:'Kneeling Thoracic Rotation',namePT:'Rotação Torácica Ajoelhado',reps:'×10',rest:0,notes:'Mobilidade torácica.',muscles:['back']},
+          {id:'sp_c_child_a',name:'Child's Pose',namePT:'Posição Criança',reps:'45-60s',rest:0,notes:'Relaxar coluna e ombros.',muscles:['back','lats']}
+        ]
+      },
+      B: {
+        name: 'Session B — PULL',
+        day: '4ª Feira', duration: '~95 min',
+        focus: 'Costas ⭐ · Bíceps · Core · Corrida',
+        muscles: ['lats','back','biceps','core','hamstrings'],
+        warmup: [
+          {id:'sp_w_cardio_b',name:'Light Cardio',namePT:'Cardio Leve',reps:'5 min',rest:0,notes:'Elíptica ou bicicleta.',muscles:[],yt:YT('cardio warm up 5 minutes')},
+          {id:'sp_w_cat_cow',name:'Cat & Cow',namePT:'Gato e Vaca',reps:'×12',rest:0,notes:'4 apoios — mobilidade lombar e torácica.',muscles:['back']},
+          {id:'sp_w_arm_circ',name:'Single-Arm Circles',namePT:'Círculos de Braço',reps:'×10',rest:0,notes:'Circulos de braço completos.',muscles:['front_delt','side_delt']},
+          {id:'sp_w_scap_b',name:'Scapular Retraction',namePT:'Retracção Escapular',reps:'×15',rest:0,notes:'Juntar omoplatas sem dobrar cotovelos.',muscles:['back','rear_delt']},
+          {id:'sp_w_hip_hinge',name:'Bodyweight Romanian Deadlift',namePT:'Bisagra Anca',reps:'×12',rest:0,notes:'Activar glúteos e isquiotibiais.',muscles:['hamstrings','glutes']},
+          {id:'sp_w_lat_act_b',name:'Kneeling Dual-Handle Lat Pulldown (Warm-Up)',namePT:'Activação Pulldown Speediance',reps:'×15',rest:0,notes:'30% da carga | activar grande dorsal.',muscles:['lats']}
+        ],
+        workout: [
+          {id:'sp_b_pulldown',name:'Kneeling Dual-Handle Lat Pulldown',namePT:'Pulldown Duplo Ajoelhado',isMain:true,sets:4,reps:'8-10',rir:0,rest:120,notes:'PRINCIPAL ⭐ — joelhos, pega neutra/pronada | puxar às clavículas | escápulas juntas',muscles:['lats','back','biceps']},
+          {id:'sp_b_bicep_curl',name:'Standing Dual-Handle Biceps Curl',namePT:'Curl Bíceps Duplo em Pé',sets:4,reps:'8-10',rir:0,rest:120,notes:'Supinação completa no topo | cotovelos fixos | excêntrico controlado 3s',muscles:['biceps']},
+          {id:'sp_b_row',name:'Floor Seated Dual-Handle Row',namePT:'Remada Sentado no Chão',sets:4,reps:'10-12',rir:0,rest:90,notes:'Sentado no chão | puxar ao umbigo | pega neutra | costas médias',muscles:['back','lats','rear_delt']},
+          {id:'sp_b_hammer',name:'Standing Dual-Handle Hammer Curl',namePT:'Hammer Curl Duplo',sets:3,reps:'10-12',rir:0,rest:90,notes:'Pega neutra — braquiorradial + braquial | cotovelos fixos',muscles:['biceps','forearms']},
+          {id:'sp_b_bent_row',name:'Bent-Over Dual-Handle Row',namePT:'Remada Curvado Dupla',sets:3,reps:'10-12',rir:0,rest:90,notes:'Curvado, puxar ao quadril | cotovelo junto ao tronco | costas superior',muscles:['back','lats','rear_delt']},
+          {id:'sp_b_incl_curl',name:'Seated Incline Dual-Handle Biceps Curl',namePT:'Curl Inclinado Duplo',sets:3,reps:'10-12',rir:0,rest:90,notes:'Banco inclinado, pega dupla | cabeça longa do bíceps | sem momentum',muscles:['biceps']},
+          {id:'sp_b_str_arm',name:'Bent-Over Dual-Handle Straight Arm Pulldown',namePT:'Pulldown Braço Direito',sets:3,reps:'12-15',rir:0,rest:90,notes:'Curvado, cabos altos, braços direitos | grande dorsal em alongamento máximo',muscles:['lats']},
+          {id:'sp_b_conc_curl',name:'Seated Single-Arm Concentration Curl',namePT:'Curl Concentrado Sentado',sets:3,reps:'12-15',rir:0,rest:90,notes:'Pico do bíceps | DROPSET na última série (-30% carga)',muscles:['biceps']},
+          {id:'sp_b_pushup',name:'Bodyweight Push-Up',namePT:'Flexões',sets:2,reps:'até falha',rir:0,rest:90,notes:'Push secundário — até falha com boa técnica',muscles:['chest','triceps','front_delt']},
+          {id:'sp_b_slrdl',name:'Dual-Handle Single-Leg Romanian Deadlift',namePT:'RDL Unipodal Cabos',sets:3,reps:'8-10/leg',rir:1,rest:90,notes:'🏃 RUNNING KEY — cabos baixos | estabilidade da anca | 8-10 cada perna',muscles:['hamstrings','glutes','lower_back']},
+          {id:'sp_b_rev_lunge',name:'Belt Reverse Lunge',namePT:'Avanço Recuado com Cinto',sets:3,reps:'10/leg',rir:1,rest:90,notes:'🏃 RUNNING KEY — cinto Speediance | lunge recuado | drive do joelho no topo',muscles:['quads','glutes','hamstrings']},
+          {id:'sp_b_knee_raise',name:'Supine Bench Knee Raise',namePT:'Elevação Joelhos Deitado',sets:3,reps:'10-12',rir:0,rest:60,notes:'Deitado no banco | joelhos ao peito — lento | lombar estabilizada',muscles:['abs','core']},
+          {id:'sp_b_side_plank',name:'Side Plank',namePT:'Prancha Lateral',sets:3,reps:'30s/leg',rir:0,rest:60,notes:'Corpo em linha recta | quadril não cair | 30s cada lado',muscles:['core','abs']},
+          {id:'sp_b_dead_bug',name:'Dead Bug',namePT:'Insecto Morto',sets:1,reps:'8/lado',rir:0,rest:60,notes:'CORE PROFUNDO — TVA | lombar no chão | braço + perna opostos | expirar no esforço',muscles:['core','abs']},
+          {id:'sp_b_curl_fin',name:'Standing Dual-Handle Biceps Curl (Finisher)',namePT:'Curl Bíceps Finisher',sets:2,reps:'10-12',rir:1,rest:90,notes:'Speediance — cabo baixo | tensão constante | curl lento e controlado',muscles:['biceps']},
+          {id:'sp_b_zottman',name:'Dual-Handle Zottman Curl',namePT:'Curl Zottman Duplo',sets:2,reps:'10-12',rir:1,rest:150,notes:'Supinação na subida (bíceps) | pronação na descida (braquiorradial)',muscles:['biceps','forearms']},
+          {id:'sp_b_pullover',name:'Dumbbell Pullover',namePT:'Pullover com Halter',sets:1,reps:'12-15',rir:1,rest:90,notes:'GRANDE DORSAL + SERRÁTIL — banco plano | DB em arco acima da cabeça | esticamento máximo',muscles:['lats','chest']}
+        ],
+        cooldown: [
+          {id:'sp_c_lat_b',name:'Lat Stretch',namePT:'Stretch Dorsal',reps:'2×30s',rest:0,notes:'Braço sobre a cabeça, inclinar para o lado.',muscles:['lats']},
+          {id:'sp_c_bicep_b',name:'Biceps Stretch',namePT:'Stretch Bíceps',reps:'30s',rest:0,notes:'Mão na parede polegar baixo, rotar o corpo.',muscles:['biceps']},
+          {id:'sp_c_child_b',name:'Child's Pose with Arm Reach',namePT:'Criança com Alcance',reps:'45s',rest:0,notes:'Estender braços alternadamente.',muscles:['back','lats']},
+          {id:'sp_c_thoracic_b',name:'Kneeling Thoracic Rotation',namePT:'Rotação Torácica',reps:'×10',rest:0,notes:'Mobilidade torácica.',muscles:['back']},
+          {id:'sp_c_neck_b',name:'Neck Stretch',namePT:'Stretch Cervical',reps:'30s',rest:0,notes:'Inclinar a cabeça para o lado, segurar.',muscles:['traps']}
+        ]
+      },
+      C: {
+        name: 'Session C — LEGS',
+        day: '6ª Feira', duration: '~115 min',
+        focus: 'Pernas ⭐ · Adutores · Glúteos · Joelho',
+        muscles: ['quads','hamstrings','glutes','adductors','calves'],
+        warmup: [
+          {id:'sp_w_cardio_c',name:'Light Cardio (Bike)',namePT:'Cardio Leve (Bicicleta)',reps:'5 min',rest:0,notes:'Bicicleta preferencial — lubrifica o joelho.',muscles:[],yt:YT('stationary bike warm up')},
+          {id:'sp_w_hip_circ_c',name:'Dynamic Standing Hip Circles',namePT:'Círculos de Anca',reps:'×20',rest:0,notes:'10 para frente e 10 para trás, cada perna.',muscles:['glutes']},
+          {id:'sp_w_leg_sw_fb',name:'Leg Swing Forward Backward',namePT:'Balanço Perna Frente-Trás',reps:'×10',rest:0,notes:'Apoio na parede, cada perna.',muscles:['hamstrings','quads']},
+          {id:'sp_w_leg_sw_lat',name:'Dynamic Lateral Leg Swings',namePT:'Balanço Perna Lateral',reps:'×10',rest:0,notes:'Activar adutores e abdutores.',muscles:['adductors','glutes']},
+          {id:'sp_w_bw_squat_c',name:'Bodyweight Squat',namePT:'Agachamento Peso Corporal',reps:'×15',rest:0,notes:'Descer em 3s, pausar em baixo.',muscles:['quads','glutes']},
+          {id:'sp_w_bw_hip_thr',name:'Bodyweight Hip Thrust',namePT:'Ponte Glúteo',reps:'×15',rest:0,notes:'Apertar glúteo 1s no topo.',muscles:['glutes']},
+          {id:'sp_w_lunge_tw',name:'Reverse Lunge With Twist',namePT:'Avanço Recuado com Rotação',reps:'×5',rest:0,notes:'Passo atrás + rotar torso para o lado da perna da frente.',muscles:['quads','glutes']}
+        ],
+        workout: [
+          {id:'sp_c_belt_squat',name:'Belt Squat (stance largo)',namePT:'Belt Squat Pés Largos',isMain:true,sets:4,reps:'8-10',rir:1,rest:120,notes:'BASE ⭐ — cinto Speediance | pés largos | adutores + quadricípite | amplitude total',muscles:['quads','adductors','glutes']},
+          {id:'sp_c_hip_add',name:'Standing Cable Hip Adduction',namePT:'Adução Anca Cabo em Pé',sets:4,reps:'12-15',rir:0,rest:120,notes:'PRIORIDADE — ankle strap, cabo baixo | lento na descida | squeeze nos adutores',muscles:['adductors']},
+          {id:'sp_c_rdl',name:'Dual-Handle Romanian Deadlift',namePT:'RDL Duplo Cabo',sets:3,reps:'10-12',rir:1,rest:90,notes:'Cabos baixos, pega dupla — bisagra controlada | excêntrico 3s',muscles:['hamstrings','glutes','lower_back']},
+          {id:'sp_c_bss',name:'Belt Bulgarian Split Squat',namePT:'Agachamento Búlgaro Cinto',sets:3,reps:'8-10/leg',rir:1,rest:90,notes:'🏃 RUNNING KEY — cinto Speediance | pé traseiro elevado no banco | profundidade máxima',muscles:['quads','glutes','hamstrings']},
+          {id:'sp_c_leg_ext',name:'Single-Leg Leg Extension',namePT:'Extensão Perna Unilateral',sets:3,reps:'12-15',rir:0,rest:90,notes:'Ankle strap, cabo baixo frontal | extensão total do joelho | pausa 1s no topo',muscles:['quads']},
+          {id:'sp_c_floor_curl',name:'Floor Leg Curl',namePT:'Curl Perna no Chão',sets:3,reps:'12-15',rir:0,rest:90,notes:'Deitado no chão, ankle strap, cabo baixo posterior | curl completo | controlar descida',muscles:['hamstrings']},
+          {id:'sp_c_hip_abd',name:'Standing Cable Hip Abduction (Floor)',namePT:'Abdução Anca Cabo',sets:3,reps:'15',rir:0,rest:90,notes:'Glúteo médio — ankle strap, cabo baixo lateral | controlo total',muscles:['glutes','adductors']},
+          {id:'sp_c_sl_calf',name:'Standing Single-Leg Calf Raise',namePT:'Elevação Gémeos Unipodal',sets:3,reps:'15/leg',rir:0,rest:90,notes:'🏃 RUNNING KEY — Aquiles + gastrocnémio | degrau | amplitude total | pausa 1s',muscles:['calves']},
+          {id:'sp_c_calf',name:'Dual-Handle Calf Raise',namePT:'Elevação Gémeos Duplo',sets:3,reps:'15-20',rir:0,rest:90,notes:'GÉMEOS — cabos baixos | amplitude total | pausa 1s no topo e no fundo',muscles:['calves']},
+          {id:'sp_c_hip_thrust',name:'Belt Hip Thrust',namePT:'Hip Thrust com Cinto',sets:3,reps:'12-15',rir:0,rest:90,notes:'🏃 RUNNING KEY — cinto Speediance na anca | banco | apertar glúteo 1s no topo',muscles:['glutes','hamstrings']},
+          {id:'sp_c_toes_calf',name:'Dual-Handle Toes-Out Calf Raise',namePT:'Elevação Gémeos Pontas Fora',sets:1,reps:'15-20',rir:0,rest:90,notes:'GÉMEOS — pontas para fora | cabeça medial | cabos baixos | amplitude total',muscles:['calves']},
+          {id:'sp_c_side_step',name:'Iso Squat Cable Side Step',namePT:'Passo Lateral Semi-Agachado',sets:1,reps:'15/lado',rir:0,rest:90,notes:'ABDUCTORES — semi-agachado | passo lateral com cabo | 15 cada direcção',muscles:['glutes','adductors']},
+          {id:'sp_c_crunch',name:'Kneeling Tricep Rope Crunch',namePT:'Crunch Corda Ajoelhado',sets:3,reps:'12-15',rir:0,rest:60,notes:'ABS — Speediance corda, joelhos | aperto abdominal máximo no fundo',muscles:['abs','core']},
+          {id:'sp_c_knee_raise',name:'Supine Bench Knee Raise',namePT:'Elevação Joelhos Deitado',sets:3,reps:'10-12',rir:0,rest:60,notes:'Deitado no banco | joelhos ao peito — lento | lombar estabilizada',muscles:['abs','core']},
+          {id:'sp_c_adduction',name:'Seated Single-Leg Adduction',namePT:'Adução Unilateral Sentado',sets:3,reps:'30s/leg',rir:0,rest:60,notes:'🏃 Adutores funcionais — ankle strap | sentado | 30s cada lado',muscles:['adductors','core']},
+          {id:'sp_c_tke',name:'Terminal Knee Extension (TKE)',namePT:'Extensão Terminal Joelho',sets:3,reps:'15-20/leg',rir:0,rest:60,notes:'🦵 JOELHO — VMO | Speediance cabo baixo + ankle strap | extensão final | PREVENÇÃO JOELHO',muscles:['quads']}
+        ],
+        cooldown: [
+          {id:'sp_c_quad_c',name:'Standing Quad Stretch',namePT:'Stretch Quadríceps',reps:'2×30s',rest:0,notes:'Tornozelo ao glúteo em pé.',muscles:['quads']},
+          {id:'sp_c_hip_flex_c',name:'Kneeling Hip Flexor Stretch',namePT:'Stretch Flexor Anca',reps:'2×30s',rest:0,notes:'Joelho no chão, quadril para a frente.',muscles:['quads']},
+          {id:'sp_c_hamstr_c',name:'Hamstring Stretch',namePT:'Stretch Isquiotibiais',reps:'2×30s',rest:0,notes:'Perna esticada, dobrar sobre ela.',muscles:['hamstrings']},
+          {id:'sp_c_inner_th',name:'Kneeling Inner Thigh Stretch',namePT:'Stretch Adutores',reps:'2×30s',rest:0,notes:'Joelhos abertos, empurrar suavemente.',muscles:['adductors']},
+          {id:'sp_c_9090',name:'Seated 90/90 Stretch',namePT:'Stretch 90/90',reps:'2×45s',rest:0,notes:'Glúteo profundo. Sentado, perna em 90°.',muscles:['glutes']},
+          {id:'sp_c_calf_str',name:'Push-up Calf Stretch',namePT:'Stretch Gémeos',reps:'2×30s',rest:0,notes:'Posição push-up, calcanhar no chão.',muscles:['calves']}
+        ]
+      },
+      D: {
+        name: 'Session D — FULL BODY ATHLETIC',
+        day: 'Sábado', duration: '~100 min',
+        focus: 'Full Body ⭐ · Potência · Running Keys',
+        muscles: ['hamstrings','glutes','chest','lats','quads'],
+        warmup: [
+          {id:'sp_w_cardio_d',name:'Light Cardio',namePT:'Cardio Leve',reps:'5 min',rest:0,notes:'Elíptica, bicicleta ou marcha rápida.',muscles:[],yt:YT('cardio warm up 5 minutes')},
+          {id:'sp_w_worlds_d',name:'The World's Greatest Stretch',namePT:'O Maior Stretch do Mundo',reps:'×5',rest:0,notes:'Lunge + mão no chão + rotação torácica. 5 cada lado.',muscles:['quads','glutes','back']},
+          {id:'sp_w_hip_h_d',name:'Bodyweight Romanian Deadlift',namePT:'Bisagra Anca',reps:'×12',rest:0,notes:'Activar glúteos e isquiotibiais.',muscles:['hamstrings','glutes']},
+          {id:'sp_w_arm_sw_d',name:'Sprinter Arm Swing',namePT:'Balanço Braços Sprinter',reps:'×20',rest:0,notes:'Braços em pêndulo para a frente e para os lados.',muscles:['front_delt','side_delt']},
+          {id:'sp_w_lat_lunge_d',name:'Dynamic Lateral Lunge',namePT:'Avanço Lateral Dinâmico',reps:'×8',rest:0,notes:'Passo lateral amplo. 8 cada lado.',muscles:['adductors','glutes']},
+          {id:'sp_w_glute_d',name:'Bodyweight Hip Thrust',namePT:'Ponte Glúteo',reps:'×15',rest:0,notes:'Apertar glúteo 1s no topo.',muscles:['glutes']}
+        ],
+        workout: [
+          {id:'sp_d_rdl',name:'Dual-Handle Romanian Deadlift',namePT:'RDL Duplo Cabo',isMain:true,sets:4,reps:'8-10',rir:1,rest:120,notes:'POTÊNCIA ⭐ — cabos baixos, pega dupla | bisagra explosiva | concêntrico explosivo',muscles:['hamstrings','glutes','lower_back']},
+          {id:'sp_d_incl_press',name:'Incline Dual-Handle Chest Press',namePT:'Press Duplo Inclinado',sets:4,reps:'8-10',rir:1,rest:120,notes:'Speediance — cabos baixos, banco inclinado | peito clavicular | POTÊNCIA',muscles:['chest','front_delt','triceps']},
+          {id:'sp_d_goblet',name:'Handle Goblet Squat',namePT:'Agachamento Goblet Duplo',sets:3,reps:'10-12',rir:1,rest:90,notes:'Profundidade total + mobilidade anca | pega dupla frontal',muscles:['quads','adductors','glutes']},
+          {id:'sp_d_pulldown',name:'Kneeling Dual-Handle Lat Pulldown',namePT:'Pulldown Duplo Ajoelhado',sets:3,reps:'10-12',rir:0,rest:90,notes:'Joelhos, pega pronada | grande dorsal | amplitude total',muscles:['lats','back']},
+          {id:'sp_d_rev_lunge',name:'Dual-Handle Alternating Reverse Lunge',namePT:'Avanço Recuado Alternado Duplo',sets:3,reps:'10-12/leg',rir:1,rest:90,notes:'🏃 RUNNING KEY — simulação da passada | cabos baixos | alternado',muscles:['quads','glutes','hamstrings']},
+          {id:'sp_d_sh_press',name:'Standing Dual-Handle Shoulder Press',namePT:'Press Ombros Duplo em Pé',sets:3,reps:'8-10',rir:1,rest:90,notes:'Em pé, pega dupla | deltóides | extensão completa no topo',muscles:['front_delt','side_delt','triceps']},
+          {id:'sp_d_belt_lunge',name:'Belt Reverse Lunge',namePT:'Avanço Recuado com Cinto',sets:3,reps:'10/leg',rir:1,rest:90,notes:'🏃 RUNNING KEY — cinto Speediance | drive do joelho no topo',muscles:['quads','glutes','hamstrings']},
+          {id:'sp_d_rev_fly',name:'Bent-Over Dual-Handle Reverse Fly',namePT:'Fly Invertido Curvado',sets:3,reps:'15',rir:0,rest:90,notes:'Curvado, fly invertido | deltóide posterior | amplitude máxima',muscles:['rear_delt','traps']},
+          {id:'sp_d_hip_thrust',name:'Belt Hip Thrust',namePT:'Hip Thrust com Cinto',sets:3,reps:'12/leg',rir:0,rest:90,notes:'🏃 RUNNING KEY — cinto na anca, banco | elevar uma perna para unilateral',muscles:['glutes','hamstrings']},
+          {id:'sp_d_upr_row',name:'Dual-Handle Upright Row',namePT:'Remada Alta Dupla',sets:3,reps:'10-12',rir:0,rest:90,notes:'Speediance — puxar ao queixo | trapézio + deltóide',muscles:['traps','side_delt']},
+          {id:'sp_d_shrug',name:'Standing Dual-Handle Shrug',namePT:'Encolher Ombros Duplo',sets:3,reps:'12-15',rir:0,rest:90,notes:'Speediance — encolher os ombros verticalmente | squeeze no topo | trapézio superior',muscles:['traps']},
+          {id:'sp_d_good_morning',name:'Good Morning (DB)',namePT:'Good Morning com Halter',sets:1,reps:'15',rir:0,rest:90,notes:'LOMBAR DIRECTO — DB no pescoço | bisagra lenta | costas neutras | sentir isquiotibiais',muscles:['lower_back','hamstrings','glutes']},
+          {id:'sp_d_crunch',name:'Kneeling Tricep Rope Crunch',namePT:'Crunch Corda Ajoelhado',sets:3,reps:'15',rir:0,rest:60,notes:'ABS — corda Speediance, joelhos | aperto máximo no topo',muscles:['abs','core']},
+          {id:'sp_d_chest_fly',name:'Inclined Dual-Handle Chest Fly (Main Frame)',namePT:'Fly Peito Inclinado Frame',sets:2,reps:'12-15',rir:1,rest:90,notes:'Banco inclinado, cabos bilaterais | peito superior | amplitude máxima',muscles:['upper_chest','front_delt']},
+          {id:'sp_d_dips',name:'Seated Bench Triceps Dips',namePT:'Dips Banco',sets:2,reps:'10-12',rir:1,rest:150,notes:'Banco plano — descer até 90° | tríceps + peito inferior',muscles:['triceps','front_delt']},
+          {id:'sp_d_preacher',name:'Incline Single-Arm Preacher Curl',namePT:'Curl Preacher Inclinado Unilateral',sets:2,reps:'10-12',rir:1,rest:90,notes:'Banco inclinado, braço apoiado | cabeça curta do bíceps',muscles:['biceps']},
+          {id:'sp_d_spider',name:'Incline Bench Spider Curl',namePT:'Spider Curl Banco Inclinado',sets:2,reps:'10-12',rir:1,rest:150,notes:'Banco inclinado prone | pico de contracção máxima no topo',muscles:['biceps']}
+        ],
+        cooldown: [
+          {id:'sp_c_hip_flex_d',name:'Kneeling Hip Flexor Stretch',namePT:'Stretch Flexor Anca',reps:'2×30s',rest:0,notes:'Iliopsoas em esticamento completo.',muscles:['quads']},
+          {id:'sp_c_hamstr_d',name:'Hamstring Stretch',namePT:'Stretch Isquiotibiais',reps:'2×30s',rest:0,notes:'Perna esticada, dobrar sobre ela.',muscles:['hamstrings']},
+          {id:'sp_c_quad_d',name:'Standing Quad Stretch',namePT:'Stretch Quadríceps',reps:'2×30s',rest:0,notes:'Tornozelo ao glúteo em pé.',muscles:['quads']},
+          {id:'sp_c_lat_d',name:'Lat Stretch',namePT:'Stretch Dorsal',reps:'2×30s',rest:0,notes:'Braço sobre a cabeça, inclinar para o lado.',muscles:['lats']},
+          {id:'sp_c_chest_d',name:'Chest Stretch',namePT:'Stretch Peitoral',reps:'2×30s',rest:0,notes:'Braço em L contra porta.',muscles:['chest']},
+          {id:'sp_c_child_d',name:'Child's Pose',namePT:'Posição Criança',reps:'45-60s',rest:0,notes:'Relaxamento final. Respiração profunda.',muscles:['back','lats']}
+        ]
+      },
+    }
+  }
 };
 // ═══════════════════════════════════════════════════════
 // APP STATE
@@ -815,7 +1188,7 @@ function openLastWorkout() {
 // ── Sessions Screen ──────────────────────────────────
 function goSessions(type) {
   state.workoutType = type;
-  document.getElementById('sessions-title').textContent = 'Hotel — Escolhe a Sessão';
+  document.getElementById('sessions-title').textContent = (SESSIONS[type]?.name || type) + ' — Escolhe a Sessão';
   const list = document.getElementById('sessions-list');
   const sessions = SESSIONS[type].sessions;
   list.innerHTML = Object.entries(sessions).map(([key,s])=>{
@@ -903,7 +1276,7 @@ function beginWorkout(mode) {
   state.startTime = Date.now();
   state.currentSection = 'warmup';
   const s = SESSIONS[type].sessions[session];
-  document.getElementById('wk-title').textContent = `${session} — ${type==='hotel'?'Hotel':''}`;
+  document.getElementById('wk-title').textContent = `${session} — ${SESSIONS[type]?.name||type}`;
   showScreen('workout-screen');
   startWorkoutTimer();
   renderSectionPills();
@@ -1094,13 +1467,13 @@ function renderExercise(idx) {
         <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:0.5px;margin-bottom:4px;text-transform:uppercase">Técnica</div>
         <div style="font-size:13px;color:var(--text2);line-height:1.5">${ex.notes}</div>
       </div>`}
-      <!-- YouTube button — full width, prominent -->
-      <a href="${ex.yt}" target="_blank" style="text-decoration:none;display:block;margin-bottom:4px">
+      <!-- YouTube button — only if yt link exists -->
+      ${ex.yt ? `<a href="${ex.yt}" target="_blank" style="text-decoration:none;display:block;margin-bottom:4px">
         <div style="display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(255,0,0,0.12);color:#ff3333;border-radius:10px;padding:12px;font-size:14px;font-weight:700">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M21.8 8s-.2-1.4-.8-2a2.9 2.9 0 00-2-1C17.3 4.9 12 4.9 12 4.9s-5.3 0-7 .1c-.9.1-1.6.5-2 1C2.4 6.6 2.2 8 2.2 8S2 9.6 2 11.2v1.5c0 1.6.2 3.2.2 3.2s.2 1.4.8 2c.8.8 1.8.8 2.3.9C7 18.9 12 19 12 19s5.3 0 7-.2a2.9 2.9 0 002-1c.6-.6.8-2 .8-2s.2-1.6.2-3.2v-1.5C22 9.6 21.8 8 21.8 8zM10 15V9l6 3-6 3z"/></svg>
           ▶ Ver Tutorial no YouTube
         </div>
-      </a>
+      </a>` : ''}
     </div>
     ${setsHTML}
   </div>`;
@@ -2196,6 +2569,10 @@ function initTouchBindings() {
   // Hotel button
   const hotelBtn = document.getElementById('btn-hotel');
   if(hotelBtn) bindTouch(hotelBtn, function(){ goSessions('hotel'); });
+  const gymBtn = document.getElementById('btn-gym');
+  if(gymBtn) bindTouch(gymBtn, function(){ goSessions('gym'); });
+  const spBtn = document.getElementById('btn-speediance');
+  if(spBtn) bindTouch(spBtn, function(){ goSessions('speediance'); });
 
   // Session list — event delegation
   const sessList = document.getElementById('sessions-list');
