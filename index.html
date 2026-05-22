@@ -902,12 +902,12 @@ const SESSIONS = {
         focus: 'Peito ⭐ · Tríceps · Ombros · Core',
         muscles: ['chest','triceps','front_delt','side_delt','abs'],
         warmup: [
-          {id:'sp_w_cardio_a',name:'Light Cardio',namePT:'Cardio Leve',reps:'5 min',rest:0,notes:'Elíptica ou marcha rápida. FC 50-60% FCmax.',muscles:[],yt:YT('cardio warm up 5 minutes')},
+          {id:'sp_w_cardio_a',name:'Aerobic Rowing',namePT:'Remo Aeróbico',reps:'5 min',rest:0,notes:'Remo Speediance cadência leve. FC 50-60% FCmax. Postura erecta.',muscles:[]},
           {id:'sp_w_arm_swings',name:'Straight-Arm Cross Swings',namePT:'Braços Cruzados',reps:'×20',rest:0,notes:'Mobilidade peitoral e ombro.',muscles:['front_delt','chest']},
           {id:'sp_w_sh_circles',name:'Dynamic Shoulder Circles',namePT:'Círculos de Ombros',reps:'×20',rest:0,notes:'Circulos completos para a frente e para trás.',muscles:['front_delt','side_delt']},
-          {id:'sp_w_chest_open',name:'Chest Opener Reach',namePT:'Abertura Peitoral',reps:'×10',rest:0,notes:'Braços atrás, abrir peito, olhar para cima.',muscles:['chest']},
+          {id:'sp_w_chest_open',name:'Open Book',namePT:'Abertura Torácica',reps:'×10 cada lado',rest:0,notes:'Deitado de lado, braço superior abre para o outro lado. Mobilidade torácica e peitoral.',muscles:['chest']},
           {id:'sp_w_pushup_a',name:'Bodyweight Push-Up',namePT:'Flexões (Aquecimento)',reps:'×12',rest:0,notes:'Activação peito e tríceps.',muscles:['chest','triceps']},
-          {id:'sp_w_lat_act_a',name:'Standing Dual-Handle Lateral Raise (Warm-Up)',namePT:'Activação Lateral Speediance',reps:'×15',rest:0,notes:'30% da carga — activar deltóide lateral.',muscles:['side_delt']}
+          {id:'sp_w_lat_act_a',name:'Standing Dual-Handle Lateral Raise',namePT:'Elevação Lateral Dupla (Activação)',reps:'×15',rest:0,notes:'30% da carga — activar deltóide lateral.',muscles:['side_delt']}
         ],
         workout: [
           {id:'sp_a_bench',name:'Dual-Handle Bench Press',namePT:'Press Pega Dupla Plano',isMain:true,sets:4,reps:'6-8',rir:0,rest:120,notes:'PRINCIPAL ⭐ — escápulas retraídas | cabos baixos | descida controlada 2-3s',muscles:['chest','front_delt','triceps']},
@@ -940,12 +940,12 @@ const SESSIONS = {
         focus: 'Costas ⭐ · Bíceps · Core · Corrida',
         muscles: ['lats','back','biceps','core','hamstrings'],
         warmup: [
-          {id:'sp_w_cardio_b',name:'Light Cardio',namePT:'Cardio Leve',reps:'5 min',rest:0,notes:'Elíptica ou bicicleta.',muscles:[],yt:YT('cardio warm up 5 minutes')},
+          {id:'sp_w_cardio_b',name:'Aerobic Rowing',namePT:'Remo Aeróbico',reps:'5 min',rest:0,notes:'Remo Speediance cadência leve. FC 50-60% FCmax. Postura erecta.',muscles:[]},
           {id:'sp_w_cat_cow',name:'Cat & Cow',namePT:'Gato e Vaca',reps:'×12',rest:0,notes:'4 apoios — mobilidade lombar e torácica.',muscles:['back']},
           {id:'sp_w_arm_circ',name:'Single-Arm Circles',namePT:'Círculos de Braço',reps:'×10',rest:0,notes:'Circulos de braço completos.',muscles:['front_delt','side_delt']},
-          {id:'sp_w_scap_b',name:'Scapular Retraction',namePT:'Retracção Escapular',reps:'×15',rest:0,notes:'Juntar omoplatas sem dobrar cotovelos.',muscles:['back','rear_delt']},
+          {id:'sp_w_scap_b',name:'Rolling Shrugs',namePT:'Encolher Ombros Circular',reps:'×15',rest:0,notes:'Elevar ombros, puxar para trás e descer em círculo. Activar trapézio e rombóides.',muscles:['traps','back']},
           {id:'sp_w_hip_hinge',name:'Bodyweight Romanian Deadlift',namePT:'Bisagra Anca',reps:'×12',rest:0,notes:'Activar glúteos e isquiotibiais.',muscles:['hamstrings','glutes']},
-          {id:'sp_w_lat_act_b',name:'Kneeling Dual-Handle Lat Pulldown (Warm-Up)',namePT:'Activação Pulldown Speediance',reps:'×15',rest:0,notes:'30% da carga | activar grande dorsal.',muscles:['lats']}
+          {id:'sp_w_lat_act_b',name:'Kneeling Dual-Handle Lat Pulldown',namePT:'Puxada Lat Ajoelhado (Activação)',reps:'×15',rest:0,notes:'30% da carga | activar grande dorsal.',muscles:['lats']}
         ],
         workout: [
           {id:'sp_b_pulldown',name:'Kneeling Dual-Handle Lat Pulldown',namePT:'Pulldown Duplo Ajoelhado',isMain:true,sets:4,reps:'8-10',rir:0,rest:120,notes:'PRINCIPAL ⭐ — joelhos, pega neutra/pronada | puxar às clavículas | escápulas juntas',muscles:['lats','back','biceps']},
@@ -980,10 +980,10 @@ const SESSIONS = {
         focus: 'Pernas ⭐ · Adutores · Glúteos · Joelho',
         muscles: ['quads','hamstrings','glutes','adductors','calves'],
         warmup: [
-          {id:'sp_w_cardio_c',name:'Light Cardio (Bike)',namePT:'Cardio Leve (Bicicleta)',reps:'5 min',rest:0,notes:'Bicicleta preferencial — lubrifica o joelho.',muscles:[],yt:YT('stationary bike warm up')},
+          {id:'sp_w_cardio_c',name:'Aerobic Rowing',namePT:'Remo Aeróbico',reps:'5 min',rest:0,notes:'Remo Speediance cadência leve. FC 50-60% FCmax. Postura erecta.',muscles:[]},
           {id:'sp_w_hip_circ_c',name:'Dynamic Standing Hip Circles',namePT:'Círculos de Anca',reps:'×20',rest:0,notes:'10 para frente e 10 para trás, cada perna.',muscles:['glutes']},
-          {id:'sp_w_leg_sw_fb',name:'Leg Swing Forward Backward',namePT:'Balanço Perna Frente-Trás',reps:'×10',rest:0,notes:'Apoio na parede, cada perna.',muscles:['hamstrings','quads']},
-          {id:'sp_w_leg_sw_lat',name:'Dynamic Lateral Leg Swings',namePT:'Balanço Perna Lateral',reps:'×10',rest:0,notes:'Activar adutores e abdutores.',muscles:['adductors','glutes']},
+          {id:'sp_w_leg_sw_fb',name:'Dynamic Straight Leg High Kick',namePT:'Pontapé Perna Esticada',reps:'×10 cada',rest:0,notes:'Em pé, perna esticada, pontapé à frente e para cima. Amplitude progressiva.',muscles:['hamstrings','quads']},
+          {id:'sp_w_leg_sw_lat',name:'Dynamic Standing lateral Leg Swings',namePT:'Balanço Lateral de Pernas',reps:'×10 cada',rest:0,notes:'Activar adutores e abdutores.',muscles:['adductors','glutes']},
           {id:'sp_w_bw_squat_c',name:'Bodyweight Squat',namePT:'Agachamento Peso Corporal',reps:'×15',rest:0,notes:'Descer em 3s, pausar em baixo.',muscles:['quads','glutes']},
           {id:'sp_w_bw_hip_thr',name:'Bodyweight Hip Thrust',namePT:'Ponte Glúteo',reps:'×15',rest:0,notes:'Apertar glúteo 1s no topo.',muscles:['glutes']},
           {id:'sp_w_lunge_tw',name:'Reverse Lunge With Twist',namePT:'Avanço Recuado com Rotação',reps:'×5',rest:0,notes:'Passo atrás + rotar torso para o lado da perna da frente.',muscles:['quads','glutes']}
@@ -1021,7 +1021,7 @@ const SESSIONS = {
         focus: 'Full Body ⭐ · Potência · Running Keys',
         muscles: ['hamstrings','glutes','chest','lats','quads'],
         warmup: [
-          {id:'sp_w_cardio_d',name:'Light Cardio',namePT:'Cardio Leve',reps:'5 min',rest:0,notes:'Elíptica, bicicleta ou marcha rápida.',muscles:[],yt:YT('cardio warm up 5 minutes')},
+          {id:'sp_w_cardio_d',name:'Aerobic Rowing',namePT:'Remo Aeróbico',reps:'5 min',rest:0,notes:'Remo Speediance cadência leve. FC 50-60% FCmax. Postura erecta.',muscles:[]},
           {id:'sp_w_worlds_d',name:'The World Greatest Stretch',namePT:'O Maior Stretch do Mundo',reps:'×5',rest:0,notes:'Lunge + mão no chão + rotação torácica. 5 cada lado.',muscles:['quads','glutes','back']},
           {id:'sp_w_hip_h_d',name:'Bodyweight Romanian Deadlift',namePT:'Bisagra Anca',reps:'×12',rest:0,notes:'Activar glúteos e isquiotibiais.',muscles:['hamstrings','glutes']},
           {id:'sp_w_arm_sw_d',name:'Sprinter Arm Swing',namePT:'Balanço Braços Sprinter',reps:'×20',rest:0,notes:'Braços em pêndulo para a frente e para os lados.',muscles:['front_delt','side_delt']},
