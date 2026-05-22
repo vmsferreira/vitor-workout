@@ -1446,7 +1446,7 @@ function renderExercise(idx) {
             <div class="img-badge">▶ DEMO</div>
           </div>`;
         }
-        return miniSvg ? `<div class="ex-img-wrap" style="margin-bottom:12px">${miniSvg}</div>` : '';
+        return (miniSvg && state.workoutType !== 'speediance') ? `<div class="ex-img-wrap" style="margin-bottom:12px">${miniSvg}</div>` : '';
       })()}
       <!-- Sets / meta info -->
       ${!isWarmCool?`
