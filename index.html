@@ -1180,7 +1180,7 @@ function showScreen(id) {
 function navTo(dest) {
   if(dest==='home') { showScreen('home-screen'); renderHome(); }
   if(dest==='history') { showScreen('history-screen'); renderHistory(); }
-  if(dest==='progress') { showScreen('progress-screen'); renderProgress(); }
+  if(dest==='progress') { progState.weekNum = getPlanWeek(); showScreen('progress-screen'); renderProgress(); }
 }
 
 // ── Home Screen ───────────────────────────────────────
@@ -3407,9 +3407,6 @@ function switchProgTab(tab) {
 }
 
 function renderProgress() {
-  // Re-sincronizar semana com as Definições sempre que o tab abre
-  // (o utilizador pode ter mudado a semana nas definições entretanto)
-  progState.weekNum = getPlanWeek();
   const content = document.getElementById('progress-content');
   if (!content) return;
   if (progState.tab === 'form')   renderProgressForm(content);
