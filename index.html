@@ -3320,9 +3320,9 @@ document.addEventListener('DOMContentLoaded', initTouchBindings);
 const PLAN_START   = new Date('2026-05-05T00:00:00Z'); // 2ª feira início Semana 1
 const DELOAD_WEEKS = [4, 8, 12];
 
+// Usa sempre a semana configurada nas Definições (getPlanWeek), não calcula pela data
 function currentWeekNum() {
-  const diffDays = Math.floor((Date.now() - PLAN_START.getTime()) / 86400000);
-  return Math.max(1, Math.min(12, Math.floor(diffDays / 7) + 1));
+  return getPlanWeek();
 }
 function weekDateRange(weekNum) {
   const startMs = PLAN_START.getTime() + (weekNum - 1) * 7 * 86400000;
@@ -3407,6 +3407,9 @@ function switchProgTab(tab) {
 }
 
 function renderProgress() {
+  // Re-sincronizar semana com as Definições sempre que o tab abre
+  // (o utilizador pode ter mudado a semana nas definições entretanto)
+  progState.weekNum = getPlanWeek();
   const content = document.getElementById('progress-content');
   if (!content) return;
   if (progState.tab === 'form')   renderProgressForm(content);
@@ -3563,11 +3566,16 @@ async function saveProgressaoWeek(weekNum) {
     showToast('✅ Guardado localmente. Configura o URL do Sheets para sincronizar.');
   } else {
     try {
-      const res  = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'progressao_save', progressao: data }) });
-      const json = await res.json();
-      showToast(json.status === 'ok' ? `✅ Semana ${weekNum} guardada e sincronizada!` : `Guardado local. Erro Sheets: ${json.msg||''}`);
+      // GAS não suporta CORS em POST → usar no-cors (envia mas não lê resposta, igual ao sendToSheets)
+      await fetch(url, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'progressao_save', progressao: data })
+      });
+      showToast(`✅ Semana ${weekNum} guardada e enviada para Sheets!`);
     } catch(err) {
-      showToast('✅ Guardado localmente (sem rede para Sheets).');
+      showToast('✅ Guardado localmente (erro de rede: ' + err.message + ')');
     }
   }
 
