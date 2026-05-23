@@ -1957,6 +1957,7 @@ function hideModePicker() {
   // Não limpar sessionsLogOnly aqui — beginWorkout trata disso
 }
 function beginWorkout(mode) {
+  hideModePicker();
   state.logMode = (mode === 'log');
   state.sessionsLogOnly = false;
   if (mode !== 'log') state.logDate = null;
