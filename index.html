@@ -397,6 +397,22 @@ canvas{max-width:100%;}
   <div class="scroll" id="history-content"></div>
 </div>
 
+<!-- PROGRESS SCREEN -->
+<div id="progress-screen" class="screen">
+  <div class="topbar">
+    <h1>📈 Progressão</h1>
+    <button id="prog-sync-btn" onclick="syncProgressao()" style="background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;touch-action:manipulation">☁️ Sync</button>
+  </div>
+  <div style="padding:12px 16px 0;flex-shrink:0;">
+    <div class="tabs">
+      <button class="tab active" id="prog-tab-btn-form" onclick="switchProgTab('form')" style="font-family:inherit;cursor:pointer">Esta Semana</button>
+      <button class="tab" id="prog-tab-btn-table" onclick="switchProgTab('table')" style="font-family:inherit;cursor:pointer">12 Semanas</button>
+      <button class="tab" id="prog-tab-btn-charts" onclick="switchProgTab('charts')" style="font-family:inherit;cursor:pointer">Gráficos</button>
+    </div>
+  </div>
+  <div class="scroll" id="progress-content"></div>
+</div>
+
 <!-- BOTTOM NAV -->
 <div id="bottomnav">
   <button class="nav-btn active" id="nav-home" onclick="navTo('home')">
@@ -406,6 +422,10 @@ canvas{max-width:100%;}
   <button class="nav-btn" id="nav-hist" onclick="navTo('history')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
     Histórico
+  </button>
+  <button class="nav-btn" id="nav-prog" onclick="navTo('progress')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+    Progresso
   </button>
 </div>
 
@@ -1150,13 +1170,15 @@ function showScreen(id) {
   const nav = document.getElementById('bottomnav');
   const hideNav = ['workout-screen','hist-detail-screen','settings-screen'];
   nav.style.display = hideNav.includes(id) ? 'none' : 'flex';
-  ['nav-home','nav-hist'].forEach(n=>document.getElementById(n).classList.remove('active'));
+  ['nav-home','nav-hist','nav-prog'].forEach(n=>{ const el=document.getElementById(n); if(el) el.classList.remove('active'); });
   if(id==='home-screen') document.getElementById('nav-home').classList.add('active');
   if(id==='history-screen') document.getElementById('nav-hist').classList.add('active');
+  if(id==='progress-screen') { const el=document.getElementById('nav-prog'); if(el) el.classList.add('active'); }
 }
 function navTo(dest) {
   if(dest==='home') { showScreen('home-screen'); renderHome(); }
   if(dest==='history') { showScreen('history-screen'); renderHistory(); }
+  if(dest==='progress') { showScreen('progress-screen'); renderProgress(); }
 }
 
 // ── Home Screen ───────────────────────────────────────
@@ -3191,6 +3213,456 @@ function initTouchBindings() {
 }
 
 document.addEventListener('DOMContentLoaded', initTouchBindings);
+
+// ═══════════════════════════════════════════════════════════════
+// PROGRESSÃO SEMANAL
+// ═══════════════════════════════════════════════════════════════
+
+const PLAN_START   = new Date('2026-05-05T00:00:00Z'); // 2ª feira início Semana 1
+const DELOAD_WEEKS = [4, 8, 12];
+
+function currentWeekNum() {
+  const diffDays = Math.floor((Date.now() - PLAN_START.getTime()) / 86400000);
+  return Math.max(1, Math.min(12, Math.floor(diffDays / 7) + 1));
+}
+function weekDateRange(weekNum) {
+  const startMs = PLAN_START.getTime() + (weekNum - 1) * 7 * 86400000;
+  return { start: new Date(startMs), end: new Date(startMs + 6 * 86400000) };
+}
+function weekLbl(weekNum) {
+  return `Sem ${weekNum}${DELOAD_WEEKS.includes(weekNum) ? ' 🟡 DELOAD' : ''}`;
+}
+
+// ── Auto-fill: melhor série de um exercício numa semana ──────
+function getBestSetForWeek(exerciseIds, weekNum) {
+  const history = loadHistory();
+  const { start, end } = weekDateRange(weekNum);
+  const startMs = start.getTime() - 86400000;
+  const endMs   = end.getTime()   + 86400000;
+  let bestKg = 0, bestReps = 0;
+  history.forEach(entry => {
+    const ts = entryDate(entry);
+    if (ts < startMs || ts > endMs) return;
+    (entry.exercises || []).forEach(ex => {
+      if (!exerciseIds.includes(ex.id)) return;
+      (ex.sets || []).forEach(s => {
+        if (!s.done) return;
+        if (s.weight > bestKg || (s.weight === bestKg && s.reps > bestReps)) {
+          bestKg = s.weight; bestReps = s.reps;
+        }
+      });
+    });
+  });
+  return bestKg > 0 ? { kg: bestKg, reps: bestReps } : null;
+}
+function getBestPlankForWeek(weekNum) {
+  const plankIds = ['gm_a_plank','forearm_plank_a'];
+  const history  = loadHistory();
+  const { start, end } = weekDateRange(weekNum);
+  const startMs = start.getTime() - 86400000;
+  const endMs   = end.getTime()   + 86400000;
+  let bestSecs = 0;
+  history.forEach(entry => {
+    const ts = entryDate(entry);
+    if (ts < startMs || ts > endMs) return;
+    (entry.exercises || []).forEach(ex => {
+      if (!plankIds.includes(ex.id)) return;
+      (ex.sets || []).forEach(s => {
+        if (!s.done) return;
+        const secs = Math.max(s.reps || 0, (s.weight > 0 && s.weight < 300) ? s.weight : 0);
+        if (secs > bestSecs) bestSecs = secs;
+      });
+    });
+  });
+  return bestSecs > 0 ? bestSecs : null;
+}
+
+// ── Storage local ────────────────────────────────────────────
+function loadProgressaoLocal() {
+  try { return JSON.parse(localStorage.getItem('vw_progressao') || '[]'); } catch(e) { return []; }
+}
+function saveProgressaoLocal(arr) {
+  localStorage.setItem('vw_progressao', JSON.stringify(arr));
+}
+function getProgressaoForWeek(weekNum) {
+  return loadProgressaoLocal().find(s => s.semana_num === weekNum) || null;
+}
+function upsertProgressaoLocal(data) {
+  const arr = loadProgressaoLocal();
+  const idx = arr.findIndex(s => s.semana_num === data.semana_num);
+  if (idx >= 0) arr[idx] = data; else arr.push(data);
+  arr.sort((a,b) => a.semana_num - b.semana_num);
+  saveProgressaoLocal(arr);
+}
+
+// ── Estado do tab de progresso ───────────────────────────────
+const progState = { tab: 'form', weekNum: currentWeekNum() };
+
+function switchProgTab(tab) {
+  progState.tab = tab;
+  ['form','table','charts'].forEach(t => {
+    const btn = document.getElementById(`prog-tab-btn-${t}`);
+    if (btn) btn.classList.toggle('active', t === tab);
+  });
+  renderProgress();
+}
+
+function renderProgress() {
+  const content = document.getElementById('progress-content');
+  if (!content) return;
+  if (progState.tab === 'form')   renderProgressForm(content);
+  else if (progState.tab === 'table')  renderProgressTable(content);
+  else renderProgressCharts(content);
+}
+
+// ── Formulário "Esta Semana" ─────────────────────────────────
+function renderProgressForm(content) {
+  const wk       = progState.weekNum;
+  const isDeload = DELOAD_WEEKS.includes(wk);
+  const { end }  = weekDateRange(wk);
+  const sundayFmt = end.toLocaleDateString('pt-PT', { weekday:'long', day:'numeric', month:'long' });
+
+  const benchBest = getBestSetForWeek(['gm_a_bench','db_bench_press'], wk);
+  const latBest   = getBestSetForWeek(['gm_b_pulldown','sp_b_pulldown','gm_d_pulldown'], wk);
+  const curlBest  = getBestSetForWeek(['gm_b_bicep_curl','standing_biceps_curl'], wk);
+  const plankBest = getBestPlankForWeek(wk);
+  const saved     = getProgressaoForWeek(wk);
+
+  const v = (field, auto) => {
+    if (saved && saved[field] != null && saved[field] !== '') return saved[field];
+    return auto ?? '';
+  };
+
+  const deloadBadge = isDeload
+    ? `<span style="background:#f39c12;color:#000;font-size:11px;font-weight:800;padding:3px 8px;border-radius:10px;margin-left:8px">🟡 DELOAD</span>`
+    : '';
+
+  const inputBase = `background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:16px;font-weight:700;color:var(--text);font-family:inherit;width:100%;box-sizing:border-box`;
+
+  content.innerHTML = `
+    <div style="padding:16px 16px 32px">
+
+      <!-- Seletor de semana -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+        <button onclick="progState.weekNum=Math.max(1,progState.weekNum-1);renderProgress()" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:40px;height:40px;font-size:20px;cursor:pointer;color:var(--text);font-family:inherit;flex-shrink:0">‹</button>
+        <div style="flex:1;text-align:center">
+          <div style="font-size:17px;font-weight:800;color:var(--text)">${weekLbl(wk)}${deloadBadge}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:3px">Preencher até ${sundayFmt}</div>
+        </div>
+        <button onclick="progState.weekNum=Math.min(12,progState.weekNum+1);renderProgress()" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:40px;height:40px;font-size:20px;cursor:pointer;color:var(--text);font-family:inherit;flex-shrink:0">›</button>
+      </div>
+
+      <!-- AUTO: exercícios -->
+      <div style="background:var(--card);border-radius:16px;padding:16px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:var(--accent);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:14px">🤖 Auto — dos Treinos desta Semana</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          ${progExRow('Bench DB','bench_kg','bench_reps',benchBest,v('bench_kg',benchBest?.kg),v('bench_reps',benchBest?.reps))}
+          ${progExRow('Lat Pull','latpull_kg','latpull_reps',latBest,v('latpull_kg',latBest?.kg),v('latpull_reps',latBest?.reps))}
+          ${progExRow('Curl DB','curl_kg','curl_reps',curlBest,v('curl_kg',curlBest?.kg),v('curl_reps',curlBest?.reps))}
+          <div style="grid-column:1/-1">${progPlankRow(plankBest,v('plank_seg',plankBest))}</div>
+        </div>
+      </div>
+
+      <!-- MANUAL -->
+      <div style="background:var(--card);border-radius:16px;padding:16px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:var(--text2);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:14px">✏️ Manual — Preencher ao Domingo</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <label style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:12px;font-weight:700;color:var(--text2)">⚖️ Peso (kg)</span>
+            <input id="prog-peso" type="number" step="0.1" min="50" max="120" value="${v('peso_kg','')}" placeholder="65.0" style="${inputBase}">
+          </label>
+          <label style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:12px;font-weight:700;color:var(--text2)">🏃 10km (MM:SS)</span>
+            <input id="prog-corrida" type="text" value="${v('corrida_texto','')}" placeholder="ex: 52:30" style="${inputBase}">
+          </label>
+          <label style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:12px;font-weight:700;color:var(--text2)">🥩 Proteína (g/dia)</span>
+            <input id="prog-proteina" type="number" step="1" min="50" max="350" value="${v('proteina_g','')}" placeholder="125" style="${inputBase}">
+          </label>
+          <label style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:12px;font-weight:700;color:var(--text2)">💚 WHOOP Recovery (%)</span>
+            <input id="prog-whoop" type="number" step="1" min="0" max="100" value="${v('whoop_pct','')}" placeholder="72" style="${inputBase}">
+          </label>
+          <label style="display:flex;flex-direction:column;gap:6px;grid-column:1/-1">
+            <span style="font-size:12px;font-weight:700;color:var(--text2)">📡 HRV médio semanal (ms)</span>
+            <input id="prog-hrv" type="number" step="1" min="10" max="150" value="${v('hrv_ms','')}" placeholder="52" style="${inputBase}">
+          </label>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:12px;font-weight:700;color:var(--text2)">📝 Notas / Ajustes</span>
+          <textarea id="prog-notas" rows="3" placeholder="Como correu esta semana? Ajustes para a próxima..." style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);font-family:inherit;width:100%;box-sizing:border-box;resize:none">${v('notas','')}</textarea>
+        </label>
+      </div>
+
+      <button onclick="saveProgressaoWeek(${wk})" class="btn btn-primary" style="width:100%;font-size:16px;font-weight:700;padding:16px">
+        💾 Guardar Semana ${wk} e Sincronizar
+      </button>
+      ${saved ? `<div style="text-align:center;font-size:12px;color:var(--text3);margin-top:10px">Última gravação: ${new Date(saved._savedAt||0).toLocaleString('pt-PT')}</div>` : ''}
+    </div>`;
+}
+
+function progExRow(label, idKg, idReps, auto, valKg, valReps) {
+  const tag = auto ? `<span style="font-size:9px;background:var(--accentbg);color:var(--accent);padding:1px 5px;border-radius:5px;font-weight:700;margin-left:4px">🤖</span>` : '';
+  const inp = `background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 4px;font-size:15px;font-weight:700;color:var(--text);font-family:inherit;text-align:center`;
+  return `
+    <div style="background:var(--bg3);border-radius:12px;padding:12px">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px">${label}${tag}</div>
+      <div style="display:flex;gap:4px;align-items:center">
+        <input id="prog-${idKg}" type="number" step="0.5" min="0" max="200" value="${valKg}" placeholder="kg" style="${inp};width:54px">
+        <span style="font-size:11px;color:var(--text3)">kg</span>
+        <span style="color:var(--text3);font-weight:700">×</span>
+        <input id="prog-${idReps}" type="number" step="1" min="0" max="50" value="${valReps}" placeholder="rep" style="${inp};width:46px">
+        <span style="font-size:11px;color:var(--text3)">reps</span>
+      </div>
+    </div>`;
+}
+
+function progPlankRow(auto, valSeg) {
+  const tag = auto ? `<span style="font-size:9px;background:var(--accentbg);color:var(--accent);padding:1px 5px;border-radius:5px;font-weight:700;margin-left:4px">🤖</span>` : '';
+  return `
+    <div style="background:var(--bg3);border-radius:12px;padding:12px">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px">Prancha${tag}</div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <input id="prog-plank" type="number" step="1" min="0" max="300" value="${valSeg}" placeholder="seg" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;font-size:15px;font-weight:700;color:var(--text);font-family:inherit;width:72px;text-align:center">
+        <span style="font-size:12px;color:var(--text3)">segundos</span>
+      </div>
+    </div>`;
+}
+
+async function saveProgressaoWeek(weekNum) {
+  const btn = document.querySelector('#progress-content .btn-primary');
+  if (btn) { btn.textContent = '⏳ A guardar…'; btn.disabled = true; }
+
+  const { end } = weekDateRange(weekNum);
+
+  const data = {
+    semana_label:   `Sem ${weekNum}`,
+    semana_num:     weekNum,
+    deload:         DELOAD_WEEKS.includes(weekNum),
+    data_domingo:   end.toISOString().slice(0,10),
+    peso_kg:        parseFloat(document.getElementById('prog-peso')?.value)       || null,
+    corrida_texto:  document.getElementById('prog-corrida')?.value?.trim()        || '',
+    bench_kg:       parseFloat(document.getElementById('prog-bench_kg')?.value)   || null,
+    bench_reps:     parseInt(document.getElementById('prog-bench_reps')?.value)   || null,
+    latpull_kg:     parseFloat(document.getElementById('prog-latpull_kg')?.value) || null,
+    latpull_reps:   parseInt(document.getElementById('prog-latpull_reps')?.value) || null,
+    curl_kg:        parseFloat(document.getElementById('prog-curl_kg')?.value)    || null,
+    curl_reps:      parseInt(document.getElementById('prog-curl_reps')?.value)    || null,
+    plank_seg:      parseInt(document.getElementById('prog-plank')?.value)        || null,
+    proteina_g:     parseInt(document.getElementById('prog-proteina')?.value)     || null,
+    whoop_pct:      parseInt(document.getElementById('prog-whoop')?.value)        || null,
+    hrv_ms:         parseInt(document.getElementById('prog-hrv')?.value)          || null,
+    notas:          document.getElementById('prog-notas')?.value?.trim()          || '',
+    _savedAt:       Date.now()
+  };
+
+  upsertProgressaoLocal(data);
+
+  const settings = loadSettings();
+  const url = settings.sheetsUrl;
+  if (!url || url.trim() === '') {
+    showToast('✅ Guardado localmente. Configura o URL do Sheets para sincronizar.');
+  } else {
+    try {
+      const res  = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'progressao_save', progressao: data }) });
+      const json = await res.json();
+      showToast(json.status === 'ok' ? `✅ Semana ${weekNum} guardada e sincronizada!` : `Guardado local. Erro Sheets: ${json.msg||''}`);
+    } catch(err) {
+      showToast('✅ Guardado localmente (sem rede para Sheets).');
+    }
+  }
+
+  if (btn) { btn.textContent = `💾 Guardar Semana ${weekNum} e Sincronizar`; btn.disabled = false; }
+  renderProgress();
+}
+
+async function syncProgressao() {
+  const btn = document.getElementById('prog-sync-btn');
+  if (btn) { btn.textContent = '⏳…'; btn.disabled = true; }
+
+  const settings = loadSettings();
+  const url = settings.sheetsUrl;
+  if (!url || url.trim() === '') {
+    showToast('Configura o URL do Google Sheets primeiro (⚙️)');
+    if (btn) { btn.textContent = '☁️ Sync'; btn.disabled = false; }
+    return;
+  }
+  try {
+    const res  = await fetch(`${url}?action=progressao&t=${Date.now()}`, { method:'GET', cache:'no-store' });
+    const data = await res.json();
+    if (data.status !== 'ok') throw new Error(data.msg);
+    (data.semanas || []).forEach(s => { if (s.semana_num > 0) upsertProgressaoLocal({ ...s, _savedAt: Date.now() }); });
+    showToast(`✅ ${(data.semanas||[]).length} semanas carregadas do Sheets`);
+    renderProgress();
+  } catch(err) {
+    showToast('Erro ao carregar do Sheets: ' + err.message);
+  }
+  if (btn) { btn.textContent = '☁️ Sync'; btn.disabled = false; }
+}
+
+// ── Tabela 12 semanas ────────────────────────────────────────
+function renderProgressTable(content) {
+  const semanas = loadProgressaoLocal();
+  const wkNow   = currentWeekNum();
+  const dataMap  = {};
+  semanas.forEach(s => { dataMap[s.semana_num] = s; });
+
+  let rows = '';
+  for (let w = 1; w <= 12; w++) {
+    const s        = dataMap[w];
+    const isDeload = DELOAD_WEEKS.includes(w);
+    const isCurrent = w === wkNow;
+    const isFuture  = w > wkNow && !s;
+    const rowBg = isDeload ? 'rgba(243,156,18,0.10)' : isCurrent ? 'rgba(0,255,136,0.07)' : 'transparent';
+    const fmt   = (v, u='') => v != null ? `${v}${u}` : `<span style="color:var(--text3)">—</span>`;
+    const fmtEx = (kg, reps) => (kg != null && reps != null) ? `${kg}×${reps}` : `<span style="color:var(--text3)">—</span>`;
+    const whoopCol = s?.whoop_pct >= 70 ? '#2ecc71' : s?.whoop_pct >= 50 ? '#f39c12' : s?.whoop_pct != null ? '#e74c3c' : 'var(--text3)';
+    const badge = isDeload ? '🟡' : isCurrent ? '●' : '';
+    rows += `
+      <tr style="background:${rowBg};opacity:${isFuture?'0.4':'1'};cursor:pointer" onclick="progState.weekNum=${w};switchProgTab('form')">
+        <td style="padding:10px 8px;font-size:13px;font-weight:${isCurrent?'800':'600'};white-space:nowrap;border-bottom:1px solid var(--border)">S${w} ${badge}</td>
+        <td style="padding:10px 8px;text-align:center;font-size:13px;border-bottom:1px solid var(--border)">${fmt(s?.peso_kg,'kg')}</td>
+        <td style="padding:10px 8px;text-align:center;font-size:12px;border-bottom:1px solid var(--border)">${s?.corrida_texto||`<span style="color:var(--text3)">—</span>`}</td>
+        <td style="padding:10px 8px;text-align:center;font-size:12px;border-bottom:1px solid var(--border)">${fmtEx(s?.bench_kg,s?.bench_reps)}</td>
+        <td style="padding:10px 8px;text-align:center;font-size:12px;border-bottom:1px solid var(--border)">${fmtEx(s?.curl_kg,s?.curl_reps)}</td>
+        <td style="padding:10px 8px;text-align:center;font-size:13px;border-bottom:1px solid var(--border)">${fmt(s?.plank_seg,'s')}</td>
+        <td style="padding:10px 8px;text-align:center;font-size:13px;color:${whoopCol};font-weight:700;border-bottom:1px solid var(--border)">${fmt(s?.whoop_pct,'%')}</td>
+        <td style="padding:10px 8px;text-align:center;font-size:13px;border-bottom:1px solid var(--border)">${fmt(s?.hrv_ms,'ms')}</td>
+      </tr>`;
+  }
+
+  content.innerHTML = `
+    <div style="padding:16px">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Toca numa linha para editar · ● semana actual · 🟡 deload</div>
+      <div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border)">
+        <table style="width:100%;border-collapse:collapse;min-width:480px">
+          <thead>
+            <tr style="background:var(--bg3)">
+              <th style="padding:9px 8px;font-size:11px;font-weight:700;color:var(--text3);text-align:left">Sem</th>
+              <th style="padding:9px 8px;font-size:11px;font-weight:700;color:var(--text3);text-align:center">Peso</th>
+              <th style="padding:9px 8px;font-size:11px;font-weight:700;color:var(--text3);text-align:center">10km</th>
+              <th style="padding:9px 8px;font-size:11px;font-weight:700;color:var(--text3);text-align:center">Bench</th>
+              <th style="padding:9px 8px;font-size:11px;font-weight:700;color:var(--text3);text-align:center">Curl</th>
+              <th style="padding:9px 8px;font-size:11px;font-weight:700;color:var(--text3);text-align:center">Plank</th>
+              <th style="padding:9px 8px;font-size:11px;font-weight:700;color:var(--text3);text-align:center">WHOOP</th>
+              <th style="padding:9px 8px;font-size:11px;font-weight:700;color:var(--text3);text-align:center">HRV</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:10px;text-align:center">Linha de base (Sem 0): Bench 25×8 · Lat 45×8 · Curl 20×12 · Plank 45s · 10km Sub-55min</div>
+    </div>`;
+}
+
+// ── Gráficos ─────────────────────────────────────────────────
+function renderProgressCharts(content) {
+  const semanas = loadProgressaoLocal();
+  if (semanas.length === 0) {
+    content.innerHTML = `<div style="padding:48px 16px;text-align:center;color:var(--text3);font-size:15px">Preenche pelo menos uma semana para ver os gráficos. 💪</div>`;
+    return;
+  }
+  const dataMap = {};
+  semanas.forEach(s => { dataMap[s.semana_num] = s; });
+  const wkNow = currentWeekNum();
+
+  const metrics = [
+    { key:'peso_kg',    label:'⚖️ Peso (kg)',               color:'#3498db', baseline:65,  lowerIsBetter:true },
+    { key:'bench_kg',   label:'🏋️ Bench DB — carga (kg)',   color:'#e74c3c', baseline:25,  lowerIsBetter:false },
+    { key:'curl_kg',    label:'💪 Curl DB — carga (kg)',     color:'#9b59b6', baseline:20,  lowerIsBetter:false },
+    { key:'plank_seg',  label:'⏱️ Prancha (seg)',            color:'#f39c12', baseline:45,  lowerIsBetter:false },
+    { key:'whoop_pct',  label:'💚 WHOOP Recovery (%)',       color:'#2ecc71', baseline:null,lowerIsBetter:false },
+    { key:'hrv_ms',     label:'📡 HRV médio (ms)',           color:'#1abc9c', baseline:null,lowerIsBetter:false },
+  ];
+
+  let html = '<div style="padding:16px">';
+  metrics.forEach(m => {
+    const pts = [];
+    for (let w = 1; w <= 12; w++) {
+      const s = dataMap[w];
+      if (s && s[m.key] != null) pts.push({ w, v: s[m.key] });
+    }
+    if (pts.length === 0) return;
+    html += buildSparkline(m, pts, wkNow);
+  });
+  html += '</div>';
+  content.innerHTML = html;
+}
+
+function buildSparkline(metric, pts, wkNow) {
+  const W=320, H=110, pL=36, pR=14, pT=14, pB=26;
+  const pw=W-pL-pR, ph=H-pT-pB;
+  const vals = pts.map(p=>p.v);
+  const minV  = Math.min(...vals);
+  const maxV  = Math.max(...vals);
+  const range = maxV - minV || 1;
+  const xOf = w  => pL + ((w-1)/11)*pw;
+  const yOf = v  => pT + ph - ((v-minV)/range)*ph;
+
+  const pathD = pts.map((p,i) => `${i?'L':'M'}${xOf(p.w).toFixed(1)},${yOf(p.v).toFixed(1)}`).join(' ');
+
+  // Fill area under curve
+  const first = pts[0], last = pts[pts.length-1];
+  const fillD = `${pathD} L${xOf(last.w).toFixed(1)},${(pT+ph).toFixed(1)} L${xOf(first.w).toFixed(1)},${(pT+ph).toFixed(1)} Z`;
+
+  // Dots
+  const dots = pts.map(p => {
+    const isCur = p.w === wkNow;
+    return `<circle cx="${xOf(p.w).toFixed(1)}" cy="${yOf(p.v).toFixed(1)}" r="${isCur?5:3}" fill="${metric.color}" ${isCur?'stroke="white" stroke-width="2"':'opacity="0.9"'}/>`;
+  }).join('');
+
+  // Labels at first, last, current
+  const showSet = new Set([pts[0].w, pts[pts.length-1].w, wkNow]);
+  const lbls = pts.filter(p=>showSet.has(p.w)).map(p => {
+    const x = xOf(p.w), y = yOf(p.v);
+    const anchor = p.w <= 2 ? 'start' : p.w >= 11 ? 'end' : 'middle';
+    return `<text x="${x.toFixed(1)}" y="${(y-9).toFixed(1)}" text-anchor="${anchor}" font-size="10" fill="${metric.color}" font-weight="700">${p.v}</text>`;
+  }).join('');
+
+  // Baseline
+  let base = '';
+  if (metric.baseline != null) {
+    const by = yOf(metric.baseline);
+    if (by >= pT-2 && by <= H-pB+2) {
+      base = `<line x1="${pL}" y1="${by.toFixed(1)}" x2="${W-pR}" y2="${by.toFixed(1)}" stroke="var(--border)" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="${pL-4}" y="${(by+4).toFixed(1)}" text-anchor="end" font-size="9" fill="var(--text3)">${metric.baseline}</text>`;
+    }
+  }
+
+  // Current week line
+  const cwx = xOf(wkNow);
+  const cwLine = `<line x1="${cwx.toFixed(1)}" y1="${pT}" x2="${cwx.toFixed(1)}" y2="${H-pB}" stroke="${metric.color}" stroke-width="1" stroke-dasharray="3,3" opacity="0.35"/>`;
+
+  // X axis ticks
+  const xTicks = [1,4,8,12].map(w =>
+    `<text x="${xOf(w).toFixed(1)}" y="${H-6}" text-anchor="middle" font-size="9" fill="var(--text3)">S${w}</text>`
+  ).join('');
+
+  // Trend
+  let trend = '';
+  if (pts.length >= 2) {
+    const diff  = last.v - first.v;
+    const arrow = diff > 0 ? '▲' : diff < 0 ? '▼' : '–';
+    const good  = metric.lowerIsBetter ? diff <= 0 : diff >= 0;
+    const col   = diff === 0 ? 'var(--text3)' : good ? '#2ecc71' : '#e74c3c';
+    trend = `<text x="${W-pR}" y="${pT+10}" text-anchor="end" font-size="11" fill="${col}" font-weight="800">${arrow} ${Math.abs(diff).toFixed(1)}</text>`;
+  }
+
+  return `
+    <div style="background:var(--card);border-radius:14px;padding:14px 14px 10px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">${metric.label}</div>
+      <svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible;display:block">
+        <defs><linearGradient id="grad_${metric.key}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="${metric.color}" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="${metric.color}" stop-opacity="0"/>
+        </linearGradient></defs>
+        <path d="${fillD}" fill="url(#grad_${metric.key})"/>
+        ${base}${cwLine}
+        <path d="${pathD}" fill="none" stroke="${metric.color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+        ${dots}${lbls}${trend}${xTicks}
+      </svg>
+    </div>`;
+}
 
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
