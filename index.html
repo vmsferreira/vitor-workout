@@ -304,12 +304,11 @@ canvas{max-width:100%;}
         <div class="type-name">Speediance</div>
         <div class="type-sub">Portugal · Casa</div>
       </button>
-      <div class="workout-type-card soon">
-        <div class="soon-badge">Em Breve</div>
+      <button class="workout-type-card" id="btn-running" onclick="goRunning()" style="cursor:pointer;font-family:inherit;display:flex;-webkit-appearance:none;">
         <div class="type-icon">🏃</div>
         <div class="type-name">Corrida</div>
-        <div class="type-sub">Garmin · Zonas</div>
-      </div>
+        <div class="type-sub">Garmin · Zonas FC</div>
+      </button>
     </div>
     <div class="card" style="margin-top:8px;">
       <div style="font-size:13px;font-weight:700;margin-bottom:8px;">📊 Resumo Rápido</div>
@@ -339,7 +338,10 @@ canvas{max-width:100%;}
 <div id="workout-screen" class="screen">
   <div class="topbar">
     <button onclick="confirmEndWorkout()" style="width:44px;height:44px;border:none;background:rgba(231,76,60,0.18);border-radius:50%;color:#e74c3c;font-size:20px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;flex-shrink:0">✕</button>
-    <h1 id="wk-title">Treino</h1>
+    <div style="flex:1;min-width:0;text-align:center">
+      <h1 id="wk-title" style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Treino</h1>
+      <div id="wk-week-chip" style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;display:inline-block;margin-top:2px;background:var(--accentbg);color:var(--accent)">Sem 1/12</div>
+    </div>
     <div class="timer-chip" id="wk-timer">00:00</div>
   </div>
   <div class="progress-bar-wrap"><div class="progress-bar" id="wk-progress"></div></div>
@@ -359,6 +361,16 @@ canvas{max-width:100%;}
     </div>
     <button class="btn-icon" id="next-ex-btn" onclick="navigateEx(1)">→</button>
   </div>
+</div>
+
+<!-- RUNNING SCREEN -->
+<div id="running-screen" class="screen">
+  <div class="topbar">
+    <button class="btn-back" onclick="showScreen('home-screen')">←</button>
+    <h1>🏃 Corrida</h1>
+    <div style="width:36px"></div>
+  </div>
+  <div class="scroll" id="running-content"></div>
 </div>
 
 <!-- SUMMARY SCREEN -->
@@ -910,7 +922,7 @@ const SESSIONS = {
           {id:'sp_w_lat_act_a',name:'Standing Dual-Handle Lateral Raise',namePT:'Elevação Lateral Dupla (Activação)',reps:'×15',rest:0,notes:'30% da carga — activar deltóide lateral.',muscles:['side_delt']}
         ],
         workout: [
-          {id:'sp_a_bench',name:'Dual-Handle Bench Press',namePT:'Press Pega Dupla Plano',isMain:true,sets:4,reps:'6-8',rir:0,rest:120,notes:'PRINCIPAL ⭐ — escápulas retraídas | cabos baixos | descida controlada 2-3s',muscles:['chest','front_delt','triceps']},
+          {id:'sp_a_bench',name:'Dual-Handle Bench Press',namePT:'Press Pega Dupla Plano',isMain:true,sets:4,reps:'6-8',rir:0,rest:150,notes:'PRINCIPAL ⭐ — escápulas retraídas | cabos baixos | descida controlada 2-3s',muscles:['chest','front_delt','triceps']},
           {id:'sp_a_tri_push',name:'Standing Tricep Rope Triceps Pushdown',namePT:'Extensão Tríceps Corda',sets:4,reps:'10-12',rir:0,rest:120,notes:'Corda Speediance — cotovelos fixos junto ao tronco | contracção máxima no topo',muscles:['triceps']},
           {id:'sp_a_incl_press',name:'Incline Dual-Handle Chest Press',namePT:'Press Pega Dupla Inclinado',sets:3,reps:'8-10',rir:1,rest:90,notes:'Banco inclinado 45° + cabos baixos | peito clavicular | amplitude total',muscles:['upper_chest','front_delt','triceps']},
           {id:'sp_a_lat_raise',name:'Standing Dual-Handle Lateral Raise',namePT:'Elevação Lateral Dupla',sets:3,reps:'13-15',rir:0,rest:90,notes:'Cotovelo ligeiramente flectido | 2s subida, 3s descida | não usar trapézio',muscles:['side_delt']},
@@ -924,7 +936,7 @@ const SESSIONS = {
           {id:'sp_a_plank',name:'Plank',namePT:'Prancha',sets:3,reps:'45-60s',rir:0,rest:60,notes:'Core activo — glúteos contraídos | coluna neutra | não deixar cair as ancas',muscles:['core','abs']},
           {id:'sp_a_hl_press',name:'Kneeling Dual-Handle High-to-Low Chest Press',namePT:'Press Descente Ajoelhado',sets:3,reps:'8-10',rir:1,rest:90,notes:'Peito inferior ⭐ — cabos altos, press descendente de joelhos | cotovelos a 45°',muscles:['chest','triceps']},
           {id:'sp_a_h_fly',name:'Standing Dual-Handle Chest Fly',namePT:'Fly Horizontal Duplo',sets:3,reps:'12-15',rir:1,rest:90,notes:'Cruzamento médio/interno em pé | aperto máximo 1s no pico | linha central',muscles:['chest']},
-          {id:'sp_a_lh_fly',name:'Standing Dual-Handle Low-to-High Chest Fly',namePT:'Fly Baixo→Alto Duplo',sets:3,reps:'12-15',rir:1,rest:150,notes:'PEITO CLAVICULAR ⭐ — cabos em baixo, fly ascendente | esticamento máximo no fundo',muscles:['upper_chest','front_delt']}
+          {id:'sp_a_lh_fly',name:'Standing Dual-Handle Low-to-High Chest Fly',namePT:'Fly Baixo→Alto Duplo',sets:3,reps:'12-15',rir:1,rest:90,notes:'PEITO CLAVICULAR ⭐ — cabos em baixo, fly ascendente | esticamento máximo no fundo',muscles:['upper_chest','front_delt']}
         ],
         cooldown: [
           {id:'sp_c_chest_a',name:'Chest Stretch',namePT:'Stretch Peitoral',reps:'2×30s',rest:0,notes:'Braço em L contra parede.',muscles:['chest']},
@@ -948,7 +960,7 @@ const SESSIONS = {
           {id:'sp_w_lat_act_b',name:'Kneeling Dual-Handle Lat Pulldown',namePT:'Puxada Lat Ajoelhado (Activação)',reps:'×15',rest:0,notes:'30% da carga | activar grande dorsal.',muscles:['lats']}
         ],
         workout: [
-          {id:'sp_b_pulldown',name:'Kneeling Dual-Handle Lat Pulldown',namePT:'Pulldown Duplo Ajoelhado',isMain:true,sets:4,reps:'8-10',rir:0,rest:120,notes:'PRINCIPAL ⭐ — joelhos, pega neutra/pronada | puxar às clavículas | escápulas juntas',muscles:['lats','back','biceps']},
+          {id:'sp_b_pulldown',name:'Kneeling Dual-Handle Lat Pulldown',namePT:'Pulldown Duplo Ajoelhado',isMain:true,sets:4,reps:'8-10',rir:0,rest:150,notes:'PRINCIPAL ⭐ — joelhos, pega neutra/pronada | puxar às clavículas | escápulas juntas',muscles:['lats','back','biceps']},
           {id:'sp_b_bicep_curl',name:'Standing Dual-Handle Biceps Curl',namePT:'Curl Bíceps Duplo em Pé',sets:4,reps:'8-10',rir:0,rest:120,notes:'Supinação completa no topo | cotovelos fixos | excêntrico controlado 3s',muscles:['biceps']},
           {id:'sp_b_row',name:'Floor Seated Dual-Handle Row',namePT:'Remada Sentado no Chão',sets:4,reps:'10-12',rir:0,rest:90,notes:'Sentado no chão | puxar ao umbigo | pega neutra | costas médias',muscles:['back','lats','rear_delt']},
           {id:'sp_b_hammer',name:'Standing Dual-Handle Hammer Curl',namePT:'Hammer Curl Duplo',sets:3,reps:'10-12',rir:0,rest:90,notes:'Pega neutra — braquiorradial + braquial | cotovelos fixos',muscles:['biceps','forearms']},
@@ -963,7 +975,7 @@ const SESSIONS = {
           {id:'sp_b_side_plank',name:'Side Plank',namePT:'Prancha Lateral',sets:3,reps:'30s/leg',rir:0,rest:60,notes:'Corpo em linha recta | quadril não cair | 30s cada lado',muscles:['core','abs']},
           {id:'sp_b_dead_bug',name:'Dead Bug',namePT:'Insecto Morto',sets:1,reps:'8/lado',rir:0,rest:60,notes:'CORE PROFUNDO — TVA | lombar no chão | braço + perna opostos | expirar no esforço',muscles:['core','abs']},
           {id:'sp_b_curl_fin',name:'Standing Dual-Handle Biceps Curl (Finisher)',namePT:'Curl Bíceps Finisher',sets:2,reps:'10-12',rir:1,rest:90,notes:'Speediance — cabo baixo | tensão constante | curl lento e controlado',muscles:['biceps']},
-          {id:'sp_b_zottman',name:'Dual-Handle Zottman Curl',namePT:'Curl Zottman Duplo',sets:2,reps:'10-12',rir:1,rest:150,notes:'Supinação na subida (bíceps) | pronação na descida (braquiorradial)',muscles:['biceps','forearms']},
+          {id:'sp_b_zottman',name:'Dual-Handle Zottman Curl',namePT:'Curl Zottman Duplo',sets:2,reps:'10-12',rir:1,rest:90,notes:'Supinação na subida (bíceps) | pronação na descida (braquiorradial)',muscles:['biceps','forearms']},
           {id:'sp_b_pullover',name:'Dumbbell Pullover',namePT:'Pullover com Halter',sets:1,reps:'12-15',rir:1,rest:90,notes:'GRANDE DORSAL + SERRÁTIL — banco plano | DB em arco acima da cabeça | esticamento máximo',muscles:['lats','chest']}
         ],
         cooldown: [
@@ -989,8 +1001,8 @@ const SESSIONS = {
           {id:'sp_w_lunge_tw',name:'Reverse Lunge With Twist',namePT:'Avanço Recuado com Rotação',reps:'×5',rest:0,notes:'Passo atrás + rotar torso para o lado da perna da frente.',muscles:['quads','glutes']}
         ],
         workout: [
-          {id:'sp_c_belt_squat',name:'Belt Squat (stance largo)',namePT:'Belt Squat Pés Largos',isMain:true,sets:4,reps:'8-10',rir:1,rest:120,notes:'BASE ⭐ — cinto Speediance | pés largos | adutores + quadricípite | amplitude total',muscles:['quads','adductors','glutes']},
-          {id:'sp_c_hip_add',name:'Standing Cable Hip Adduction',namePT:'Adução Anca Cabo em Pé',sets:4,reps:'12-15',rir:0,rest:120,notes:'PRIORIDADE — ankle strap, cabo baixo | lento na descida | squeeze nos adutores',muscles:['adductors']},
+          {id:'sp_c_belt_squat',name:'Belt Squat (stance largo)',namePT:'Belt Squat Pés Largos',isMain:true,sets:4,reps:'8-10',rir:1,rest:150,notes:'BASE ⭐ — cinto Speediance | pés largos | adutores + quadricípite | amplitude total',muscles:['quads','adductors','glutes']},
+          {id:'sp_c_hip_add',name:'Standing Cable Hip Adduction',namePT:'Adução Anca Cabo em Pé',sets:4,reps:'12-15',rir:0,rest:60,notes:'PRIORIDADE — ankle strap, cabo baixo | lento na descida | squeeze nos adutores',muscles:['adductors']},
           {id:'sp_c_rdl',name:'Dual-Handle Romanian Deadlift',namePT:'RDL Duplo Cabo',sets:3,reps:'10-12',rir:1,rest:90,notes:'Cabos baixos, pega dupla — bisagra controlada | excêntrico 3s',muscles:['hamstrings','glutes','lower_back']},
           {id:'sp_c_bss',name:'Belt Bulgarian Split Squat',namePT:'Agachamento Búlgaro Cinto',sets:3,reps:'8-10/leg',rir:1,rest:90,notes:'🏃 RUNNING KEY — cinto Speediance | pé traseiro elevado no banco | profundidade máxima',muscles:['quads','glutes','hamstrings']},
           {id:'sp_c_leg_ext',name:'Single-Leg Leg Extension',namePT:'Extensão Perna Unilateral',sets:3,reps:'12-15',rir:0,rest:90,notes:'Ankle strap, cabo baixo frontal | extensão total do joelho | pausa 1s no topo',muscles:['quads']},
@@ -1029,7 +1041,7 @@ const SESSIONS = {
           {id:'sp_w_glute_d',name:'Bodyweight Hip Thrust',namePT:'Ponte Glúteo',reps:'×15',rest:0,notes:'Apertar glúteo 1s no topo.',muscles:['glutes']}
         ],
         workout: [
-          {id:'sp_d_rdl',name:'Dual-Handle Romanian Deadlift',namePT:'RDL Duplo Cabo',isMain:true,sets:4,reps:'8-10',rir:1,rest:120,notes:'POTÊNCIA ⭐ — cabos baixos, pega dupla | bisagra explosiva | concêntrico explosivo',muscles:['hamstrings','glutes','lower_back']},
+          {id:'sp_d_rdl',name:'Dual-Handle Romanian Deadlift',namePT:'RDL Duplo Cabo',isMain:true,sets:4,reps:'8-10',rir:1,rest:150,notes:'POTÊNCIA ⭐ — cabos baixos, pega dupla | bisagra explosiva | concêntrico explosivo',muscles:['hamstrings','glutes','lower_back']},
           {id:'sp_d_incl_press',name:'Incline Dual-Handle Chest Press',namePT:'Press Duplo Inclinado',sets:4,reps:'8-10',rir:1,rest:120,notes:'Speediance — cabos baixos, banco inclinado | peito clavicular | POTÊNCIA',muscles:['chest','front_delt','triceps']},
           {id:'sp_d_goblet',name:'Handle Goblet Squat',namePT:'Agachamento Goblet Duplo',sets:3,reps:'10-12',rir:1,rest:90,notes:'Profundidade total + mobilidade anca | pega dupla frontal',muscles:['quads','adductors','glutes']},
           {id:'sp_d_pulldown',name:'Kneeling Dual-Handle Lat Pulldown',namePT:'Pulldown Duplo Ajoelhado',sets:3,reps:'10-12',rir:0,rest:90,notes:'Joelhos, pega pronada | grande dorsal | amplitude total',muscles:['lats','back']},
@@ -1043,9 +1055,9 @@ const SESSIONS = {
           {id:'sp_d_good_morning',name:'Good Morning (DB)',namePT:'Good Morning com Halter',sets:1,reps:'15',rir:0,rest:90,notes:'LOMBAR DIRECTO — DB no pescoço | bisagra lenta | costas neutras | sentir isquiotibiais',muscles:['lower_back','hamstrings','glutes']},
           {id:'sp_d_crunch',name:'Kneeling Tricep Rope Crunch',namePT:'Crunch Corda Ajoelhado',sets:3,reps:'15',rir:0,rest:60,notes:'ABS — corda Speediance, joelhos | aperto máximo no topo',muscles:['abs','core']},
           {id:'sp_d_chest_fly',name:'Inclined Dual-Handle Chest Fly (Main Frame)',namePT:'Fly Peito Inclinado Frame',sets:2,reps:'12-15',rir:1,rest:90,notes:'Banco inclinado, cabos bilaterais | peito superior | amplitude máxima',muscles:['upper_chest','front_delt']},
-          {id:'sp_d_dips',name:'Seated Bench Triceps Dips',namePT:'Dips Banco',sets:2,reps:'10-12',rir:1,rest:150,notes:'Banco plano — descer até 90° | tríceps + peito inferior',muscles:['triceps','front_delt']},
+          {id:'sp_d_dips',name:'Seated Bench Triceps Dips',namePT:'Dips Banco',sets:2,reps:'10-12',rir:1,rest:90,notes:'Banco plano — descer até 90° | tríceps + peito inferior',muscles:['triceps','front_delt']},
           {id:'sp_d_preacher',name:'Incline Single-Arm Preacher Curl',namePT:'Curl Preacher Inclinado Unilateral',sets:2,reps:'10-12',rir:1,rest:90,notes:'Banco inclinado, braço apoiado | cabeça curta do bíceps',muscles:['biceps']},
-          {id:'sp_d_spider',name:'Incline Bench Spider Curl',namePT:'Spider Curl Banco Inclinado',sets:2,reps:'10-12',rir:1,rest:150,notes:'Banco inclinado prone | pico de contracção máxima no topo',muscles:['biceps']}
+          {id:'sp_d_spider',name:'Incline Bench Spider Curl',namePT:'Spider Curl Banco Inclinado',sets:2,reps:'10-12',rir:1,rest:90,notes:'Banco inclinado prone | pico de contracção máxima no topo',muscles:['biceps']}
         ],
         cooldown: [
           {id:'sp_c_hip_flex_d',name:'Kneeling Hip Flexor Stretch',namePT:'Stretch Flexor Anca',reps:'2×30s',rest:0,notes:'Iliopsoas em esticamento completo.',muscles:['quads']},
@@ -1185,13 +1197,570 @@ function openLastWorkout() {
   if(history.length > 0) openHistDetail(history.length - 1);
 }
 
+// ── Running Screen ───────────────────────────────────
+// ── Plano de Corrida 12 Semanas (dados reais do Excel) ──
+// Cada entrada: { tue, thu, sun } | deload = semanas 4, 8, 12
+const WEEKLY_RUNNING = {
+  1: {
+    isDeload: false,
+    tue: { km:'6 km', pace:'6:15–6:30/km', notes:'Respiração nasal Z2 estrito. Sem strides esta semana.' },
+    thu: { label:'Intervalos 1km × 5', type:'intervalos', emoji:'⚡', color:'#E67E22',
+           proto:'5 × 1km a 5:05–5:10/km | recuperação activa 90s (trote lento — não parar)',
+           hrMin:141, hrMax:164,
+           tips:['Aquecimento 10 min Z2 antes de arrancar','Objectivo: pace consistente em todas as reps — não ir ao limite na 1ª','Se a última rep for >10s mais lenta que a 1ª → reduz 1 rep na próxima','Arrefecimento 5 min Z2 no final'],
+           whoopG:'Executa as 5 repetições completas no pace alvo 5:05–5:10/km.',
+           whoopY:'Converte em Z2 fácil (6:15–6:30/km). NUNCA intervalos com WHOOP amarelo.',
+           whoopR:'Cancela. Caminhada 30–40 min Z1.' },
+    sun: { km:'12 km', pace:'Z2 uniforme (6:00–6:30/km)', cardiac:'Sem cardiac drift esta semana — ritmo uniforme do início ao fim.' }
+  },
+  2: {
+    isDeload: false,
+    tue: { km:'7 km', pace:'6:15–6:30/km + strides', notes:'Nasal breathing. No fim: 4 × 25s strides (pace livre, 90s caminhada entre cada).' },
+    thu: { label:'Intervalos 1km × 5 (mais consistente)', type:'intervalos', emoji:'⚡', color:'#E67E22',
+           proto:'5 × 1km a 5:00–5:05/km | recuperação activa 90s',
+           hrMin:141, hrMax:164,
+           tips:['Pace mais rápido que semana 1 — confirma que a semana 1 ficou fácil antes de acelerar','Foco em manter o ritmo igual em todas as repetições','Trote lento na recuperação — não parar completamente'],
+           whoopG:'5 repetições a 5:00–5:05/km. Mais rápido que semana 1.',
+           whoopY:'Converte em Z2 fácil. Sem qualidade com recovery <67%.',
+           whoopR:'Cancela. Caminhada 30–40 min Z1.' },
+    sun: { km:'12 km', pace:'Z2 (6:00–6:30/km)', cardiac:'🫀 CARDIAC DRIFT: km 5–7 aumentar naturalmente para 5:40–5:50/km (Z3 baixo). Depois volta a Z2. FC não deve passar Z3.' }
+  },
+  3: {
+    isDeload: false,
+    tue: { km:'7 km', pace:'6:00–6:20/km + strides', notes:'4 × 25s strides no final. Começar a 50% esforço → aumentar até 90% nos últimos 5s. 60–90s caminhada entre cada.' },
+    thu: { label:'Tempo Run 25 min', type:'tempo', emoji:'🟡', color:'#F1C40F',
+           proto:'25 min contínuos @ 5:15–5:20/km | Zona 4 threshold',
+           hrMin:141, hrMax:157,
+           tips:['Aquecimento 8 min Z2 antes de subir o ritmo','Sensação: 7/10 esforço — consegues dizer palavras soltas mas não frases','FC alvo: 141–157 bpm. Se passa 157 → abranda ligeiramente','Arrefecimento: 5 min Z2 — não pares de repente'],
+           whoopG:'25 min completos a 5:15–5:20/km após aquecimento.',
+           whoopY:'Converte em Z3 suave (5:45–6:00/km) ou Z2 puro. NUNCA threshold com WHOOP amarelo.',
+           whoopR:'Cancela. Caminhada 30–40 min Z1.' },
+    sun: { km:'13 km', pace:'Z2 (5:55–6:20/km)', cardiac:'🫀 CARDIAC DRIFT: km 6–9 aumentar naturalmente para 5:35–5:45/km (Z3 baixo). Depois volta a Z2.' }
+  },
+  4: {
+    isDeload: true,
+    tue: { km:'5 km', pace:'6:30–6:45/km', notes:'⭐ DELOAD — sem strides, nasal breathing, ritmo muito confortável. Recuperação activa.' },
+    thu: { label:'Deload — 20 min fácil + strides leves', type:'deload', emoji:'⭐', color:'#F1C40F',
+           proto:'20 min Z2 fácil (6:30+/km) + 4 × 100m strides leves (sem esforço)',
+           hrMin:98, hrMax:131,
+           tips:['Strides de deload: apenas acelerações suaves — sem velocidade máxima','Objectivo: manter movimento sem acumular fadiga','FC ≤ 131 bpm durante toda a sessão'],
+           whoopG:'20 min Z2 fácil + 4 strides leves conforme planeado.',
+           whoopY:'Apenas 15 min caminhada Z1. Prioridade: recuperar.',
+           whoopR:'Descanso total. Semana de deload — é para recuperar.' },
+    sun: { km:'10 km', pace:'Z2 fácil (6:15–6:45/km)', cardiac:'⭐ DELOAD — sem cardiac drift. Ritmo leve e uniforme. Desfruta a corrida.' }
+  },
+  5: {
+    isDeload: false,
+    tue: { km:'7 km', pace:'6:00–6:15/km + strides', notes:'4 × 25s strides no final — sentir progressão de pace vs semana 3.' },
+    thu: { label:'4×4 Norueguês', type:'noruegues', emoji:'🇳🇴', color:'#E74C3C',
+           proto:'4 repetições × 4 min a 90–95% FCmax | recuperação activa 3 min de trote entre cada',
+           hrMin:148, hrMax:160,
+           tips:['Aquecimento: 10 min Z2 obrigatório','FC deve chegar a 90% (148 bpm) dentro do 1º minuto de cada rep — se não chegar, aumenta o pace','Recuperação: 3 min de trote/caminhada (FC descer para ~70% = ~115 bpm)','Arrefecimento: 5 min Z1. Total da sessão: ~30–35 min'],
+           whoopG:'4 repetições completas × 4 min a 90–95% FCmax.',
+           whoopY:'Substitui por Z2 puro 30 min. NUNCA 4×4 com WHOOP <67%.',
+           whoopR:'Cancela. Caminhada suave 30 min.' },
+    sun: { km:'13 km', pace:'Z2 (5:55–6:20/km)', cardiac:'🫀 CARDIAC DRIFT: km 5–8 aumentar naturalmente para 5:35–5:45/km (Z3 baixo). FC não deve passar Z3.' }
+  },
+  6: {
+    isDeload: false,
+    tue: { km:'8 km', pace:'6:00–6:15/km + strides', notes:'4 × 25s strides no final. Primeiro treino com 8km — ritmo confortável.' },
+    thu: { label:'Intervalos 1km × 6', type:'intervalos', emoji:'⚡', color:'#E67E22',
+           proto:'6 × 1km a 4:55–5:00/km | recuperação activa 75s',
+           hrMin:141, hrMax:164,
+           tips:['Mais 1 rep e pace mais rápido vs semana 1/2 — só avança se as semanas anteriores ficaram confortáveis','Recuperação mais curta (75s vs 90s) — testar tolerância ao lactato','Se ritmo não for sustentável → 5 reps a pace correcto é melhor que 6 reps lentos'],
+           whoopG:'6 × 1km a 4:55–5:00/km. Recuperação 75s activa.',
+           whoopY:'Reduz para 4 × 1km ou converte em Z2 fácil.',
+           whoopR:'Cancela. Caminhada 30 min Z1.' },
+    sun: { km:'13 km', pace:'Z2 (5:55–6:20/km)', cardiac:'🫀 CARDIAC DRIFT: km 6–9 aumentar naturalmente para 5:30–5:40/km (Z3 baixo). Depois volta a Z2.' }
+  },
+  7: {
+    isDeload: false,
+    tue: { km:'8 km', pace:'5:55–6:10/km + strides', notes:'4 × 25s strides. Pace Z2 começando a melhorar — avalia se ficou mais fácil vs semana 1.' },
+    thu: { label:'Tempo Run 30 min', type:'tempo', emoji:'🟡', color:'#F1C40F',
+           proto:'30 min contínuos @ 5:10–5:15/km | verificar FC estável Z4',
+           hrMin:141, hrMax:157,
+           tips:['5 min a mais que semana 3 — só executar se semana 3 ficou confortável','FC alvo: 141–157 bpm. Garmin mostrará "Anaerobic Threshold Pace" como referência','Sensação constante de 7/10 — deve manter-se igual do início ao fim','Arrefecimento 5 min Z2 obrigatório'],
+           whoopG:'30 min completos a 5:10–5:15/km.',
+           whoopY:'Reduz para 20 min ou converte em Z3 suave.',
+           whoopR:'Cancela. Caminhada 30 min Z1.' },
+    sun: { km:'14 km', pace:'Z2 (5:50–6:15/km)', cardiac:'🫀 CARDIAC DRIFT: km 6–9 aumentar naturalmente para 5:30–5:40/km (Z3 baixo). Primeira longa de 14km.' }
+  },
+  8: {
+    isDeload: true,
+    tue: { km:'5 km', pace:'6:30/km', notes:'⭐ DELOAD — sem strides, completamente fácil. Recuperação antes do bloco final.' },
+    thu: { label:'Deload — 20 min Z2 + strides 200m', type:'deload', emoji:'⭐', color:'#F1C40F',
+           proto:'20 min Z2 fácil + 4 × 200m strides (pace 4:40–4:50/km)',
+           hrMin:98, hrMax:131,
+           tips:['Strides mais longos que semana 4 (200m vs 100m) — mas ainda confortáveis','Manter o pace Z2 entre os strides','Total da sessão muito curta — é intencional'],
+           whoopG:'20 min Z2 + 4 × 200m strides breves conforme planeado.',
+           whoopY:'Apenas caminhada 20 min. Prioridade absoluta: recuperar.',
+           whoopR:'Descanso total. O bloco final começa semana 9.' },
+    sun: { km:'11 km', pace:'Z2 fácil (6:15–6:45/km)', cardiac:'⭐ DELOAD — sem cardiac drift. Mais longa que deload da semana 4 mas ritmo completamente fácil.' }
+  },
+  9: {
+    isDeload: false,
+    tue: { km:'8 km', pace:'5:55–6:10/km + strides', notes:'Avaliar se pace Z2 melhorou vs semana 1 (era 6:15–6:30). Se sim: adaptação aeróbica a funcionar.' },
+    thu: { label:'Hill Repeats 6×60s + 3×1km', type:'hill', emoji:'⛰', color:'#9B59B6',
+           proto:'6 × 60s em subida moderada (4–8% inclinação) a esforço máximo | descer a caminhar ~90s | depois 3 × 1km @ pace alvo',
+           hrMin:148, hrMax:164,
+           tips:['Escolhe subida de ~100–150m. Correr por FC — não olhas para o pace na subida','Descer a caminhar (recuperação completa antes da rep seguinte)','Após os hill repeats: 3 × 1km no pace alvo dos 10km (5:00–5:10/km)','NÃO fazer no dia anterior a Session C (pernas)'],
+           whoopG:'6 hill repeats + 3 × 1km @ pace alvo.',
+           whoopY:'Reduz para 4 hill repeats. Cancela os 3×1km.',
+           whoopR:'Cancela tudo. Caminhada 30 min Z1.' },
+    sun: { km:'15 km', pace:'Z2 (5:50–6:10/km)', cardiac:'🫀 CARDIAC DRIFT: km 7–11 aumentar naturalmente para 5:25–5:35/km (Z3 baixo). Maior longa do plano até agora.' }
+  },
+  10: {
+    isDeload: false,
+    tue: { km:'8 km', pace:'5:50–6:05/km + strides', notes:'Pace Z2 a melhorar progressivamente. 4 × 25s strides no final.' },
+    thu: { label:'4×4 Norueguês (intensidade máxima)', type:'noruegues', emoji:'🇳🇴', color:'#E74C3C',
+           proto:'4 repetições × 4 min a 93–97% FCmax | recuperação activa 3 min',
+           hrMin:153, hrMax:164,
+           tips:['Mais intenso que semana 5 (93–97% vs 90–95%) — FC mais alta','FC alvo: 153–164 bpm durante as repetições','Se FC não chegar a 153 no 1º minuto → aumenta o pace','Aquecimento 10 min obrigatório. Arrefecimento 5 min.'],
+           whoopG:'4 × 4 min a 93–97% FCmax. Máxima intensidade desta semana.',
+           whoopY:'Substitui por 4×4 a 85–90% FCmax ou Z2 puro.',
+           whoopR:'Cancela. Caminhada 30 min.' },
+    sun: { km:'15 km', pace:'Z2 (5:50–6:10/km)', cardiac:'🫀 CARDIAC DRIFT: km 7–11 aumentar naturalmente para 5:20–5:30/km (Z3 baixo). Segunda longa de 15km.' }
+  },
+  11: {
+    isDeload: false,
+    tue: { km:'8 km', pace:'5:50–6:05/km + strides', notes:'Última semana de alto volume. 4 × 25s strides. Foca na técnica.' },
+    thu: { label:'Tempo Run Longo 35 min', type:'tempo', emoji:'🟡', color:'#F1C40F',
+           proto:'35 min contínuos @ 5:05–5:10/km | maior esforço desta fase do plano',
+           hrMin:141, hrMax:157,
+           tips:['Sessão de maior esforço do plano — reservar esta semana para boas condições (sono, nutrição, WHOOP ≥70%)','Pace 5:05–5:10/km é quase o pace de prova dos 10km — é difícil, deve sê-lo','Se FC sair de controlo (>160) → reduz 5s/km e mantém os 35 min','Aquecimento 10 min. Arrefecimento 5–10 min.'],
+           whoopG:'35 min completos a 5:05–5:10/km. Sessão de pico.',
+           whoopY:'Reduz para 25 min ou converte em Z3 suave. Não forçar na semana de pico.',
+           whoopR:'Cancela. Caminhada 30 min. Guarda energia para o deload + prova.' },
+    sun: { km:'16 km', pace:'Z2 (5:50–6:10/km)', cardiac:'🫀 CARDIAC DRIFT: km 8–12 aumentar naturalmente para 5:20–5:30/km — se WHOOP ≥70%. Maior longa do plano.' }
+  },
+  12: {
+    isDeload: true,
+    tue: { km:'5 km', pace:'6:30/km', notes:'⭐ DELOAD — frescos para avaliação. Completamente fácil, sem pressão.' },
+    thu: { label:'Deload — 5km @ pace de prova', type:'deload_test', emoji:'⭐', color:'#2ECC71',
+           proto:'5km @ 5:00/km — testar a sensação do pace de prova',
+           hrMin:141, hrMax:157,
+           tips:['Único dia em que corres ao pace de prova — mas apenas 5km','Objectivo: sentir como corre a 5:00/km depois de 11 semanas de treino','Não é uma corrida de esforço — é uma calibração','Nota a FC e a sensação subjectiva de esforço: devia parecer sustentável'],
+           whoopG:'5km @ 5:00/km. Testa a sensação — devia parecer "difícil mas possível".',
+           whoopY:'Reduz para 3km @ pace alvo ou Z2 fácil.',
+           whoopR:'Descanso. A prova está a chegar.' },
+    sun: { km:'10 km', pace:'Z2 fácil (6:15–6:45/km)', cardiac:'⭐ DELOAD final — sem cardiac drift. Poupas as pernas para a prova. Últimas semana do ciclo.' }
+  }
+};
+
+const HR_ZONES = [
+  { z: 'Z1', name: 'Recuperação', min: 0,   max: 97,  color: '#95a5a6', pct: '<60%' },
+  { z: 'Z2', name: 'Aeróbica',   min: 98,  max: 131, color: '#2ECC71', pct: '60–80%' },
+  { z: 'Z3', name: 'Aeróbica+',  min: 132, max: 140, color: '#F39C12', pct: '81–86%' },
+  { z: 'Z4', name: 'Limiar',     min: 141, max: 157, color: '#E67E22', pct: '86–96%' },
+  { z: 'Z5', name: 'VO2max',     min: 158, max: 164, color: '#E74C3C', pct: '96–100%' },
+];
+
+// ── RUNNING_PLAN kept for day-of-week rest/strength days ──
+const RUNNING_PLAN = {
+  // 0=Dom,1=Seg,2=Ter,3=Qua,4=Qui,5=Sex,6=Sab
+  0: {
+    type: 'long',
+    label: 'Long Run',
+    emoji: '🔵',
+    zone: 'Zona 2–3',
+    zoneColor: '#3498DB',
+    distance: '8–12 km',
+    duration: null,
+    pace: '5:45–6:15/km',
+    hrMin: 110, hrMax: 148,
+    desc: 'Corrida longa de base aeróbica. Mantém conversa curta mas possível. Base de endurance e confiança para os 10km.',
+    tips: [
+      'Primeiro km: arranca lento, deixa o corpo aquecer',
+      'Se FC passar 148 bpm → abranda até recuperar',
+      'Hidrata a cada 20–25 min',
+      'Caminha 2–3 min no final para arrefecer'
+    ],
+    whoop: {
+      green: 'Executa a distância completa (8–12 km) no pace planeado.',
+      yellow: 'Mantém a distância mas reduz para Z2 puro (6:15–6:30/km). FC ≤ 138.',
+      red: 'Substitui por caminhada 40 min em Z1. Descanso total se muito fatigado.'
+    }
+  },
+  1: {
+    type: 'rest',
+    label: 'Descanso / Força',
+    emoji: '💪',
+    zoneColor: '#666',
+    desc: 'Dia de força — Ginásio/Hotel/Speediance. Sem corrida hoje.',
+    tip: 'Se fizeres treino de força, podes adicionar 20–30 min de caminhada Z2 (≥6:30/km) depois.',
+    next: 'Próxima corrida: Terça — Z2 Fácil'
+  },
+  2: {
+    type: 'easy',
+    label: 'Z2 Fácil / Base',
+    emoji: '🟢',
+    zone: 'Zona 2',
+    zoneColor: '#2ECC71',
+    distance: '5–7 km',
+    duration: null,
+    pace: '6:00–6:30/km',
+    hrMin: 98, hrMax: 131,
+    desc: 'Corrida fácil de construção aeróbica. Tens de conseguir fazer uma conversa completa enquanto corres. Se não consegues → estás demasiado rápido.',
+    tips: [
+      'Teste da conversa: deves conseguir falar em frases completas',
+      'Ritmo nasal: tenta respirar só pelo nariz — se não consegues, abranda',
+      'FC alvo: 110–131 bpm. Passa dos 131 → abranda',
+      'Não te preocupes com o pace — guia-te pela FC'
+    ],
+    whoop: {
+      green: 'Executa os 5–7 km no pace 6:00–6:30/km.',
+      yellow: 'Reduz para 4–5 km. FC ≤ 125 bpm. Se corpo não responde, para mais cedo.',
+      red: 'Substitui por caminhada 30 min em Z1. Sem correr hoje.'
+    }
+  },
+  3: {
+    type: 'active',
+    label: 'Força + Z2 Opcional',
+    emoji: '💪',
+    zoneColor: '#666',
+    desc: 'Dia de força — foco no treino de musculação. Podes adicionar 20–30 min de Z2 leve depois se o recovery o permitir.',
+    tip: 'Z2 após força: 20–30 min, pace ≥ 6:30/km, FC ≤ 125 bpm. Estimulo vagal — melhora HRV e RHR.',
+    next: 'Próxima corrida: Quinta — Tempo Run'
+  },
+  4: {
+    type: 'tempo',
+    label: 'Tempo Run',
+    emoji: '🟡',
+    zone: 'Zona 4',
+    zoneColor: '#F1C40F',
+    distance: null,
+    duration: '20–30 min',
+    pace: '5:20–5:40/km',
+    hrMin: 140, hrMax: 157,
+    desc: 'Treino de limiar de lactato. Esforço sustentável mas exigente — frases curtas possíveis, conversa impossível. Este treino é o mais importante para baixar o tempo nos 10km.',
+    tips: [
+      'Aquecimento: 5–8 min em Z2 antes de subir o ritmo',
+      'Ritmo alvo: 5:20–5:40/km. Não começas rápido demais nos primeiros 5 min',
+      'FC alvo: 140–157 bpm. Mantém nesta janela',
+      'Arrefecimento: 5 min em Z2 no final — não pares de repente'
+    ],
+    whoop: {
+      green: 'Executa 20–30 min no pace 5:20–5:40/km após aquecimento.',
+      yellow: 'Converte em Z3 suave (5:45–6:00/km) ou Z2 puro. NUNCA alta intensidade com WHOOP amarelo.',
+      red: 'Cancela. Substitui por caminhada 30–40 min em Z1. O HRV não mente.'
+    }
+  },
+  5: {
+    type: 'rest',
+    label: 'Descanso / Força',
+    emoji: '💪',
+    zoneColor: '#666',
+    desc: 'Dia de força — Session C (Pernas). Sem corrida hoje.',
+    tip: '⚠️ Atenção: Após Session C, evita corrida de alta intensidade amanhã (Sábado) mesmo com WHOOP verde. Tendões e tecido conjuntivo recuperam 24–48h mais lento que o músculo.',
+    next: 'Próxima corrida: Domingo — Long Run'
+  },
+  6: {
+    type: 'easy_post',
+    label: 'Z2 Leve / Descanso',
+    emoji: '🟢',
+    zone: 'Zona 1–2',
+    zoneColor: '#2ECC71',
+    distance: '3–5 km',
+    duration: null,
+    pace: '6:30+/km',
+    hrMin: 98, hrMax: 125,
+    desc: 'Dia após Session C (Pernas pesadas). Se fizeste legs ontem, mantém só Z2 muito leve ou descansa. Tendões e tecido conjuntivo recuperam mais lento que o músculo.',
+    tips: [
+      'Sentes as pernas pesadas? → Descansa hoje, não vale a pena forçar',
+      'Se corres: pace confortável ≥ 6:30/km, FC ≤ 125 bpm',
+      'NUNCA intervalos ou Tempo Run hoje — mesmo com WHOOP verde'
+    ],
+    whoop: {
+      green: 'Podes correr 3–5 km em Z2 muito leve (≥6:30/km). Só se as pernas estiverem bem.',
+      yellow: 'Descanso activo: caminhada 30 min. Sem correr.',
+      red: 'Descanso total. Preparação para o Long Run de amanhã.'
+    }
+  }
+};
+
+function goRunning() {
+  showScreen('running-screen');
+  renderRunning();
+}
+
+function renderRunning() {
+  const today = new Date();
+  const dow = today.getDay(); // 0=Dom,1=Seg,2=Ter,3=Qua,4=Qui,5=Sex,6=Sab
+  const week = getPlanWeek();
+  const wData = WEEKLY_RUNNING[week];
+  const isDeload = wData.isDeload;
+  const el = document.getElementById('running-content');
+
+  // ── Cabeçalho: data + semana + badge deload ──
+  let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+    <div>
+      <div style="font-size:15px;font-weight:700">${today.toLocaleDateString('pt-PT',{weekday:'long',day:'numeric',month:'long'})}</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:2px">Semana ${week} de 12 · Sub-50min 10km</div>
+    </div>
+    <div style="display:flex;gap:6px;align-items:center">
+      ${isDeload ? `<span style="font-size:11px;font-weight:800;color:#F1C40F;background:#F1C40F22;border:1px solid #F1C40F44;padding:4px 10px;border-radius:20px">⭐ DELOAD</span>` : `<span style="font-size:11px;font-weight:700;color:var(--accent);background:var(--accentbg);padding:4px 10px;border-radius:20px">Sem ${week}</span>`}
+      <button onclick="openSettings()" style="background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit">Alterar semana ›</button>
+    </div>
+  </div>`;
+
+  // ── Treino do dia por dia da semana ──
+  if (dow === 2) {
+    // TERÇA — Z2 Fácil
+    const d = wData.tue;
+    html += _renderEasyRun(d, week, isDeload);
+    html += _renderWhoopCard('Z2 Fácil',
+      `Executa os ${d.km} no pace ${d.pace}.`,
+      `Reduz para ${isDeload?'4 km':'5 km'} muito fácil. FC ≤ 125 bpm.`,
+      'Substitui por caminhada 30 min Z1. Sem correr hoje.');
+    html += _renderHRZonesCard(98, 131);
+
+  } else if (dow === 4) {
+    // QUINTA — Sessão de qualidade (rotação semanal)
+    const d = wData.thu;
+    const zColor = d.color;
+    html += `<div class="card" style="border-left:4px solid ${zColor};margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <span style="font-size:34px">${d.emoji}</span>
+        <div style="flex:1">
+          <div style="font-size:18px;font-weight:800">${d.label}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px">Sessão de qualidade · Semana ${week}</div>
+        </div>
+        <div style="background:${zColor}22;border:1px solid ${zColor}44;border-radius:10px;padding:8px 12px;text-align:center;flex-shrink:0">
+          <div style="font-size:10px;color:var(--text2);font-weight:600">FC ALVO</div>
+          <div style="font-size:15px;font-weight:800;color:${zColor}">${d.hrMin}–${d.hrMax}</div>
+          <div style="font-size:10px;color:var(--text2)">bpm</div>
+        </div>
+      </div>
+      <div style="background:${zColor}15;border:1px solid ${zColor}33;border-radius:10px;padding:12px;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;color:${zColor};margin-bottom:4px">PROTOCOLO</div>
+        <div style="font-size:13px;color:var(--text);font-weight:600;line-height:1.5">${d.proto}</div>
+      </div>
+      <div style="font-weight:700;font-size:13px;margin-bottom:8px">📋 Como executar</div>
+      ${d.tips.map(t=>`<div style="display:flex;gap:8px;margin-bottom:7px;font-size:13px;color:var(--text2)"><span style="color:${zColor};flex-shrink:0;font-weight:700">›</span><span>${t}</span></div>`).join('')}
+    </div>`;
+    html += _renderWhoopCard(d.label, d.whoopG, d.whoopY, d.whoopR);
+    html += _renderHRZonesCard(d.hrMin, d.hrMax);
+
+  } else if (dow === 0) {
+    // DOMINGO — Long Run
+    const d = wData.sun;
+    html += `<div class="card" style="border-left:4px solid #3498DB;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <span style="font-size:34px">🔵</span>
+        <div style="flex:1">
+          <div style="font-size:20px;font-weight:800">Long Run</div>
+          <div style="font-size:12px;color:var(--text2)">Zona 2–3 · Domingo</div>
+        </div>
+        <div style="background:#3498DB22;border:1px solid #3498DB44;border-radius:10px;padding:8px 12px;text-align:center;flex-shrink:0">
+          <div style="font-size:10px;color:var(--text2);font-weight:600">FC ALVO</div>
+          <div style="font-size:15px;font-weight:800;color:#3498DB">98–140</div>
+          <div style="font-size:10px;color:var(--text2)">bpm</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:10px;color:var(--text2);font-weight:600;margin-bottom:4px">DISTÂNCIA</div>
+          <div style="font-size:24px;font-weight:800;color:#3498DB">${d.km}</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:10px;color:var(--text2);font-weight:600;margin-bottom:4px">PACE BASE</div>
+          <div style="font-size:15px;font-weight:800;color:#3498DB;line-height:1.2">${d.pace}</div>
+        </div>
+      </div>
+      ${d.cardiac ? `<div style="background:#3498DB15;border:1px solid #3498DB33;border-radius:10px;padding:12px;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;color:#3498DB;margin-bottom:4px">🫀 CARDIAC DRIFT</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.5">${d.cardiac}</div>
+      </div>` : ''}
+      <div style="font-weight:700;font-size:13px;margin-bottom:8px">📋 Regras da longa</div>
+      ${['Arranca devagar — primeiro km sempre 10–15s mais lento que o pace alvo',
+         'Se FC passar 140 bpm → abranda imediatamente até recuperar',
+         'Hidrata a cada 20–25 min. Em Angola/Dubai: +20–30s/km por cada 5°C acima de 25°C',
+         'Caminha 2–3 min no final para arrefecer']
+        .map(t=>`<div style="display:flex;gap:8px;margin-bottom:7px;font-size:13px;color:var(--text2)"><span style="color:#3498DB;flex-shrink:0;font-weight:700">›</span><span>${t}</span></div>`).join('')}
+    </div>`;
+    html += _renderWhoopCard('Long Run',
+      `Executa os ${d.km} no pace planeado. ${d.cardiac?'Cardiac drift conforme indicado.':'Ritmo uniforme.'}`,
+      `Mantém distância mas reduz para Z2 puro (6:15–6:30/km) sem cardiac drift. FC ≤ 131.`,
+      'Substitui por caminhada 40 min Z1. Um dia de descanso recupera mais do que uma sessão mal executada.');
+    html += _renderHRZonesCard(98, 140);
+
+  } else if (dow === 1 || dow === 3) {
+    // SEGUNDA / QUARTA — Força + Z2 opcional
+    const nextRun = dow === 1 ? 'Terça — Z2 Fácil' : 'Quinta — Sessão de Qualidade';
+    html += `<div class="card" style="border-left:4px solid #666;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="font-size:34px">💪</span>
+        <div>
+          <div style="font-size:18px;font-weight:800">Dia de Força</div>
+          <div style="font-size:12px;color:var(--text2)">Sem corrida principal hoje</div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:10px">Foco no treino de musculação. Podes adicionar 20–30 min de Z2 leve depois se o recovery o permitir.</div>
+      <div style="font-size:12px;font-weight:700;color:var(--accent)">⏭ Próxima corrida: ${nextRun}</div>
+    </div>`;
+    html += _renderZ2PostStrength(isDeload);
+
+  } else if (dow === 5) {
+    // SEXTA — Força C (Pernas)
+    html += `<div class="card" style="border-left:4px solid #666;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="font-size:34px">🦵</span>
+        <div>
+          <div style="font-size:18px;font-weight:800">Dia de Força — Pernas</div>
+          <div style="font-size:12px;color:var(--text2)">Session C · Sem corrida hoje</div>
+        </div>
+      </div>
+      <div style="background:#E74C3C15;border:1px solid #E74C3C33;border-radius:10px;padding:12px;font-size:12px;color:var(--text2);line-height:1.5">
+        ⚠️ Após Session C, evita corrida de alta intensidade amanhã (Sábado) mesmo com WHOOP verde. Tendões e tecido conjuntivo recuperam 24–48h mais lento que o músculo.
+      </div>
+      <div style="margin-top:10px;font-size:12px;font-weight:700;color:var(--accent)">⏭ Próxima corrida: Domingo — Long Run ${wData.sun.km}</div>
+    </div>`;
+
+  } else if (dow === 6) {
+    // SÁBADO — Força D + aviso pós-pernas
+    html += `<div class="card" style="border-left:4px solid #2ECC71;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="font-size:34px">💪</span>
+        <div>
+          <div style="font-size:18px;font-weight:800">Força / Z2 Muito Leve</div>
+          <div style="font-size:12px;color:var(--text2)">Dia após Session C de pernas</div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:10px">Dia após treino de pernas. Podes correr muito levemente ou descansar — tendões recuperam 24–48h mais lento.</div>
+      <div style="background:var(--bg3);border-radius:10px;padding:12px;font-size:12px;color:var(--text2)">💡 Se corres hoje: pace ≥6:30/km, FC ≤ 125 bpm, máx 3–5 km. NUNCA intervalos ou threshold hoje.</div>
+      <div style="margin-top:10px;font-size:12px;font-weight:700;color:var(--accent)">⏭ Amanhã: Long Run ${wData.sun.km}</div>
+    </div>`;
+  }
+
+  // ── Semana completa (visão rápida) ──
+  html += `<div class="card" style="margin-bottom:12px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:10px">📅 Esta semana — Semana ${week}${isDeload?' ⭐ DELOAD':''}</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:8px;background:${dow===2?'var(--accentbg)':'var(--bg3)'};border-radius:8px;${dow===2?'border:1px solid var(--accent)33':''}">
+        <span style="font-size:11px;font-weight:700;color:var(--text2);min-width:30px;padding-top:1px">3ª</span>
+        <div><div style="font-size:13px;font-weight:600;color:#2ECC71">🟢 Z2 Fácil — ${wData.tue.km}</div><div style="font-size:11px;color:var(--text2)">${wData.tue.pace}</div></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:8px;background:${dow===4?'var(--accentbg)':'var(--bg3)'};border-radius:8px;${dow===4?'border:1px solid var(--accent)33':''}">
+        <span style="font-size:11px;font-weight:700;color:var(--text2);min-width:30px;padding-top:1px">5ª</span>
+        <div><div style="font-size:13px;font-weight:600;color:${wData.thu.color}">${wData.thu.emoji} ${wData.thu.label}</div><div style="font-size:11px;color:var(--text2)">${wData.thu.proto.split('|')[0].trim()}</div></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:8px;background:${dow===0?'var(--accentbg)':'var(--bg3)'};border-radius:8px;${dow===0?'border:1px solid var(--accent)33':''}">
+        <span style="font-size:11px;font-weight:700;color:var(--text2);min-width:30px;padding-top:1px">Dom</span>
+        <div><div style="font-size:13px;font-weight:600;color:#3498DB">🔵 Long Run — ${wData.sun.km}</div><div style="font-size:11px;color:var(--text2)">${wData.sun.pace}</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="height:24px"></div>`;
+
+  el.innerHTML = html;
+}
+
+function _renderEasyRun(d, week, isDeload) {
+  return `<div class="card" style="border-left:4px solid #2ECC71;margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <span style="font-size:34px">🟢</span>
+      <div style="flex:1">
+        <div style="font-size:20px;font-weight:800">${isDeload?'⭐ Z2 Fácil — DELOAD':'Z2 Fácil / Base'}</div>
+        <div style="font-size:12px;color:var(--text2)">Zona 2 · Terça · Semana ${week}</div>
+      </div>
+      <div style="background:#2ECC7122;border:1px solid #2ECC7144;border-radius:10px;padding:8px 12px;text-align:center;flex-shrink:0">
+        <div style="font-size:10px;color:var(--text2);font-weight:600">FC ALVO</div>
+        <div style="font-size:15px;font-weight:800;color:#2ECC71">98–131</div>
+        <div style="font-size:10px;color:var(--text2)">bpm</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:10px;color:var(--text2);font-weight:600;margin-bottom:4px">DISTÂNCIA</div>
+        <div style="font-size:24px;font-weight:800;color:#2ECC71">${d.km}</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:10px;color:var(--text2);font-weight:600;margin-bottom:4px">PACE ALVO</div>
+        <div style="font-size:15px;font-weight:800;color:#2ECC71;line-height:1.2">${d.pace}</div>
+      </div>
+    </div>
+    <div style="background:#2ECC7115;border:1px solid #2ECC7133;border-radius:10px;padding:10px;margin-bottom:12px;font-size:12px;color:var(--text2)">${d.notes}</div>
+    <div style="font-weight:700;font-size:13px;margin-bottom:8px">📋 Regras Z2</div>
+    ${['Teste da conversa: deves conseguir falar em frases completas enquanto corres','Ritmo nasal: se não consegues respirar só pelo nariz → estás demasiado rápido','FC alvo: 98–131 bpm. Passa dos 131 → abranda imediatamente','Não te preocupes com o pace — guia-te pela FC e pela respiração nasal']
+      .map(t=>`<div style="display:flex;gap:8px;margin-bottom:7px;font-size:13px;color:var(--text2)"><span style="color:#2ECC71;flex-shrink:0;font-weight:700">›</span><span>${t}</span></div>`).join('')}
+  </div>`;
+}
+
+function _renderWhoopCard(title, green, yellow, red) {
+  return `<div class="card" style="margin-bottom:12px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:10px">🔴 Protocolo WHOOP — ${title}</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="background:#2ECC7115;border:1px solid #2ECC7140;border-radius:10px;padding:11px">
+        <div style="font-size:11px;font-weight:800;color:#2ECC71;margin-bottom:4px">🟢 VERDE · ≥67%</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.5">${green}</div>
+      </div>
+      <div style="background:#F1C40F15;border:1px solid #F1C40F40;border-radius:10px;padding:11px">
+        <div style="font-size:11px;font-weight:800;color:#F1C40F;margin-bottom:4px">🟡 AMARELO · 34–66%</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.5">${yellow}</div>
+      </div>
+      <div style="background:#E74C3C15;border:1px solid #E74C3C40;border-radius:10px;padding:11px">
+        <div style="font-size:11px;font-weight:800;color:#E74C3C;margin-bottom:4px">🔴 VERMELHO · <34%</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.5">${red}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function _renderHRZonesCard(hrMin, hrMax) {
+  return `<div class="card" style="margin-bottom:12px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:10px">❤️ Zonas FC — FC máx 164 bpm</div>
+    ${HR_ZONES.map(z => {
+      const isActive = z.min <= hrMax && z.max >= hrMin;
+      return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;opacity:${isActive?'1':'0.35'}">
+        <div style="width:5px;height:32px;background:${z.color};border-radius:3px;flex-shrink:0"></div>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:700;color:${isActive?z.color:'var(--text2)'}">${z.z} · ${z.name}</div>
+          <div style="font-size:11px;color:var(--text2)">${z.min}–${z.max} bpm · ${z.pct} FCmax</div>
+        </div>
+        ${isActive ? `<span style="font-size:10px;font-weight:700;color:${z.color};background:${z.color}22;padding:2px 7px;border-radius:20px">HOJE</span>` : ''}
+      </div>`;
+    }).join('')}
+    <div style="font-size:11px;color:var(--text3);margin-top:4px">FC máx estimada 164 bpm (220 − 56 anos). Confirma no Garmin Fenix 8.</div>
+  </div>`;
+}
+
+function _renderZ2PostStrength(isDeload) {
+  return `<div class="card" style="border-left:4px solid #2ECC71;margin-bottom:12px;opacity:0.85">
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px">🟢 Z2 pós-força (opcional)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:10px;color:var(--text2);font-weight:600">DURAÇÃO</div>
+        <div style="font-size:18px;font-weight:800">${isDeload?'15–20 min':'20–30 min'}</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:10px;color:var(--text2);font-weight:600">PACE</div>
+        <div style="font-size:18px;font-weight:800;color:#2ECC71">≥6:30/km</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text2)">Após a sessão de força — estimulo vagal activo. FC ≤ 125 bpm. Melhora HRV e RHR. ${isDeload?'Semana de deload: reduz para 15–20 min.':'Só se o recovery o permitir.'}</div>
+  </div>`;
+}
+
 // ── Sessions Screen ──────────────────────────────────
 function goSessions(type) {
   state.workoutType = type;
+  const week = getPlanWeek();
+  const isDeload = [4,8,12].includes(week);
   document.getElementById('sessions-title').textContent = (SESSIONS[type]?.name || type) + ' — Escolhe a Sessão';
   const list = document.getElementById('sessions-list');
   const sessions = SESSIONS[type].sessions;
-  list.innerHTML = Object.entries(sessions).map(([key,s])=>{
+  // Banner de semana / deload
+  const deloadBanner = isDeload
+    ? `<div style="background:#F1C40F18;border:1px solid #F1C40F44;border-radius:12px;padding:12px 14px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:800;color:#F1C40F;margin-bottom:4px">⭐ SEMANA ${week} — DELOAD</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.5">Reduzir volume −40% (menos séries). Manter a carga. Eliminar séries até à falha. Foco na recuperação e técnica perfeita.</div>
+      </div>`
+    : `<div style="background:var(--bg3);border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:13px;font-weight:700;color:var(--accent)">Semana ${week} / 12</span>
+        <span style="font-size:12px;color:var(--text2)">· Ciclo de 12 semanas Sub-50min</span>
+      </div>`;
+  list.innerHTML = deloadBanner + Object.entries(sessions).map(([key,s])=>{
     const history = loadHistory();
     const lastDone = history.filter(h=>h.type===type&&h.session===key).slice(-1)[0];
     const lastStr = lastDone ? `Último: ${fmtEntryDate(lastDone)}` : 'Nunca feito';
@@ -1276,7 +1845,17 @@ function beginWorkout(mode) {
   state.startTime = Date.now();
   state.currentSection = 'warmup';
   const s = SESSIONS[type].sessions[session];
+  const _week = getPlanWeek();
+  const _isDeload = [4,8,12].includes(_week);
   document.getElementById('wk-title').textContent = `${session} — ${SESSIONS[type]?.name||type}`;
+  // Deload badge na topbar do treino
+  const _chip = document.getElementById('wk-week-chip');
+  if(_chip) {
+    _chip.textContent = _isDeload ? `⭐ Deload Sem ${_week}` : `Sem ${_week}/12`;
+    _chip.style.background = _isDeload ? '#F1C40F22' : 'var(--accentbg)';
+    _chip.style.color = _isDeload ? '#F1C40F' : 'var(--accent)';
+    _chip.style.border = _isDeload ? '1px solid #F1C40F44' : '1px solid var(--accent)33';
+  }
   showScreen('workout-screen');
   startWorkoutTimer();
   renderSectionPills();
@@ -2498,12 +3077,29 @@ function openSettings() {
   if(el) el.value = s.sheetsUrl||'';
   const bw = document.getElementById('bw-input');
   if(bw) bw.value = s.bodyweight||80;
+  const wk = document.getElementById('plan-week-input');
+  if(wk) wk.value = s.planWeek||1;
   showScreen('settings-screen');
 }
 function saveBW() {
   const val = parseFloat(document.getElementById('bw-input').value)||80;
   const s = loadSettings(); s.bodyweight=val; saveSettings(s);
   showToast('Peso corporal: '+val+'kg guardado');
+}
+function savePlanWeek() {
+  const val = Math.min(12, Math.max(1, parseInt(document.getElementById('plan-week-input').value)||1));
+  document.getElementById('plan-week-input').value = val;
+  const s = loadSettings(); s.planWeek = val; saveSettings(s);
+  const isDeload = [4,8,12].includes(val);
+  showToast(isDeload ? '⭐ Semana '+val+' — DELOAD guardado' : '✓ Semana '+val+' guardada');
+}
+function getPlanWeek() {
+  return Math.min(12, Math.max(1, parseInt(loadSettings().planWeek)||1));
+}
+function _updateDeloadBadge() {
+  const val = parseInt(document.getElementById('plan-week-input').value)||1;
+  const badge = document.getElementById('plan-week-deload-badge');
+  if(badge) badge.style.display = [4,8,12].includes(val) ? 'inline' : 'none';
 }
 function saveSheetUrl() {
   const url = document.getElementById('sheets-url-input').value.trim();
@@ -2635,12 +3231,25 @@ document.addEventListener('DOMContentLoaded', initTouchBindings);
     <div style="background:var(--card);border-radius:16px;padding:20px;margin-bottom:16px">
       <div style="font-size:13px;font-weight:700;color:var(--accent);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:4px">Google Sheets Sync</div>
       <div style="font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.5">Cola aqui o URL do teu Google Apps Script para guardar o histórico na cloud automaticamente após cada treino.</div>
-      <div style="margin-bottom:18px;padding:14px;background:var(--bg3);border-radius:12px">
+      <div style="margin-bottom:12px;padding:14px;background:var(--bg3);border-radius:12px">
         <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px">⚖️ Peso Corporal (kg)</div>
         <div style="font-size:11px;color:var(--text3);margin-bottom:10px">Usado para calcular volume em exercícios de peso corporal (flexões, pranchas, etc.)</div>
         <div style="display:flex;gap:10px;align-items:center">
           <input type="number" id="bw-input" placeholder="80" inputmode="decimal" style="width:80px;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text1);font-size:18px;text-align:center;font-weight:700">
           <button class="btn btn-primary" onclick="saveBW()" style="flex:1;padding:12px">Guardar</button>
+        </div>
+      </div>
+      <div style="margin-bottom:18px;padding:14px;background:var(--bg3);border-radius:12px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <div style="font-size:12px;font-weight:700;color:var(--text2)">📅 Semana do Plano (1–12)</div>
+          <span id="plan-week-deload-badge" style="display:none;font-size:10px;font-weight:700;color:#F1C40F;background:#F1C40F22;padding:2px 7px;border-radius:20px">⭐ DELOAD</span>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px">Controla o treino de corrida e o modo deload (semanas 4, 8 e 12) em toda a app.</div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button onclick="(()=>{const i=document.getElementById('plan-week-input');i.value=Math.max(1,parseInt(i.value||1)-1);_updateDeloadBadge();})()" style="width:40px;height:40px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">−</button>
+          <input type="number" id="plan-week-input" min="1" max="12" inputmode="numeric" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text1);font-size:22px;text-align:center;font-weight:800" oninput="_updateDeloadBadge()">
+          <button onclick="(()=>{const i=document.getElementById('plan-week-input');i.value=Math.min(12,parseInt(i.value||1)+1);_updateDeloadBadge();})()" style="width:40px;height:40px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">+</button>
+          <button class="btn btn-primary" onclick="savePlanWeek()" style="flex:1;padding:12px">Guardar</button>
         </div>
       </div>
       <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Apps Script Web App URL</label>
