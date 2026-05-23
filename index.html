@@ -1110,7 +1110,9 @@ let state = {
   restInterval: null,
   restTotal: 0,
   restRemaining: 0,
-  histTab: 'log'
+  histTab: 'log',
+  logDate: null,          // timestamp ms da data escolhida em modo log (null = usar Date.now())
+  sessionsLogOnly: false  // true quando a lista de sessões foi aberta para registar log de sessão passada
 };
 
 // ── Storage ──────────────────────────────────────────
@@ -1765,14 +1767,46 @@ function _renderZ2PostStrength(isDeload) {
 }
 
 // ── Sessions Screen ──────────────────────────────────
-function goSessions(type) {
+// Mapeia o dia da semana (0=Dom…6=Sáb) à sessão de força
+function todaySessionKey() {
+  return ({1:'A', 3:'B', 5:'C', 6:'D'})[new Date().getDay()] || null;
+}
+
+function goSessions(type, forceLogOnly) {
   state.workoutType = type;
+  forceLogOnly = forceLogOnly || false;
+
+  if (!forceLogOnly) {
+    const todayKey = todaySessionKey();
+    if (todayKey && SESSIONS[type]?.sessions[todayKey]) {
+      // Dia de força → auto-seleccionar sessão e ir directo ao mode picker
+      state.sessionsLogOnly = false;
+      showModePicker(type, todayKey);
+      return;
+    }
+    // Dia de corrida/descanso → mostrar lista mas só em modo log
+    state.sessionsLogOnly = true;
+  } else {
+    state.sessionsLogOnly = true;
+  }
+
+  _renderSessionsList(type);
+}
+
+function openSessionsLogOnly(type) {
+  hideModePicker();
+  setTimeout(() => goSessions(type, true), 80); // pequeno delay para o overlay fechar
+}
+
+function _renderSessionsList(type) {
+  const logOnly = state.sessionsLogOnly;
   const week = getPlanWeek();
   const isDeload = [4,8,12].includes(week);
-  document.getElementById('sessions-title').textContent = (SESSIONS[type]?.name || type) + ' — Escolhe a Sessão';
+  document.getElementById('sessions-title').textContent =
+    (SESSIONS[type]?.name || type) + (logOnly ? ' — Registar Log' : ' — Escolhe a Sessão');
   const list = document.getElementById('sessions-list');
   const sessions = SESSIONS[type].sessions;
-  // Banner de semana / deload
+
   const deloadBanner = isDeload
     ? `<div style="background:#F1C40F18;border:1px solid #F1C40F44;border-radius:12px;padding:12px 14px;margin-bottom:12px">
         <div style="font-size:13px;font-weight:800;color:#F1C40F;margin-bottom:4px">⭐ SEMANA ${week} — DELOAD</div>
@@ -1782,8 +1816,15 @@ function goSessions(type) {
         <span style="font-size:13px;font-weight:700;color:var(--accent)">Semana ${week} / 12</span>
         <span style="font-size:12px;color:var(--text2)">· Ciclo de 12 semanas Sub-50min</span>
       </div>`;
-  list.innerHTML = deloadBanner + Object.entries(sessions).map(([key,s])=>{
-    const history = loadHistory();
+
+  const logBanner = logOnly
+    ? `<div style="background:rgba(52,152,219,0.10);border:1px dashed rgba(52,152,219,0.4);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--text2);line-height:1.5">
+        📋 <strong>Modo Log</strong> — selecciona a sessão que fizeste e não registaste na altura
+      </div>`
+    : '';
+
+  const history = loadHistory();
+  list.innerHTML = deloadBanner + logBanner + Object.entries(sessions).map(([key,s])=>{
     const lastDone = history.filter(h=>h.type===type&&h.session===key).slice(-1)[0];
     const lastStr = lastDone ? `Último: ${fmtEntryDate(lastDone)}` : 'Nunca feito';
     const chips = s.muscles.slice(0,4).map(m=>`<span class="chip chip-accent">${MUSCLE_PT[m]||m}</span>`).join('');
@@ -1847,16 +1888,78 @@ function initSets(exercises) {
 function showModePicker(type, session) {
   state.pendingType = type;
   state.pendingSession = session;
+  const logOnly = state.sessionsLogOnly;
   const s = SESSIONS[type].sessions[session];
-  document.getElementById('mp-title').textContent = `${session} — ${s.name}`;
+  const todayKey = todaySessionKey();
+  const isToday = !logOnly && todayKey === session;
+
+  const btnBase = `display:flex;align-items:center;gap:14px;width:100%;padding:18px;background:var(--bg2);border:2px solid var(--border);border-radius:16px;cursor:pointer;text-align:left;font-family:inherit;transition:border-color .15s`;
+
+  document.getElementById('mp-inner').innerHTML = `
+    <div style="font-size:17px;font-weight:800;color:var(--text1);margin-bottom:4px;text-align:center">${session} — ${s.name}</div>
+    <div style="font-size:13px;color:var(--text3);text-align:center;margin-bottom:22px">
+      ${isToday ? `✅ Sessão de hoje · ${s.day}` : logOnly ? '📋 Log de sessão passada' : s.day}
+    </div>
+
+    ${!logOnly ? `
+    <button onclick="beginWorkout('workout')" style="${btnBase};margin-bottom:12px" ontouchstart="this.style.borderColor='var(--accent)'" ontouchend="this.style.borderColor='var(--border)'">
+      <span style="font-size:34px;line-height:1">💪</span>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:var(--text1);margin-bottom:3px">Fazer Treino</div>
+        <div style="font-size:12px;color:var(--text3)">Timer de descanso · Guia exercício a exercício · Vibração</div>
+      </div>
+    </button>` : ''}
+
+    <button onclick="showLogDatePicker()" style="${btnBase};margin-bottom:${logOnly ? '20px' : '14px'}" ontouchstart="this.style.borderColor='var(--accent)'" ontouchend="this.style.borderColor='var(--border)'">
+      <span style="font-size:34px;line-height:1">📋</span>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:var(--text1);margin-bottom:3px">Registar Log</div>
+        <div style="font-size:12px;color:var(--text3)">Já fiz · Sem timers · Ver todos os exercícios de uma vez</div>
+      </div>
+    </button>
+
+    ${!logOnly ? `
+    <button onclick="openSessionsLogOnly('${type}')" style="width:100%;padding:10px 14px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:10px;font-family:inherit">
+      📅 Outra sessão (log de dia passado)
+    </button>` : ''}
+
+    <button onclick="hideModePicker()" style="width:100%;padding:12px;background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;font-family:inherit">← Cancelar</button>
+  `;
   document.getElementById('mode-picker-overlay').style.display = 'flex';
 }
+
+function showLogDatePicker() {
+  const today = new Date().toISOString().slice(0,10);
+  const s = SESSIONS[state.pendingType]?.sessions[state.pendingSession];
+  document.getElementById('mp-inner').innerHTML = `
+    <div style="font-size:17px;font-weight:800;text-align:center;margin-bottom:4px">📋 Registar Log</div>
+    <div style="font-size:13px;color:var(--text3);text-align:center;margin-bottom:20px">${state.pendingSession} — ${s?.name||''}</div>
+    <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:10px;text-align:center">Quando fizeste este treino?</div>
+    <input type="date" id="log-date-input" value="${today}" max="${today}"
+      style="width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:2px solid var(--accent);background:var(--bg3);color:var(--text);font-size:20px;font-weight:700;text-align:center;margin-bottom:20px;font-family:inherit;-webkit-appearance:none">
+    <button onclick="confirmLogDate()" style="display:flex;align-items:center;justify-content:center;width:100%;padding:16px;margin-bottom:10px;background:var(--accent);color:#000;font-size:16px;font-weight:700;border:none;border-radius:14px;cursor:pointer;font-family:inherit">
+      ✓ Confirmar e Registar
+    </button>
+    <button onclick="showModePicker(state.pendingType, state.pendingSession)" style="width:100%;padding:12px;background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;font-family:inherit">← Voltar</button>
+  `;
+}
+
+function confirmLogDate() {
+  const input = document.getElementById('log-date-input');
+  const dateStr = input?.value || new Date().toISOString().slice(0,10);
+  state.logDate = new Date(dateStr + 'T12:00:00').getTime();
+  hideModePicker();
+  beginWorkout('log');
+}
+
 function hideModePicker() {
   document.getElementById('mode-picker-overlay').style.display = 'none';
+  // Não limpar sessionsLogOnly aqui — beginWorkout trata disso
 }
 function beginWorkout(mode) {
-  hideModePicker();
   state.logMode = (mode === 'log');
+  state.sessionsLogOnly = false;
+  if (mode !== 'log') state.logDate = null;
   const type = state.pendingType;
   const session = state.pendingSession;
   state.workoutType = type;
@@ -2502,7 +2605,7 @@ function finishWorkout() {
   // Collect all muscles worked
   const musclesWorked = [...new Set(exercises.flatMap(e=>e.muscles))];
   const entry = {
-    date: Date.now(),
+    date: state.logDate || Date.now(),
     type: state.workoutType,
     mode: state.logMode ? 'log' : 'workout',
     session: state.workoutSession,
@@ -3205,11 +3308,7 @@ function initTouchBindings() {
     }, {passive:false});
   }
 
-  // Mode picker buttons — already <button>, but add touch for safety
-  document.querySelectorAll('[onclick*="beginWorkout"]').forEach(btn => {
-    const mode = btn.getAttribute('onclick').includes("'workout'") ? 'workout' : 'log';
-    bindTouch(btn, function(){ beginWorkout(mode); });
-  });
+  // Mode picker: conteúdo dinâmico — os botões usam onclick directamente (sem binding estático necessário)
 }
 
 document.addEventListener('DOMContentLoaded', initTouchBindings);
@@ -3670,24 +3769,8 @@ function buildSparkline(metric, pts, wkNow) {
 
 <!-- ── Mode Picker Overlay ───────────────────────────────── -->
 <div id="mode-picker-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:300;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--card);border-radius:22px;padding:28px 20px;width:100%;max-width:400px">
-    <div id="mp-title" style="font-size:18px;font-weight:800;color:var(--text1);margin-bottom:6px;text-align:center"></div>
-    <div style="font-size:13px;color:var(--text3);text-align:center;margin-bottom:24px">O que queres fazer?</div>
-    <button onclick="beginWorkout('workout')" style="display:flex;align-items:center;gap:14px;width:100%;padding:18px;margin-bottom:12px;background:var(--bg2);border:2px solid var(--border);border-radius:16px;cursor:pointer;text-align:left;transition:border-color .2s" ontouchstart="this.style.borderColor='var(--accent)'" ontouchend="this.style.borderColor='var(--border)'">
-      <span style="font-size:36px;line-height:1">💪</span>
-      <div>
-        <div style="font-size:16px;font-weight:700;color:var(--text1);margin-bottom:3px">Fazer Treino</div>
-        <div style="font-size:12px;color:var(--text3)">Timer de descanso · Guia exercício a exercício · Vibração</div>
-      </div>
-    </button>
-    <button onclick="beginWorkout('log')" style="display:flex;align-items:center;gap:14px;width:100%;padding:18px;margin-bottom:20px;background:var(--bg2);border:2px solid var(--border);border-radius:16px;cursor:pointer;text-align:left;transition:border-color .2s" ontouchstart="this.style.borderColor='var(--accent)'" ontouchend="this.style.borderColor='var(--border)'">
-      <span style="font-size:36px;line-height:1">📋</span>
-      <div>
-        <div style="font-size:16px;font-weight:700;color:var(--text1);margin-bottom:3px">Registar Log</div>
-        <div style="font-size:12px;color:var(--text3)">Já fiz · Sem timers · Ver todos os exercícios de uma vez</div>
-      </div>
-    </button>
-    <button onclick="hideModePicker()" style="width:100%;padding:12px;background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer">← Cancelar</button>
+  <div id="mp-inner" style="background:var(--card);border-radius:22px;padding:28px 20px;width:100%;max-width:400px">
+    <!-- conteúdo gerado dinamicamente por showModePicker() / showLogDatePicker() -->
   </div>
 </div>
 
