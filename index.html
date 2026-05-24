@@ -3807,19 +3807,20 @@ const SUPL_FALLBACK = [
   {hora:'08:30',suplemento:'D3 + K2',dose:'1 cáp',marca:'Now Foods D3+K2 MK-7',notas:'Com gordura',dias:'Todos',ordem:5},
   {hora:'08:30',suplemento:'Omega-3',dose:'2-3 softgels',marca:'Now Foods Ultra Omega-3',notas:'Com refeição',dias:'Todos',ordem:6},
   {hora:'08:30',suplemento:'HMB',dose:'1g (1 cáp)',marca:'ON HMB 1000mg',notas:'1ª dose de 3',dias:'Todos',ordem:7},
-  {hora:'12:30',suplemento:'Bariatric Advantage Ultra Solo',dose:'1 comp',marca:'Bariatric Advantage Ultra Solo with Iron',notas:'Com almoço',dias:'Todos',ordem:8},
-  {hora:'12:30',suplemento:'Ubiquinol CoQ10',dose:'200mg',marca:'NOW Foods CoQ10 200mg',notas:'Com refeição gordurosa',dias:'Todos',ordem:9},
-  {hora:'12:30',suplemento:'HMB',dose:'1g (1 cáp)',marca:'ON HMB 1000mg',notas:'2ª dose de 3',dias:'Todos',ordem:10},
-  {hora:'12:30',suplemento:'Beta-Alanina',dose:'800mg',marca:'NOW Foods Beta-Alanine',notas:'2ª dose de 4',dias:'Todos',ordem:11},
-  {hora:'18:00',suplemento:'Colagénio Hidrolisado + Vit C',dose:'15g + 250mg',marca:'Prozis Hydrolyzed Collagen',notas:'60min pré-treino de força',dias:'Força',ordem:12},
-  {hora:'19:30',suplemento:'Whey Protein',dose:'30-40g',marca:'ON Gold Standard Whey',notas:'Pós-treino · janela anabólica 30min',dias:'Treino',ordem:13},
-  {hora:'19:30',suplemento:'HMB',dose:'1g (1 cáp)',marca:'ON HMB 1000mg',notas:'3ª dose de 3',dias:'Todos',ordem:14},
-  {hora:'19:30',suplemento:'Beta-Alanina',dose:'800mg',marca:'NOW Foods Beta-Alanine',notas:'3ª dose de 4',dias:'Todos',ordem:15},
-  {hora:'21:00',suplemento:'Ashwagandha KSM-66',dose:'600mg (2 cáps)',marca:'NOW Foods Ashwagandha KSM-66',notas:'Com jantar',dias:'Todos',ordem:16},
-  {hora:'22:00',suplemento:'Magnésio Glicinato',dose:'200mg (2 cáps)',marca:'Pure Encapsulations Magnesium Glycinate',notas:'Antes de dormir',dias:'Todos',ordem:17},
-  {hora:'22:00',suplemento:'B12 Sublingual',dose:'1 comp',marca:'Jarrow Methyl B12 1000µg',notas:'Sublingual 60 seg · não engolir',dias:'Todos',ordem:18},
-  {hora:'22:00',suplemento:'Beta-Alanina',dose:'800mg',marca:'NOW Foods Beta-Alanine',notas:'4ª dose de 4',dias:'Todos',ordem:19},
-  {hora:'22:00',suplemento:'Pitavastatina (Livazo)',dose:'1mg (1 comp)',marca:'Livazo 1mg',notas:'Antes de dormir',dias:'Todos',ordem:20}
+  {hora:'08:30',suplemento:'Ginkgo Biloba',dose:'60mg',marca:'NOW Foods Ginkgo Biloba 60mg',notas:'Função cognitiva e circulação cerebral',dias:'Todos',ordem:8},
+  {hora:'12:30',suplemento:'Bariatric Advantage Ultra Solo',dose:'1 comp',marca:'Bariatric Advantage Ultra Solo with Iron',notas:'Com almoço',dias:'Todos',ordem:9},
+  {hora:'12:30',suplemento:'Ubiquinol CoQ10',dose:'200mg',marca:'NOW Foods CoQ10 200mg',notas:'Com refeição gordurosa',dias:'Todos',ordem:10},
+  {hora:'12:30',suplemento:'HMB',dose:'1g (1 cáp)',marca:'ON HMB 1000mg',notas:'2ª dose de 3',dias:'Todos',ordem:11},
+  {hora:'12:30',suplemento:'Beta-Alanina',dose:'800mg',marca:'NOW Foods Beta-Alanine',notas:'2ª dose de 4',dias:'Todos',ordem:12},
+  {hora:'18:00',suplemento:'Colagénio Hidrolisado + Vit C',dose:'15g + 250mg',marca:'Prozis Hydrolyzed Collagen',notas:'60min pré-treino de força',dias:'Força',ordem:13},
+  {hora:'19:30',suplemento:'Whey Protein',dose:'30-40g',marca:'ON Gold Standard Whey',notas:'Pós-treino · janela anabólica 30min',dias:'Treino',ordem:14},
+  {hora:'19:30',suplemento:'HMB',dose:'1g (1 cáp)',marca:'ON HMB 1000mg',notas:'3ª dose de 3',dias:'Todos',ordem:15},
+  {hora:'19:30',suplemento:'Beta-Alanina',dose:'800mg',marca:'NOW Foods Beta-Alanine',notas:'3ª dose de 4',dias:'Todos',ordem:16},
+  {hora:'21:00',suplemento:'Ashwagandha KSM-66',dose:'600mg (2 cáps)',marca:'NOW Foods Ashwagandha KSM-66',notas:'Com jantar',dias:'Todos',ordem:17},
+  {hora:'22:00',suplemento:'Magnésio Glicinato',dose:'200mg (2 cáps)',marca:'Pure Encapsulations Magnesium Glycinate',notas:'Antes de dormir',dias:'Todos',ordem:18},
+  {hora:'22:00',suplemento:'B12 Sublingual',dose:'1 comp',marca:'Jarrow Methyl B12 1000µg',notas:'Sublingual 60 seg · não engolir',dias:'Todos',ordem:19},
+  {hora:'22:00',suplemento:'Beta-Alanina',dose:'800mg',marca:'NOW Foods Beta-Alanine',notas:'4ª dose de 4',dias:'Todos',ordem:20},
+  {hora:'22:00',suplemento:'Pitavastatina (Livazo)',dose:'1mg (1 comp)',marca:'Livazo 1mg',notas:'Antes de dormir',dias:'Todos',ordem:21}
 ];
 
 function getSuplToday() { return new Date().toISOString().slice(0,10); }
@@ -3878,8 +3879,17 @@ function renderSuplementos() {
   else { loadSuplementos(false); }
 }
 
+function horaToMin(h) {
+  const [hh,mm] = h.split(':').map(Number);
+  return hh*60 + mm;
+}
+function nowMinutes() {
+  const n = new Date(); return n.getHours()*60 + n.getMinutes();
+}
+
 function renderSuplList(list) {
   const checks = getSuplChecks();
+  const nowMin = nowMinutes();
   const total = list.length;
   const done = Object.values(checks).filter(Boolean).length;
   const pct = total ? Math.round(done/total*100) : 0;
@@ -3904,31 +3914,50 @@ function renderSuplList(list) {
   let html = '';
   Object.keys(groups).sort().forEach(hora => {
     const items = groups[hora];
-    const allDone = items.every(s => checks[s.idx]);
+    const slotMin = horaToMin(hora);
+    const unlocked = nowMin >= slotMin;
+    const allDone = unlocked && items.every(s => checks[s.idx]);
     const isForca = items.some(s => s.dias === 'Força');
-    html += `<div style="margin-bottom:4px;">
+
+    const idxList = items.map(s=>s.idx);
+    const idxListStr = JSON.stringify(idxList);
+    html += `<div style="margin-bottom:4px;${unlocked?'':'opacity:0.45;'}">
       <div style="display:flex;align-items:center;gap:8px;padding:10px 0 6px;">
         <span style="font-size:18px;">${horaIcons[hora]||'⏰'}</span>
-        <span style="font-size:15px;font-weight:700;color:${allDone?'var(--green)':'var(--text)'};">${hora}</span>
+        <span style="font-size:15px;font-weight:700;color:${allDone?'var(--green)':unlocked?'var(--text)':'var(--text3)'};">${hora}</span>
+        ${!unlocked?'<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:var(--bg3);color:var(--text3);">ainda não</span>':''}
         ${isForca?'<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:var(--accentbg);color:var(--accent);">só força</span>':''}
         ${allDone?'<span style="font-size:11px;color:var(--green);font-weight:600;">✓ completo</span>':''}
+        ${unlocked?`<button ontouchend="event.preventDefault();event.stopPropagation();toggleSuplGroup(${idxListStr})"
+          onclick="event.stopPropagation();toggleSuplGroup(${idxListStr})"
+          style="margin-left:auto;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;
+                 background:${allDone?'var(--bg3)':'var(--greenbg)'};color:${allDone?'var(--text2)':'var(--green)'};
+                 border:1px solid ${allDone?'var(--border)':'var(--green)'};cursor:pointer;font-family:inherit;touch-action:manipulation;">
+          ${allDone?'↩ Desfazer':'✓ Tudo'}
+        </button>`:''}
       </div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">`;
+
     items.forEach((s, j) => {
       const checked = !!checks[s.idx];
       const last = j === items.length - 1;
+      const clickable = unlocked;
       html += `
-        <button ontouchend="event.preventDefault();toggleSupl(${s.idx})" onclick="toggleSupl(${s.idx})"
-          style="width:100%;text-align:left;background:${checked?'var(--greenbg)':'transparent'};border:none;border-bottom:${last?'none':'1px solid var(--border)'};
-                 padding:13px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:inherit;touch-action:manipulation;-webkit-appearance:none;transition:background .2s;">
-          <div style="width:24px;height:24px;border-radius:50%;border:2px solid ${checked?'var(--green)':'var(--border)'};
+        <button ${clickable?`ontouchend="event.preventDefault();toggleSupl(${s.idx})" onclick="toggleSupl(${s.idx})"`:''
+          } style="width:100%;text-align:left;background:${checked?'var(--greenbg)':'transparent'};border:none;
+                 border-bottom:${last?'none':'1px solid var(--border)'};
+                 padding:13px 14px;display:flex;align-items:center;gap:12px;
+                 cursor:${clickable?'pointer':'default'};font-family:inherit;touch-action:manipulation;-webkit-appearance:none;transition:background .2s;">
+          <div style="width:24px;height:24px;border-radius:50%;
+                      border:2px solid ${checked?'var(--green)':unlocked?'var(--border)':'var(--text3)'};
                       background:${checked?'var(--green)':'transparent'};display:flex;align-items:center;justify-content:center;
                       flex-shrink:0;transition:all .2s;">
             ${checked?'<svg width="13" height="13" viewBox="0 0 13 13"><polyline points="2,7 5,10 11,3" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
           </div>
           <div style="flex:1;min-width:0;">
-            <div style="font-size:14px;font-weight:600;color:${checked?'var(--green)':'var(--text)'};opacity:${checked?'.7':'1'};
-                        text-decoration:${checked?'line-through':'none'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            <div style="font-size:14px;font-weight:600;color:${checked?'var(--green)':unlocked?'var(--text)':'var(--text3)'};
+                        opacity:${checked?.7:1};text-decoration:${checked?'line-through':'none'};
+                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
               ${s.suplemento}
             </div>
             <div style="font-size:12px;color:var(--text2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
@@ -3946,10 +3975,29 @@ function renderSuplList(list) {
 
 function toggleSupl(idx) {
   const checks = getSuplChecks();
-  checks[idx] = !checks[idx];
+  const alreadyDone = !!checks[idx];
+  if (alreadyDone) {
+    const list = getCachedSupl() || SUPL_FALLBACK;
+    const s = list[idx];
+    const nome = s ? s.suplemento : 'este suplemento';
+    if (!confirm('Remover o log de "' + nome + '"?\n\nTem a certeza que ainda não tomou?')) return;
+  }
+  checks[idx] = !alreadyDone;
   saveSuplChecks(checks);
-  const cached = getCachedSupl() || SUPL_FALLBACK;
-  renderSuplList(cached);
+  renderSuplList(getCachedSupl() || SUPL_FALLBACK);
+}
+
+function toggleSuplGroup(idxList) {
+  const checks = getSuplChecks();
+  const allDone = idxList.every(i => !!checks[i]);
+  if (allDone) {
+    if (!confirm('Remover o log de toda esta toma?\n\nTem a certeza que quer desfazer?')) return;
+    idxList.forEach(i => { checks[i] = false; });
+  } else {
+    idxList.forEach(i => { checks[i] = true; });
+  }
+  saveSuplChecks(checks);
+  renderSuplList(getCachedSupl() || SUPL_FALLBACK);
 }
 
 </script>
