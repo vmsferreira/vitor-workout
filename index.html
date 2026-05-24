@@ -3899,7 +3899,7 @@ const SUPL_CACHE_TIME = 'supl_data_time_v1';
 const SUPL_FALLBACK = [
   {hora:'06:30',suplemento:'Ferro-Gradumet',dose:'1 comp',marca:'Ferro-Gradumet 329,7mg',notas:'Jejum · aguardar 30min antes de comer',dias:'Todos',ordem:1},
   {hora:'06:30',suplemento:'Verisol® Colagénio',dose:'5g',marca:'Prozis Collagen Peptides Verisol®',notas:'Com água + limão, jejum',dias:'Todos',ordem:2},
-  {hora:'06:30',suplemento:'Beta-Alanina',dose:'800mg',marca:'NOW Foods Beta-Alanine',notas:'1ª dose de 4 · tomar todos os dias',dias:'Todos',ordem:3},
+  {hora:'06:30',suplemento:'Beta-Alanina',dose:'1600mg (pó)',marca:'NOW Foods Beta-Alanine',notas:'1ª toma do dia · misturar em água',dias:'Todos',ordem:3},
   {hora:'08:30',suplemento:'Creatina',dose:'5g',marca:'ON Micronized Creatine',notas:'Com pequeno-almoço',dias:'Todos',ordem:4},
   {hora:'08:30',suplemento:'D3 + K2',dose:'1 cáp',marca:'Now Foods D3+K2 MK-7',notas:'Com gordura',dias:'Todos',ordem:5},
   {hora:'08:30',suplemento:'Omega-3',dose:'2-3 softgels',marca:'Now Foods Ultra Omega-3',notas:'Com refeição',dias:'Todos',ordem:6},
@@ -3908,16 +3908,14 @@ const SUPL_FALLBACK = [
   {hora:'12:30',suplemento:'Bariatric Advantage Ultra Solo',dose:'1 comp',marca:'Bariatric Advantage Ultra Solo with Iron',notas:'Com almoço',dias:'Todos',ordem:9},
   {hora:'12:30',suplemento:'Ubiquinol CoQ10',dose:'200mg',marca:'NOW Foods CoQ10 200mg',notas:'Com refeição gordurosa',dias:'Todos',ordem:10},
   {hora:'12:30',suplemento:'HMB',dose:'1g (1 cáp)',marca:'ON HMB 1000mg',notas:'2ª dose de 3',dias:'Todos',ordem:11},
-  {hora:'12:30',suplemento:'Beta-Alanina',dose:'800mg',marca:'NOW Foods Beta-Alanine',notas:'2ª dose de 4',dias:'Todos',ordem:12},
-  {hora:'18:00',suplemento:'Colagénio Hidrolisado + Vit C',dose:'15g + 250mg',marca:'Prozis Hydrolyzed Collagen',notas:'60min pré-treino de força',dias:'Força',ordem:13},
-  {hora:'19:30',suplemento:'Whey Protein',dose:'30-40g',marca:'ON Gold Standard Whey',notas:'Pós-treino · janela anabólica 30min',dias:'Treino',ordem:14},
-  {hora:'19:30',suplemento:'HMB',dose:'1g (1 cáp)',marca:'ON HMB 1000mg',notas:'3ª dose de 3',dias:'Todos',ordem:15},
-  {hora:'19:30',suplemento:'Beta-Alanina',dose:'800mg',marca:'NOW Foods Beta-Alanine',notas:'3ª dose de 4',dias:'Todos',ordem:16},
-  {hora:'21:00',suplemento:'Ashwagandha KSM-66',dose:'600mg (2 cáps)',marca:'NOW Foods Ashwagandha KSM-66',notas:'Com jantar',dias:'Todos',ordem:17},
-  {hora:'22:00',suplemento:'Magnésio Glicinato',dose:'200mg (2 cáps)',marca:'Pure Encapsulations Magnesium Glycinate',notas:'Antes de dormir',dias:'Todos',ordem:18},
-  {hora:'22:00',suplemento:'B12 Sublingual',dose:'1 comp',marca:'Jarrow Methyl B12 1000µg',notas:'Sublingual 60 seg · não engolir',dias:'Todos',ordem:19},
-  {hora:'22:00',suplemento:'Beta-Alanina',dose:'800mg',marca:'NOW Foods Beta-Alanine',notas:'4ª dose de 4',dias:'Todos',ordem:20},
-  {hora:'22:00',suplemento:'Pitavastatina (Livazo)',dose:'1mg (1 comp)',marca:'Livazo 1mg',notas:'Antes de dormir',dias:'Todos',ordem:21}
+  {hora:'18:00',suplemento:'Colagénio Hidrolisado + Vit C',dose:'15g + 250mg',marca:'Prozis Hydrolyzed Collagen',notas:'60min pré-treino de força',dias:'Força',ordem:12},
+  {hora:'19:30',suplemento:'Whey Protein',dose:'30-40g',marca:'ON Gold Standard Whey',notas:'Pós-treino · janela anabólica 30min',dias:'Treino',ordem:13},
+  {hora:'19:30',suplemento:'HMB',dose:'1g (1 cáp)',marca:'ON HMB 1000mg',notas:'3ª dose de 3',dias:'Todos',ordem:14},
+  {hora:'21:00',suplemento:'Ashwagandha KSM-66',dose:'600mg (2 cáps)',marca:'NOW Foods Ashwagandha KSM-66',notas:'Com jantar',dias:'Todos',ordem:15},
+  {hora:'22:00',suplemento:'Magnésio Glicinato',dose:'200mg (2 cáps)',marca:'Pure Encapsulations Magnesium Glycinate',notas:'Antes de dormir',dias:'Todos',ordem:16},
+  {hora:'22:00',suplemento:'B12 Sublingual',dose:'1 comp',marca:'Jarrow Methyl B12 1000µg',notas:'Sublingual 60 seg · não engolir',dias:'Todos',ordem:17},
+  {hora:'22:00',suplemento:'Beta-Alanina',dose:'1600mg (pó)',marca:'NOW Foods Beta-Alanine',notas:'2ª e última toma do dia · misturar em água',dias:'Todos',ordem:18},
+  {hora:'22:00',suplemento:'Pitavastatina (Livazo)',dose:'1mg (1 comp)',marca:'Livazo 1mg',notas:'Antes de dormir',dias:'Todos',ordem:19}
 ];
 
 function getSuplToday() { return new Date().toISOString().slice(0,10); }
@@ -3953,7 +3951,7 @@ async function loadSuplementos(forceRefresh) {
     if (cached) { renderSuplList(cached); if(btn){btn.textContent='☁️ Sync';btn.disabled=false;} return; }
   }
   try {
-    const s = getSettings();
+    const s = loadSettings();
     const url = s.sheetsUrl;
     if (!url) throw new Error('no url');
     const res = await fetch(url + '?action=suplementos');
@@ -4181,7 +4179,7 @@ async function submitCorridaLog() {
   if (!dist || dist <= 0) { setStatus('⚠️ Distância obrigatória', '#e74c3c'); return; }
   if (!tempo) { setStatus('⚠️ Tempo total obrigatório (ex: 45:22)', '#e74c3c'); return; }
 
-  const settings = getSettings();
+  const settings = loadSettings();
   if (!settings.sheetsUrl) {
     setStatus('⚠️ URL do Apps Script não configurado em Definições', '#e74c3c');
     return;
@@ -4249,7 +4247,7 @@ async function loadCorridaHistory() {
   listEl.innerHTML = '<div style="font-size:12px;color:var(--text2);text-align:center;padding:12px 0">⏳ A carregar...</div>';
   if (btn) { btn.textContent = '↻'; btn.disabled = true; }
 
-  const settings = getSettings();
+  const settings = loadSettings();
   if (!settings.sheetsUrl) {
     listEl.innerHTML = '<div style="font-size:12px;color:#e74c3c;text-align:center;padding:8px">URL do Apps Script não configurado</div>';
     if (btn) { btn.textContent = 'Carregar ›'; btn.disabled = false; }
