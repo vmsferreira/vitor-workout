@@ -1738,8 +1738,8 @@ function renderRunning() {
           <input id="cf-dist" type="number" step="0.1" min="0" placeholder="ex: 7.5" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:13px;font-family:inherit">
         </div>
         <div>
-          <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Tempo total (MM:SS)</div>
-          <input id="cf-tempo" type="text" placeholder="ex: 45:22" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:13px;font-family:inherit">
+          <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Tempo total (H:MM:SS ou MM:SS)</div>
+          <input id="cf-tempo" type="text" placeholder="ex: 1:18:21 ou 45:22" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:13px;font-family:inherit">
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
@@ -4185,8 +4185,17 @@ async function submitCorridaLog() {
     return;
   }
 
+  // Data local do dispositivo (não UTC) para evitar desfasamento de fuso
+  const _now = new Date();
+  const _localDate = _now.getFullYear() + '-' +
+    String(_now.getMonth() + 1).padStart(2, '0') + '-' +
+    String(_now.getDate()).padStart(2, '0');
+  const _loc = document.getElementById('cf-local').value;
+  // Fuso horário baseado na localização seleccionada
+  const _tzMap = { 'Portugal': 'Europe/Lisbon', 'Angola': 'Africa/Luanda', 'Dubai': 'Asia/Dubai', 'Outro': 'UTC' };
   const corrida = {
-    data:           new Date().toISOString().slice(0, 10),
+    data:           _localDate,
+    timezone:       _tzMap[_loc] || 'UTC',
     semana_plano:   getPlanWeek(),
     tipo_treino:    document.getElementById('cf-tipo').value,
     distancia_km:   dist,
@@ -4197,7 +4206,7 @@ async function submitCorridaLog() {
     cadencia_media: parseInt(document.getElementById('cf-cad').value) || null,
     whoop_recovery: parseInt(document.getElementById('cf-whoop').value) || null,
     rpe:            parseInt(document.getElementById('cf-rpe').value) || null,
-    localizacao:    document.getElementById('cf-local').value,
+    localizacao:    _loc,
     notas:          document.getElementById('cf-notas').value.trim()
   };
 
@@ -4283,7 +4292,9 @@ function renderCorridaHistory(corridas) {
   recent.forEach((c, idx) => {
     const emoji = tipoEmoji[c.tipo_treino] || '🏃';
     const flag  = localEmoji[c.localizacao] || '🌍';
-    const dateLabel = c.data ? new Date(c.data + 'T12:00:00').toLocaleDateString('pt-PT', { weekday:'short', day:'numeric', month:'short' }) : '—';
+    const _d = c.data ? new Date(c.data + 'T12:00:00Z') : null;
+    const _valid = _d && !isNaN(_d) && _d.getFullYear() > 1900;
+    const dateLabel = _valid ? _d.toLocaleDateString('pt-PT', { weekday:'short', day:'numeric', month:'short', year:'numeric', timeZone:'UTC' }) : (c.data || '—');
     const isFirst = idx === 0;
 
     html += `<div style="border-radius:10px;background:var(--bg3);padding:12px;margin-bottom:8px;${isFirst?'border:1px solid var(--accent)33':''}">
