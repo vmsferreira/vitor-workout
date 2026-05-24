@@ -4170,24 +4170,25 @@ function toggleCorridaForm() {
 }
 
 async function submitCorridaLog() {
-  const statusEl = document.getElementById('cf-status');
+  const setStatus = (msg, color) => {
+    const el = document.getElementById('cf-status');
+    if (el) { el.style.color = color || 'var(--text2)'; el.textContent = msg; }
+  };
+
   const dist = parseFloat(document.getElementById('cf-dist').value);
   const tempo = document.getElementById('cf-tempo').value.trim();
 
-  if (!dist || dist <= 0) {
-    statusEl.style.color = '#e74c3c';
-    statusEl.textContent = '⚠️ Distância obrigatória';
-    return;
-  }
-  if (!tempo) {
-    statusEl.style.color = '#e74c3c';
-    statusEl.textContent = '⚠️ Tempo total obrigatório (ex: 45:22)';
+  if (!dist || dist <= 0) { setStatus('⚠️ Distância obrigatória', '#e74c3c'); return; }
+  if (!tempo) { setStatus('⚠️ Tempo total obrigatório (ex: 45:22)', '#e74c3c'); return; }
+
+  const settings = getSettings();
+  if (!settings.sheetsUrl) {
+    setStatus('⚠️ URL do Apps Script não configurado em Definições', '#e74c3c');
     return;
   }
 
-  const today = new Date().toISOString().slice(0, 10);
   const corrida = {
-    data:           today,
+    data:           new Date().toISOString().slice(0, 10),
     semana_plano:   getPlanWeek(),
     tipo_treino:    document.getElementById('cf-tipo').value,
     distancia_km:   dist,
@@ -4202,40 +4203,42 @@ async function submitCorridaLog() {
     notas:          document.getElementById('cf-notas').value.trim()
   };
 
-  statusEl.style.color = 'var(--text2)';
-  statusEl.textContent = '⏳ A guardar...';
+  setStatus('⏳ A guardar...');
 
-  const settings = getSettings();
-  if (!settings.sheetsUrl) {
-    statusEl.style.color = '#e74c3c';
-    statusEl.textContent = '⚠️ URL do Apps Script não configurado em Definições';
-    return;
-  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 20000);
 
   try {
     const res = await fetch(settings.sheetsUrl, {
       method: 'POST',
+      signal: controller.signal,
       body: JSON.stringify({ action: 'save_corrida', corrida })
     });
-    const json = await res.json();
+    clearTimeout(timer);
+
+    let json;
+    try { json = await res.json(); }
+    catch(_) { json = { status: 'error', msg: 'Resposta inválida do servidor (não é JSON). Verifica se o Apps Script está bem configurado.' }; }
+
     if (json.status === 'ok') {
-      statusEl.style.color = '#2ECC71';
-      statusEl.textContent = '✅ Corrida guardada no Google Sheets!';
-      // Reset form
+      setStatus('✅ Corrida guardada!', '#2ECC71');
       setTimeout(() => {
         ['cf-dist','cf-tempo','cf-pace','cf-fc-avg','cf-fc-max','cf-cad','cf-whoop','cf-rpe','cf-notas']
           .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
-        statusEl.textContent = '';
+        const s = document.getElementById('cf-status'); if(s) s.textContent = '';
         toggleCorridaForm();
-        // Reload history
         loadCorridaHistory();
       }, 1500);
     } else {
-      throw new Error(json.msg || 'Erro desconhecido');
+      setStatus('❌ ' + (json.msg || 'Erro do servidor'), '#e74c3c');
     }
   } catch(err) {
-    statusEl.style.color = '#e74c3c';
-    statusEl.textContent = '❌ Erro: ' + err.message;
+    clearTimeout(timer);
+    if (err.name === 'AbortError') {
+      setStatus('❌ Timeout (20s) — o Apps Script não respondeu. Verifica se foi feito o deploy.', '#e74c3c');
+    } else {
+      setStatus('❌ Erro de rede: ' + err.message, '#e74c3c');
+    }
   }
 }
 
