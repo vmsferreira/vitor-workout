@@ -1698,6 +1698,103 @@ function renderRunning() {
         <div><div style="font-size:13px;font-weight:600;color:#3498DB">🔵 Long Run — ${wData.sun.km}</div><div style="font-size:11px;color:var(--text2)">${wData.sun.pace}</div></div>
       </div>
     </div>
+  </div>`;
+
+  // ── Registar corrida + histórico ──
+  html += `<div class="card" style="margin-bottom:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:20px">📝</span>
+        <div style="font-size:14px;font-weight:700">Registar corrida</div>
+      </div>
+      <button onclick="toggleCorridaForm()" id="btn-corrida-form" style="background:var(--accent);color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">+ Registar</button>
+    </div>
+    <div id="corrida-form-wrap" style="display:none;margin-top:14px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Tipo de treino</div>
+          <select id="cf-tipo" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:13px;font-family:inherit">
+            <option>Easy Run</option>
+            <option>Long Run</option>
+            <option>Tempo Run</option>
+            <option>Intervalos</option>
+            <option>Fartlek</option>
+            <option>Recuperação</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Localização</div>
+          <select id="cf-local" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:13px;font-family:inherit">
+            <option>Angola</option>
+            <option>Dubai</option>
+            <option>Portugal</option>
+            <option>Outro</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Distância (km)</div>
+          <input id="cf-dist" type="number" step="0.1" min="0" placeholder="ex: 7.5" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:13px;font-family:inherit">
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Tempo total (MM:SS)</div>
+          <input id="cf-tempo" type="text" placeholder="ex: 45:22" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:13px;font-family:inherit">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">FC Média (bpm)</div>
+          <input id="cf-fc-avg" type="number" min="50" max="220" placeholder="ex: 128" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:13px;font-family:inherit">
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">FC Máxima (bpm)</div>
+          <input id="cf-fc-max" type="number" min="50" max="220" placeholder="ex: 155" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:13px;font-family:inherit">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Pace médio (MM:SS/km)</div>
+          <input id="cf-pace" type="text" placeholder="ex: 6:03" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:13px;font-family:inherit">
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Cadência (ppm)</div>
+          <input id="cf-cad" type="number" min="100" max="230" placeholder="ex: 172" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:13px;font-family:inherit">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">WHOOP Recovery (%)</div>
+          <input id="cf-whoop" type="number" min="0" max="100" placeholder="ex: 78" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:13px;font-family:inherit">
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">RPE (1–10)</div>
+          <input id="cf-rpe" type="number" min="1" max="10" placeholder="ex: 6" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:13px;font-family:inherit">
+        </div>
+      </div>
+      <div style="margin-bottom:10px">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Notas (opcional)</div>
+        <textarea id="cf-notas" rows="2" placeholder="Como te sentiste? Condições, progressão, sensações..." style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:13px;font-family:inherit;resize:none"></textarea>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="submitCorridaLog()" style="flex:1;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">💾 Guardar corrida</button>
+        <button onclick="toggleCorridaForm()" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:14px;cursor:pointer;color:var(--text);font-family:inherit">✕</button>
+      </div>
+      <div id="cf-status" style="margin-top:8px;font-size:12px;text-align:center;color:var(--text2)"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:20px">📊</span>
+        <div style="font-size:14px;font-weight:700">Histórico de corridas</div>
+      </div>
+      <button onclick="loadCorridaHistory()" id="btn-corrida-hist" style="background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit">Carregar ›</button>
+    </div>
+    <div id="corrida-hist-list">
+      <div style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0">Clica em "Carregar" para ver as últimas corridas</div>
+    </div>
   </div>
 
   <div style="height:24px"></div>`;
@@ -3887,6 +3984,26 @@ function nowMinutes() {
   const n = new Date(); return n.getHours()*60 + n.getMinutes();
 }
 
+// Accordion: null = defaults not yet set
+let suplExpanded = null;
+
+function initSuplExpanded(groups, checks, nowMin) {
+  if (suplExpanded !== null) return;
+  suplExpanded = {};
+  Object.keys(groups).forEach(hora => {
+    const items = groups[hora];
+    const unlocked = nowMin >= horaToMin(hora);
+    const allDone = unlocked && items.every(s => !!checks[s.idx]);
+    suplExpanded[hora] = unlocked && !allDone;
+  });
+}
+
+function toggleSuplExpand(hora) {
+  if (!suplExpanded) suplExpanded = {};
+  suplExpanded[hora] = !suplExpanded[hora];
+  renderSuplList(getCachedSupl() || SUPL_FALLBACK);
+}
+
 function renderSuplList(list) {
   const checks = getSuplChecks();
   const nowMin = nowMinutes();
@@ -3895,16 +4012,17 @@ function renderSuplList(list) {
   const pct = total ? Math.round(done/total*100) : 0;
 
   const label = document.getElementById('supl-progress-label');
-  const fill = document.getElementById('supl-progress-fill');
+  const fill  = document.getElementById('supl-progress-fill');
   if(label) label.textContent = done + ' / ' + total + ' tomados hoje';
-  if(fill) fill.style.width = pct + '%';
+  if(fill)  fill.style.width  = pct + '%';
 
-  // Group by hour
   const groups = {};
   list.forEach((s,i) => {
     if(!groups[s.hora]) groups[s.hora] = [];
     groups[s.hora].push({...s, idx: i});
   });
+
+  initSuplExpanded(groups, checks, nowMin);
 
   const content = document.getElementById('supl-content');
   if(!content) return;
@@ -3913,60 +4031,88 @@ function renderSuplList(list) {
 
   let html = '';
   Object.keys(groups).sort().forEach(hora => {
-    const items = groups[hora];
-    const slotMin = horaToMin(hora);
-    const unlocked = nowMin >= slotMin;
-    const allDone = unlocked && items.every(s => checks[s.idx]);
-    const isForca = items.some(s => s.dias === 'Força');
+    const items   = groups[hora];
+    const unlocked = nowMin >= horaToMin(hora);
+    const allDone  = unlocked && items.every(s => !!checks[s.idx]);
+    const isForca  = items.some(s => s.dias === 'Força');
+    const isOpen   = !!suplExpanded[hora];
+    const idxList  = items.map(s => s.idx);
+    const idxStr   = JSON.stringify(idxList);
+    const doneCnt  = items.filter(s => !!checks[s.idx]).length;
 
-    const idxList = items.map(s=>s.idx);
-    const idxListStr = JSON.stringify(idxList);
-    html += `<div style="margin-bottom:4px;${unlocked?'':'opacity:0.45;'}">
-      <div style="display:flex;align-items:center;gap:8px;padding:10px 0 6px;">
-        <span style="font-size:18px;">${horaIcons[hora]||'⏰'}</span>
-        <span style="font-size:15px;font-weight:700;color:${allDone?'var(--green)':unlocked?'var(--text)':'var(--text3)'};">${hora}</span>
-        ${!unlocked?'<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:var(--bg3);color:var(--text3);">ainda não</span>':''}
-        ${isForca?'<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:var(--accentbg);color:var(--accent);">só força</span>':''}
-        ${allDone?'<span style="font-size:11px;color:var(--green);font-weight:600;">✓ completo</span>':''}
-        ${unlocked?`<button ontouchend="event.preventDefault();event.stopPropagation();toggleSuplGroup(${idxListStr})"
-          onclick="event.stopPropagation();toggleSuplGroup(${idxListStr})"
-          style="margin-left:auto;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;
-                 background:${allDone?'var(--bg3)':'var(--greenbg)'};color:${allDone?'var(--text2)':'var(--green)'};
-                 border:1px solid ${allDone?'var(--border)':'var(--green)'};cursor:pointer;font-family:inherit;touch-action:manipulation;">
-          ${allDone?'↩ Desfazer':'✓ Tudo'}
-        </button>`:''}
-      </div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">`;
+    // ── Header (always visible, tap = toggle open/close) ──
+    html += `<div style="margin-bottom:6px;">
+      <button ontouchend="event.preventDefault();toggleSuplExpand('${hora}')"
+              onclick="toggleSuplExpand('${hora}')"
+        style="width:100%;text-align:left;
+               background:${allDone?'var(--greenbg)':unlocked?'var(--card)':'var(--bg3)'};
+               border:1px solid ${allDone?'var(--green)':'var(--border)'};
+               border-radius:${isOpen?'var(--radius) var(--radius) 0 0':'var(--radius)'};
+               padding:12px 14px;display:flex;align-items:center;gap:10px;
+               cursor:pointer;font-family:inherit;touch-action:manipulation;-webkit-appearance:none;">
+        <span style="font-size:18px;flex-shrink:0;">${horaIcons[hora]||'⏰'}</span>
+        <span style="font-size:15px;font-weight:700;
+                     color:${allDone?'var(--green)':unlocked?'var(--text)':'var(--text3)'};">${hora}</span>
+        ${allDone
+          ? `<span style="font-size:11px;color:var(--green);font-weight:700;">✓ completo</span>`
+          : unlocked
+            ? `<span style="font-size:11px;color:var(--text2);">${doneCnt}/${items.length}</span>`
+            : `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;
+                            background:var(--bg3);color:var(--text3);border:1px solid var(--border);">ainda não</span>`}
+        ${isForca?`<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;
+                                background:var(--accentbg);color:var(--accent);">só força</span>`:''}
+        ${unlocked && !allDone
+          ? `<button ontouchend="event.preventDefault();event.stopPropagation();toggleSuplGroup(${idxStr})"
+                     onclick="event.stopPropagation();toggleSuplGroup(${idxStr})"
+               style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;
+                      background:var(--greenbg);color:var(--green);border:1px solid var(--green);
+                      cursor:pointer;font-family:inherit;touch-action:manipulation;">✓ Tudo</button>` : ''}
+        ${allDone
+          ? `<button ontouchend="event.preventDefault();event.stopPropagation();toggleSuplGroup(${idxStr})"
+                     onclick="event.stopPropagation();toggleSuplGroup(${idxStr})"
+               style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;
+                      background:var(--bg3);color:var(--text2);border:1px solid var(--border);
+                      cursor:pointer;font-family:inherit;touch-action:manipulation;">↩</button>` : ''}
+        <span style="margin-left:auto;font-size:12px;color:var(--text3);
+                     display:inline-block;transform:rotate(${isOpen?'0':'180'}deg);">▼</span>
+      </button>`;
 
-    items.forEach((s, j) => {
-      const checked = !!checks[s.idx];
-      const last = j === items.length - 1;
-      const clickable = unlocked;
-      html += `
-        <button ${clickable?`ontouchend="event.preventDefault();toggleSupl(${s.idx})" onclick="toggleSupl(${s.idx})"`:''
-          } style="width:100%;text-align:left;background:${checked?'var(--greenbg)':'transparent'};border:none;
-                 border-bottom:${last?'none':'1px solid var(--border)'};
-                 padding:13px 14px;display:flex;align-items:center;gap:12px;
-                 cursor:${clickable?'pointer':'default'};font-family:inherit;touch-action:manipulation;-webkit-appearance:none;transition:background .2s;">
-          <div style="width:24px;height:24px;border-radius:50%;
-                      border:2px solid ${checked?'var(--green)':unlocked?'var(--border)':'var(--text3)'};
-                      background:${checked?'var(--green)':'transparent'};display:flex;align-items:center;justify-content:center;
-                      flex-shrink:0;transition:all .2s;">
-            ${checked?'<svg width="13" height="13" viewBox="0 0 13 13"><polyline points="2,7 5,10 11,3" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
-          </div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:14px;font-weight:600;color:${checked?'var(--green)':unlocked?'var(--text)':'var(--text3)'};
-                        opacity:${checked?.7:1};text-decoration:${checked?'line-through':'none'};
-                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-              ${s.suplemento}
+    // ── Body (collapsible) ──
+    if(isOpen) {
+      html += `<div style="background:var(--card);border:1px solid var(--border);border-top:none;
+                           border-radius:0 0 var(--radius) var(--radius);overflow:hidden;">`;
+      items.forEach((s, j) => {
+        const checked = !!checks[s.idx];
+        const last    = j === items.length - 1;
+        html += `
+          <button ${unlocked
+            ? `ontouchend="event.preventDefault();toggleSupl(${s.idx})" onclick="toggleSupl(${s.idx})"`
+            : ''}
+            style="width:100%;text-align:left;
+                   background:${checked?'var(--greenbg)':'transparent'};border:none;
+                   border-bottom:${last?'none':'1px solid var(--border)'};
+                   padding:13px 14px;display:flex;align-items:center;gap:12px;
+                   cursor:${unlocked?'pointer':'default'};font-family:inherit;
+                   touch-action:manipulation;-webkit-appearance:none;">
+            <div style="width:24px;height:24px;border-radius:50%;flex-shrink:0;
+                        border:2px solid ${checked?'var(--green)':unlocked?'var(--border)':'var(--text3)'};
+                        background:${checked?'var(--green)':'transparent'};
+                        display:flex;align-items:center;justify-content:center;">
+              ${checked?'<svg width="13" height="13" viewBox="0 0 13 13"><polyline points="2,7 5,10 11,3" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
             </div>
-            <div style="font-size:12px;color:var(--text2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-              ${s.dose} · ${s.notas}
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+                          color:${checked?'var(--green)':unlocked?'var(--text)':'var(--text3)'};
+                          opacity:${checked?.7:1};text-decoration:${checked?'line-through':'none'};">
+                ${s.suplemento}</div>
+              <div style="font-size:12px;color:var(--text2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                ${s.dose} · ${s.notas}</div>
             </div>
-          </div>
-        </button>`;
-    });
-    html += `</div></div>`;
+          </button>`;
+      });
+      html += `</div>`;
+    }
+    html += `</div>`;
   });
 
   if(!html) html = '<div style="text-align:center;padding:40px;color:var(--text2);">A carregar suplementos...<br><small>Vai às definições e confirma o URL do Sheets</small></div>';
@@ -3978,8 +4124,7 @@ function toggleSupl(idx) {
   const alreadyDone = !!checks[idx];
   if (alreadyDone) {
     const list = getCachedSupl() || SUPL_FALLBACK;
-    const s = list[idx];
-    const nome = s ? s.suplemento : 'este suplemento';
+    const nome = (list[idx] || {}).suplemento || 'este suplemento';
     if (!confirm('Remover o log de "' + nome + '"?\n\nTem a certeza que ainda não tomou?')) return;
   }
   checks[idx] = !alreadyDone;
@@ -3991,14 +4136,195 @@ function toggleSuplGroup(idxList) {
   const checks = getSuplChecks();
   const allDone = idxList.every(i => !!checks[i]);
   if (allDone) {
-    if (!confirm('Remover o log de toda esta toma?\n\nTem a certeza que quer desfazer?')) return;
+    if (!confirm('Remover o log de toda esta toma?\n\nTem a certeza?')) return;
     idxList.forEach(i => { checks[i] = false; });
+    // Auto-reopen the group
+    // (hora is unknown here, but expanding all with items undone would be weird;
+    //  just reset suplExpanded so initSuplExpanded recalculates defaults next render)
+    suplExpanded = null;
   } else {
     idxList.forEach(i => { checks[i] = true; });
+    // Auto-collapse this group after marking all done — find its hora
+    const list = getCachedSupl() || SUPL_FALLBACK;
+    const hora = (list[idxList[0]] || {}).hora;
+    if (hora && suplExpanded) suplExpanded[hora] = false;
   }
   saveSuplChecks(checks);
   renderSuplList(getCachedSupl() || SUPL_FALLBACK);
 }
+// ═══════════════════════════════════════════════════════════════
+// CORRIDA — Log + Histórico
+// ═══════════════════════════════════════════════════════════════
+
+function toggleCorridaForm() {
+  const wrap = document.getElementById('corrida-form-wrap');
+  const btn = document.getElementById('btn-corrida-form');
+  const isOpen = wrap.style.display !== 'none';
+  wrap.style.display = isOpen ? 'none' : 'block';
+  btn.textContent = isOpen ? '+ Registar' : '✕ Fechar';
+  if (!isOpen) {
+    // Pré-preencher semana actual
+    document.getElementById('cf-rpe') && (document.getElementById('cf-rpe').value = '');
+    document.getElementById('cf-status').textContent = '';
+  }
+}
+
+async function submitCorridaLog() {
+  const statusEl = document.getElementById('cf-status');
+  const dist = parseFloat(document.getElementById('cf-dist').value);
+  const tempo = document.getElementById('cf-tempo').value.trim();
+
+  if (!dist || dist <= 0) {
+    statusEl.style.color = '#e74c3c';
+    statusEl.textContent = '⚠️ Distância obrigatória';
+    return;
+  }
+  if (!tempo) {
+    statusEl.style.color = '#e74c3c';
+    statusEl.textContent = '⚠️ Tempo total obrigatório (ex: 45:22)';
+    return;
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const corrida = {
+    data:           today,
+    semana_plano:   getPlanWeek(),
+    tipo_treino:    document.getElementById('cf-tipo').value,
+    distancia_km:   dist,
+    tempo_total:    tempo,
+    pace_medio:     document.getElementById('cf-pace').value.trim(),
+    fc_media:       parseInt(document.getElementById('cf-fc-avg').value) || null,
+    fc_max:         parseInt(document.getElementById('cf-fc-max').value) || null,
+    cadencia_media: parseInt(document.getElementById('cf-cad').value) || null,
+    whoop_recovery: parseInt(document.getElementById('cf-whoop').value) || null,
+    rpe:            parseInt(document.getElementById('cf-rpe').value) || null,
+    localizacao:    document.getElementById('cf-local').value,
+    notas:          document.getElementById('cf-notas').value.trim()
+  };
+
+  statusEl.style.color = 'var(--text2)';
+  statusEl.textContent = '⏳ A guardar...';
+
+  const settings = getSettings();
+  if (!settings.sheetsUrl) {
+    statusEl.style.color = '#e74c3c';
+    statusEl.textContent = '⚠️ URL do Apps Script não configurado em Definições';
+    return;
+  }
+
+  try {
+    const res = await fetch(settings.sheetsUrl, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'save_corrida', corrida })
+    });
+    const json = await res.json();
+    if (json.status === 'ok') {
+      statusEl.style.color = '#2ECC71';
+      statusEl.textContent = '✅ Corrida guardada no Google Sheets!';
+      // Reset form
+      setTimeout(() => {
+        ['cf-dist','cf-tempo','cf-pace','cf-fc-avg','cf-fc-max','cf-cad','cf-whoop','cf-rpe','cf-notas']
+          .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+        statusEl.textContent = '';
+        toggleCorridaForm();
+        // Reload history
+        loadCorridaHistory();
+      }, 1500);
+    } else {
+      throw new Error(json.msg || 'Erro desconhecido');
+    }
+  } catch(err) {
+    statusEl.style.color = '#e74c3c';
+    statusEl.textContent = '❌ Erro: ' + err.message;
+  }
+}
+
+async function loadCorridaHistory() {
+  const listEl = document.getElementById('corrida-hist-list');
+  const btn = document.getElementById('btn-corrida-hist');
+  if (!listEl) return;
+  listEl.innerHTML = '<div style="font-size:12px;color:var(--text2);text-align:center;padding:12px 0">⏳ A carregar...</div>';
+  if (btn) { btn.textContent = '↻'; btn.disabled = true; }
+
+  const settings = getSettings();
+  if (!settings.sheetsUrl) {
+    listEl.innerHTML = '<div style="font-size:12px;color:#e74c3c;text-align:center;padding:8px">URL do Apps Script não configurado</div>';
+    if (btn) { btn.textContent = 'Carregar ›'; btn.disabled = false; }
+    return;
+  }
+
+  try {
+    const res = await fetch(settings.sheetsUrl + '?action=corrida_history');
+    const json = await res.json();
+    if (btn) { btn.textContent = '↻ Actualizar'; btn.disabled = false; }
+    renderCorridaHistory(json.corridas || []);
+  } catch(err) {
+    listEl.innerHTML = '<div style="font-size:12px;color:#e74c3c;text-align:center;padding:8px">❌ Erro ao carregar: ' + err.message + '</div>';
+    if (btn) { btn.textContent = 'Carregar ›'; btn.disabled = false; }
+  }
+}
+
+function renderCorridaHistory(corridas) {
+  const listEl = document.getElementById('corrida-hist-list');
+  if (!listEl) return;
+
+  if (!corridas || corridas.length === 0) {
+    listEl.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0">Ainda sem corridas registadas. Faz a primeira! 🏃</div>';
+    return;
+  }
+
+  const tipoEmoji = { 'Easy Run':'🟢', 'Long Run':'🔵', 'Tempo Run':'🟠', 'Intervalos':'🔴', 'Fartlek':'🟡', 'Recuperação':'⚪' };
+  const localEmoji = { 'Angola':'🇦🇴', 'Dubai':'🇦🇪', 'Portugal':'🇵🇹', 'Outro':'🌍' };
+
+  const recent = corridas.slice(0, 8);
+  let html = '';
+
+  recent.forEach((c, idx) => {
+    const emoji = tipoEmoji[c.tipo_treino] || '🏃';
+    const flag  = localEmoji[c.localizacao] || '🌍';
+    const dateLabel = c.data ? new Date(c.data + 'T12:00:00').toLocaleDateString('pt-PT', { weekday:'short', day:'numeric', month:'short' }) : '—';
+    const isFirst = idx === 0;
+
+    html += `<div style="border-radius:10px;background:var(--bg3);padding:12px;margin-bottom:8px;${isFirst?'border:1px solid var(--accent)33':''}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:16px">${emoji}</span>
+          <div style="font-size:13px;font-weight:700">${c.tipo_treino || '—'}</div>
+          <span style="font-size:11px;color:var(--text2)">${flag} Sem ${c.semana_plano || '?'}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text2)">${dateLabel}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:${c.notas?'8px':'0'}">
+        <div style="background:var(--bg);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:10px;color:var(--text2);font-weight:600">DISTÂNCIA</div>
+          <div style="font-size:16px;font-weight:800;color:#2ECC71">${c.distancia_km ? c.distancia_km+'km' : '—'}</div>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:10px;color:var(--text2);font-weight:600">TEMPO</div>
+          <div style="font-size:16px;font-weight:800;color:var(--accent)">${c.tempo_total || '—'}</div>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:10px;color:var(--text2);font-weight:600">PACE</div>
+          <div style="font-size:14px;font-weight:800;color:var(--text)">${c.pace_medio ? c.pace_medio+'/km' : '—'}</div>
+        </div>
+      </div>
+      ${(c.fc_media || c.whoop_recovery || c.rpe) ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+        ${c.fc_media ? `<span style="background:#e74c3c22;border:1px solid #e74c3c33;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;color:#e74c3c">❤️ ${c.fc_media}bpm avg${c.fc_max?' / '+c.fc_max+'max':''}</span>` : ''}
+        ${c.whoop_recovery ? `<span style="background:#3498db22;border:1px solid #3498db33;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;color:#3498db">💙 WHOOP ${c.whoop_recovery}%</span>` : ''}
+        ${c.rpe ? `<span style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;color:var(--text2)">RPE ${c.rpe}/10</span>` : ''}
+      </div>` : ''}
+      ${c.notas ? `<div style="font-size:11px;color:var(--text2);margin-top:6px;font-style:italic">"${c.notas}"</div>` : ''}
+    </div>`;
+  });
+
+  if (corridas.length > 8) {
+    html += `<div style="font-size:11px;color:var(--text3);text-align:center;padding:4px">+ ${corridas.length - 8} corridas mais antigas no Google Sheets</div>`;
+  }
+
+  listEl.innerHTML = html;
+}
+
+
 
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
