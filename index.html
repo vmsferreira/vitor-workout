@@ -1216,7 +1216,17 @@ function navTo(dest) {
     showScreen('history-screen'); renderHistory();
     loadCorridaHistoryBg(); // Sempre actualiza corridas em background
   }
-  if(dest==='progress') { showScreen('progress-screen'); renderProgress(); }
+  if(dest==='progress') {
+    // Se planWeek mudou desde a última vez, reset para planWeek-1
+    const _curPlan = getPlanWeek();
+    if (progState._lastPlanWeek !== _curPlan) {
+      progState.weekNum = Math.max(1, _curPlan - 1);
+      progState._lastPlanWeek = _curPlan;
+    } else if (!progState.weekNum) {
+      progState.weekNum = Math.max(1, _curPlan - 1);
+    }
+    showScreen('progress-screen'); renderProgress();
+  }
   if(dest==='supl') { showScreen('supl-screen'); renderSuplementos(); }
 }
 
@@ -3624,12 +3634,10 @@ function upsertProgressaoLocal(data) {
 }
 
 // ── Estado do tab de progresso ───────────────────────────────
-// Smart default: se a semana anterior ainda não tem progresso guardado, abre lá
-// (caso típico: início da semana nova, preencher a semana passada)
+// Default: abre sempre na semana anterior (planWeek - 1)
+// Usa ‹ / › para navegar. Sem depender de localStorage.
 function getDefaultProgWeek() {
-  const cur = getPlanWeek();
-  if (cur > 1 && !getProgressaoForWeek(cur - 1)) return cur - 1;
-  return cur;
+  return Math.max(1, getPlanWeek() - 1);
 }
 const progState = { tab: 'form', weekNum: 0 }; // 0 = inicializado lazily
 
