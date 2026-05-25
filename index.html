@@ -3547,33 +3547,56 @@ function renderProgress() {
   else renderProgressCharts(content);
 }
 
+// Busca os melhores sets da semana ao Sheets (cloud fallback para o AUTO)
+async function fetchWeekBestFromCloud(weekNum) {
+  try {
+    const url = loadSettings().sheetsUrl;
+    if (!url) return null;
+    const res = await fetch(url + '?action=week_best&week=' + weekNum + '&t=' + Date.now());
+    const data = await res.json();
+    if (data.status !== 'ok' || !data.best) return null;
+    const b = data.best;
+    return {
+      bench:  b.bench_kg  > 0 ? { kg: b.bench_kg,  reps: b.bench_reps  } : null,
+      lat:    b.lat_kg    > 0 ? { kg: b.lat_kg,    reps: b.lat_reps    } : null,
+      curl:   b.curl_kg   > 0 ? { kg: b.curl_kg,   reps: b.curl_reps   } : null,
+      plank:  b.plank_seg > 0 ? b.plank_seg : null
+    };
+  } catch(e) { return null; }
+}
+
 // ── Formulário "Esta Semana" ─────────────────────────────────
-function renderProgressForm(content) {
+async function renderProgressForm(content) {
   const wk       = progState.weekNum;
   const isDeload = DELOAD_WEEKS.includes(wk);
   const { end }  = weekDateRange(wk);
   const sundayFmt = end.toLocaleDateString('pt-PT', { weekday:'long', day:'numeric', month:'long' });
 
-  // IDs cobertos por ambiente: gym (gm_), speediance (sp_), hotel (db_/standing_)
-  const benchBest = getBestSetForWeek([
-    'gm_a_bench',        // Gym — Dumbbell Bench Press
-    'sp_a_bench',        // Speediance — Dual-Handle Bench Press
-    'db_bench_press',    // Hotel — Dumbbell Bench Press
+  // LOCAL: melhor série de cada exercício no localStorage
+  let benchBest = getBestSetForWeek([
+    'gm_a_bench', 'sp_a_bench', 'db_bench_press',
   ], wk);
-  const latBest = getBestSetForWeek([
-    'gm_b_pulldown',     // Gym B — Neutral Grip Cable Lat Pulldown
-    'gm_d_pulldown',     // Gym D — Overhand Grip Cable Lat Pulldown
-    'sp_b_pulldown',     // Speediance B — Kneeling Dual-Handle Lat Pulldown
-    'sp_d_pulldown',     // Speediance D — Kneeling Dual-Handle Lat Pulldown
+  let latBest = getBestSetForWeek([
+    'gm_b_pulldown', 'gm_d_pulldown', 'sp_b_pulldown', 'sp_d_pulldown',
   ], wk);
-  const curlBest = getBestSetForWeek([
-    'gm_b_bicep_curl',   // Gym B — Dumbbell Bicep Curl
-    'sp_b_bicep_curl',   // Speediance B — Standing Dual-Handle Biceps Curl (PRINCIPAL)
-    'sp_b_curl_fin',     // Speediance B — Curl Finisher
-    'standing_biceps_curl', // Hotel — Standing Biceps Curl
+  let curlBest = getBestSetForWeek([
+    'gm_b_bicep_curl', 'sp_b_bicep_curl', 'sp_b_curl_fin', 'standing_biceps_curl',
   ], wk);
-  const plankBest = getBestPlankForWeek(wk);
-  const saved     = getProgressaoForWeek(wk);
+  let plankBest = getBestPlankForWeek(wk);
+
+  // CLOUD FALLBACK: se não houver dados locais, vai buscar ao Sheets
+  const hasLocal = benchBest || latBest || curlBest || plankBest;
+  if (!hasLocal) {
+    const cloud = await fetchWeekBestFromCloud(wk);
+    if (cloud) {
+      benchBest = benchBest || cloud.bench;
+      latBest   = latBest   || cloud.lat;
+      curlBest  = curlBest  || cloud.curl;
+      plankBest = plankBest || cloud.plank;
+    }
+  }
+
+  const saved = getProgressaoForWeek(wk);
 
   const v = (field, auto) => {
     if (saved && saved[field] != null && saved[field] !== '') return saved[field];
@@ -3959,7 +3982,8 @@ function getCachedSupl() {
     const t = parseInt(localStorage.getItem(SUPL_CACHE_TIME)||'0');
     if (Date.now() - t < 24*3600*1000) {
       const d = JSON.parse(localStorage.getItem(SUPL_CACHE_KEY)||'null');
-      if (d && d.length && _suplDataValid(d)) return d;
+      // Rejeita cache com horas em formato inválido (ex: "Sat Dec 30 1899...")
+      if (d && d.length && /^\d{1,2}:\d{2}/.test(String(d[0]?.hora||''))) return d;
     }
   } catch(e) {}
   return null;
@@ -3970,11 +3994,6 @@ function setCachedSupl(list) {
 function clearCachedSupl() {
   try { localStorage.removeItem(SUPL_CACHE_KEY); localStorage.removeItem(SUPL_CACHE_TIME); } catch(e) {}
 }
-// Valida se os dados têm hora no formato HH:mm — rejeita dados com datas 1899 ou outros lixos
-function _suplDataValid(list) {
-  if (!list || !list.length) return false;
-  return list.slice(0,3).every(s => /^\d{1,2}:\d{2}$/.test(String(s.hora||'').trim()));
-}
 
 async function loadSuplementos(forceRefresh) {
   const btn = document.getElementById('supl-sync-btn');
@@ -3983,25 +4002,21 @@ async function loadSuplementos(forceRefresh) {
     const cached = getCachedSupl();
     if (cached) { renderSuplList(cached); if(btn){btn.textContent='☁️ Sync';btn.disabled=false;} return; }
   }
-  // Força refresh: limpa cache primeiro para não ficar preso com dados antigos
   if (forceRefresh) clearCachedSupl();
   try {
     const s = loadSettings();
     const url = s.sheetsUrl;
-    if (!url) throw new Error('URL do Sheets não configurado');
+    if (!url) throw new Error('no url');
     const res = await fetch(url + '?action=suplementos&t=' + Date.now());
     const data = await res.json();
-    if (data.status === 'ok' && data.suplementos && data.suplementos.length && _suplDataValid(data.suplementos)) {
+    if (data.status === 'ok' && data.suplementos && data.suplementos.length) {
       setCachedSupl(data.suplementos);
       renderSuplList(data.suplementos);
-      if(btn){btn.textContent='✓ Sync';btn.disabled=false;} return;
+      if(btn){btn.textContent='☁️ Sync';btn.disabled=false;} return;
     }
-    // Dados inválidos do servidor — usa fallback local
     renderSuplList(SUPL_FALLBACK);
-    showToast('⚠️ Dados do Sheets inválidos — a usar lista local');
   } catch(e) {
     renderSuplList(SUPL_FALLBACK);
-    showToast('⚠️ Sem ligação ao Sheets — a usar lista local');
   }
   if(btn){btn.textContent='☁️ Sync';btn.disabled=false;}
 }
