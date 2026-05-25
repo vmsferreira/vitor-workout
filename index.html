@@ -2514,11 +2514,18 @@ function toggleSetDone(id, i) {
         }
       }
     } else {
-      // ── Exercício normal: descanso quando todas as séries feitas ──
-      const allDone = state.sets[id].every(st=>st.done);
-      if(allDone) {
-        const nextEx = state.workout[state.currentIdx+1];
-        if(ex.rest>0) startRestTimer(ex.rest, nextEx);
+      // ── Exercício normal: descanso após CADA série ──
+      if(ex.rest > 0) {
+        const allDone = state.sets[id].every(st=>st.done);
+        if(allDone) {
+          // Última série → mostra próximo exercício
+          startRestTimer(ex.rest, state.workout[state.currentIdx+1]);
+        } else {
+          // Entre séries → mostra qual a próxima série
+          const doneCount = state.sets[id].filter(st=>st.done).length;
+          const total = state.sets[id].length;
+          startRestTimer(ex.rest, `Próxima série: ${doneCount+1} / ${total}`);
+        }
       }
     }
   }
@@ -2650,7 +2657,8 @@ function startRestTimer(seconds, nextEx) {
   const arc = document.getElementById('rest-arc');
   const circumference = 2*Math.PI*70; // r=70
   const nextLabel = document.getElementById('rest-next-ex');
-  nextLabel.textContent = nextEx ? `A seguir: ${nextEx.name}` : 'Último exercício!';
+  nextLabel.textContent = typeof nextEx === 'string' ? nextEx
+    : nextEx ? `A seguir: ${nextEx.name}` : 'Último exercício!';
   overlay.classList.add('show');
   if(state.restInterval) clearInterval(state.restInterval);
   function tick() {
