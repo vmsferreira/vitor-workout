@@ -3050,7 +3050,7 @@ function renderHistLog(history, content) {
   }
   if (filter !== 'workouts') {
     corridas.forEach((c, idx) => {
-      const ts = c.data ? new Date(c.data + 'T12:00:00Z').getTime() : 0;
+      const ts = sanitizeCorridaDate(c.data);
       if (ts > 0) entries.push({ kind: 'run', date: ts, idx, data: c });
     });
   }
@@ -4127,8 +4127,32 @@ function renderSuplementos() {
   else { loadSuplementos(false); }
 }
 
+/// Extrai timestamp de qualquer formato de data — incluindo "Sun May 24 2026 15:00:00 GMT+0300..."
+function sanitizeCorridaDate(d) {
+  if (!d) return 0;
+  const s = String(d).trim();
+  // Formato ISO YYYY-MM-DD
+  const iso = s.match(/(\d{4}-\d{2}-\d{2})/);
+  if (iso) return new Date(iso[1] + 'T12:00:00Z').getTime();
+  // Tenta parse directo (suporta "Sun May 24 2026 15:00:00 GMT+0300")
+  const ts = new Date(s).getTime();
+  return isNaN(ts) ? 0 : ts;
+}
+
+// Extrai "HH:mm" de qualquer formato — incluindo "Sat Dec 30 1899 06:30:00 GMT+0227"
+function sanitizeHora(h) {
+  if (!h) return '';
+  const s = String(h).trim();
+  if (/^\d{1,2}:\d{2}$/.test(s)) return s;
+  // Extrai HH:mm:ss de dentro de uma string de data
+  const m = s.match(/\b(\d{1,2}):(\d{2}):\d{2}\b/);
+  if (m) return m[1].padStart(2,'0') + ':' + m[2];
+  return s;
+}
 function horaToMin(h) {
-  const [hh,mm] = h.split(':').map(Number);
+  const clean = sanitizeHora(h);
+  const [hh,mm] = clean.split(':').map(Number);
+  if (isNaN(hh) || isNaN(mm)) return 9999;
   return hh*60 + mm;
 }
 function nowMinutes() {
@@ -4155,7 +4179,9 @@ function toggleSuplExpand(hora) {
   renderSuplList(getCachedSupl() || SUPL_FALLBACK);
 }
 
-function renderSuplList(list) {
+function renderSuplList(rawList) {
+  // Sanitiza horas antes de renderizar — suporta formato "Sat Dec 30 1899 06:30:00..."
+  const list = (rawList||[]).map(s => ({...s, hora: sanitizeHora(s.hora)}));
   const checks = getSuplChecks();
   const nowMin = nowMinutes();
   const total = list.length;
