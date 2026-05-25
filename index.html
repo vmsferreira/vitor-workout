@@ -3624,11 +3624,11 @@ function upsertProgressaoLocal(data) {
 }
 
 // ── Estado do tab de progresso ───────────────────────────────
-// Smart default: se a semana actual não tem progresso guardado, abre na semana anterior
-// (caso típico: segunda-feira, a abrir para preencher a semana passada)
+// Smart default: se a semana anterior ainda não tem progresso guardado, abre lá
+// (caso típico: início da semana nova, preencher a semana passada)
 function getDefaultProgWeek() {
   const cur = getPlanWeek();
-  if (cur > 1 && !getProgressaoForWeek(cur)) return cur - 1;
+  if (cur > 1 && !getProgressaoForWeek(cur - 1)) return cur - 1;
   return cur;
 }
 const progState = { tab: 'form', weekNum: 0 }; // 0 = inicializado lazily
@@ -3839,16 +3839,24 @@ async function saveProgressaoWeek(weekNum) {
     showToast('✅ Guardado localmente. Configura o URL do Sheets para sincronizar.');
   } else {
     try {
-      // GAS não suporta CORS em POST → usar no-cors (envia mas não lê resposta, igual ao sendToSheets)
-      await fetch(url, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'progressao_save', progressao: data })
-      });
-      showToast(`✅ Semana ${weekNum} guardada e enviada para Sheets!`);
+      // Usar GET para progressao_save — sem problemas de CORS e podemos ler a resposta
+      const saveData = { ...data };
+      delete saveData._savedAt; // não incluir timestamp interno
+      const getUrl = url + '?action=progressao_save&data=' + encodeURIComponent(JSON.stringify(saveData)) + '&t=' + Date.now();
+      const res = await fetch(getUrl);
+      const json = await res.json();
+      if (json.status === 'ok') {
+        showToast(`✅ Semana ${weekNum} guardada no Sheets!`);
+      } else {
+        showToast(`⚠️ Guardado localmente. Erro Sheets: ${json.msg || 'desconhecido'}`);
+      }
     } catch(err) {
-      showToast('✅ Guardado localmente (erro de rede: ' + err.message + ')');
+      // Fallback: tentar POST no-cors
+      try {
+        fetch(url, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'progressao_save', progressao: data }) });
+      } catch(_) {}
+      showToast(`✅ Guardado localmente (sem rede: ${err.message})`);
     }
   }
 
