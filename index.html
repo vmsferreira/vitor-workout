@@ -324,6 +324,13 @@ canvas{max-width:100%;}
       </div>
       <div id="last-workout-summary" style="color:var(--text2);font-size:13px;">Nenhum treino registado ainda.</div>
     </button>
+    <button id="last-corrida-card" onclick="openLastCorrida()" style="display:none;width:100%;text-align:left;font-family:inherit;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;cursor:pointer;touch-action:manipulation;-webkit-appearance:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="font-size:13px;font-weight:700;">🏃 Última Corrida</div>
+        <span style="color:var(--text3);font-size:16px">›</span>
+      </div>
+      <div id="last-corrida-summary" style="color:var(--text2);font-size:13px;">Nenhuma corrida registada.</div>
+    </button>
   </div>
 </div>
 
@@ -1231,41 +1238,95 @@ function navTo(dest) {
 }
 
 // ── Home Screen ───────────────────────────────────────
+// Converte string "H:MM:SS" ou "MM:SS" em segundos totais
+function parseDurationSecs(s) {
+  if (!s) return 0;
+  const parts = String(s).trim().split(':').map(Number);
+  if (parts.length === 3) return (parts[0]||0)*3600 + (parts[1]||0)*60 + (parts[2]||0);
+  if (parts.length === 2) return (parts[0]||0)*60 + (parts[1]||0);
+  return 0;
+}
+function fmtDurationSecs(secs) {
+  const h = Math.floor(secs/3600);
+  const m = Math.floor((secs%3600)/60);
+  const s = secs % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
 function renderHome() {
   const d = new Date();
   document.getElementById('home-date').textContent = d.toLocaleDateString('pt-PT',{weekday:'long',day:'numeric',month:'long'});
   const history = loadHistory();
+  const corridas = loadCorridasLocal();
   const qs = document.getElementById('quick-stats');
-  if(history.length===0) {
-    qs.textContent = 'Nenhum treino ainda. Começa já! 💪';
+
+  // Limite "esta semana" = início da semana actual do plano
+  const { start: weekStart } = weekDateRange(getPlanWeek());
+  const weekStartMs = weekStart.getTime();
+
+  // ── Treinos ──
+  const totalTreinos = history.length;
+  const treinsEstaSemana = history.filter(h => entryDate(h) >= weekStartMs).length;
+  const totalVol = history.reduce((a,h) => {
+    const vol = h.totalVolume > 0 ? h.totalVolume : (h.exercises||[]).reduce((s,e)=>s+(e.volume||0),0);
+    return a + vol;
+  }, 0);
+
+  // ── Corridas ──
+  const totalCorridas = corridas.length;
+  const corridasEstaSemana = corridas.filter(c => sanitizeCorridaDate(c.data) >= weekStartMs).length;
+  const totalCorridaSecs = corridas.reduce((a,c) => a + parseDurationSecs(c.tempo_total), 0);
+
+  let statsHTML = '';
+  if (totalTreinos === 0 && totalCorridas === 0) {
+    statsHTML = 'Nenhuma actividade ainda. Começa já! 💪';
   } else {
-    const total = history.length;
-    const weekAgo = Date.now()-7*86400000;
-    const thisWeek = history.filter(h=>entryDate(h) > weekAgo).length;
-    const totalVol = history.reduce((a,h)=>{
-      const vol = h.totalVolume > 0 ? h.totalVolume : (h.exercises||[]).reduce((s,e)=>s+(e.volume||0),0);
-      return a + vol;
-    }, 0);
-    qs.innerHTML = `<b>${total}</b> treinos · <b>${thisWeek}</b> esta semana · <b>${Math.round(totalVol/1000)}t</b> volume total`;
+    if (totalTreinos > 0) {
+      statsHTML += `<div style="margin-bottom:4px">🏋️ <b>${totalTreinos}</b> treino${totalTreinos!==1?'s':''} · <b>${treinsEstaSemana}</b> esta semana · <b>${Math.round(totalVol/1000)}t</b> vol total</div>`;
+    }
+    if (totalCorridas > 0) {
+      statsHTML += `<div>🏃 <b>${totalCorridas}</b> corrida${totalCorridas!==1?'s':''} · <b>${corridasEstaSemana}</b> esta semana · <b>${fmtDurationSecs(totalCorridaSecs)}</b> total</div>`;
+    }
   }
+  qs.innerHTML = statsHTML;
+
+  // ── Último treino ──
   const lw = document.getElementById('last-workout-summary');
   const card = document.getElementById('last-workout-card');
-  if(history.length>0) {
+  if (history.length > 0) {
     const last = history[history.length-1];
     const sess = SESSIONS[last.type]?.sessions[last.session];
-    const vol = last.totalVolume > 0 ? last.totalVolume :
-      (last.exercises||[]).reduce((a,e)=>a+(e.volume||0),0);
-    const dateStr = fmtEntryDate(last);
-    lw.innerHTML = `<b>${sess?sess.name:'?'}</b> — ${dateStr}<br>⏱ ${fmtTime(last.duration||0)} · 🏋️ ${Math.round(vol)}kg vol · ${(last.exercises||[]).length} exercícios`;
-    if(card) card.style.display = '';
+    const vol = last.totalVolume > 0 ? last.totalVolume : (last.exercises||[]).reduce((a,e)=>a+(e.volume||0),0);
+    lw.innerHTML = `<b>${sess?sess.name:'?'}</b> — ${fmtEntryDate(last)}<br>⏱ ${fmtTime(last.duration||0)} · 🏋️ ${Math.round(vol)}kg vol · ${(last.exercises||[]).length} exercícios`;
+    if (card) card.style.display = '';
   } else {
-    if(card) card.style.display = 'none';
+    if (card) card.style.display = 'none';
+  }
+
+  // ── Última corrida ──
+  const lc = document.getElementById('last-corrida-summary');
+  const ccCard = document.getElementById('last-corrida-card');
+  if (corridas.length > 0) {
+    const last = corridas[0]; // getCorridaHistory_ devolve por ordem inversa (mais recente primeiro)
+    const ts = sanitizeCorridaDate(last.data);
+    const dateLabel = ts ? new Date(ts).toLocaleDateString('pt-PT',{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'}) : '—';
+    const tipoEmoji = {'Easy Run':'🟢','Long Run':'🔵','Tempo Run':'🟠','Intervalos':'🔴','Fartlek':'🟡','Recuperação':'⚪'};
+    const emoji = tipoEmoji[last.tipo_treino] || '🏃';
+    lc.innerHTML = `<b>${emoji} ${last.tipo_treino||'Corrida'}</b> — ${dateLabel}<br>📍 ${last.distancia_km||'—'}km · ⏱ ${last.tempo_total||'—'} · 👟 ${last.pace_medio ? last.pace_medio+'/km' : '—'}`;
+    if (ccCard) ccCard.style.display = '';
+  } else {
+    if (ccCard) ccCard.style.display = 'none';
   }
 }
 
 function openLastWorkout() {
   const history = loadHistory();
   if(history.length > 0) openHistDetail(history.length - 1);
+}
+function openLastCorrida() {
+  const corridas = loadCorridasLocal();
+  if (corridas.length > 0) openCorridaDetail(0); // índice 0 = mais recente
 }
 
 // ── Running Screen ───────────────────────────────────
@@ -3107,14 +3168,17 @@ function renderHistLog(history, content) {
       const dateLabel = _d.toLocaleDateString('pt-PT', { weekday:'short', day:'numeric', month:'short', timeZone:'UTC' });
       const emoji = tipoEmoji[c.tipo_treino] || '🏃';
       const flag  = localEmoji[c.localizacao] || '🌍';
-      return `<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:10px">
+      return `<button onclick="openCorridaDetail(${e.idx})" style="width:100%;text-align:left;font-family:inherit;cursor:pointer;-webkit-appearance:none;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:10px;touch-action:manipulation">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
           <div style="display:flex;align-items:center;gap:6px">
             <span style="font-size:16px">${emoji}</span>
             <div style="font-size:14px;font-weight:700">${c.tipo_treino||'Corrida'}</div>
             <span style="font-size:11px;color:var(--text2)">${flag}</span>
           </div>
-          <div style="font-size:12px;color:var(--text2);font-weight:600">${dateLabel}</div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="font-size:12px;color:var(--text2);font-weight:600">${dateLabel}</div>
+            <span style="color:var(--text3);font-size:18px">›</span>
+          </div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
           <div style="background:var(--bg3);border-radius:8px;padding:8px;text-align:center">
@@ -3131,7 +3195,7 @@ function renderHistLog(history, content) {
           </div>
         </div>
         ${c.notas ? `<div style="font-size:11px;color:var(--text2);margin-top:8px;font-style:italic">"${c.notas}"</div>` : ''}
-      </div>`;
+      </button>`;
     }
   }).join('');
 
@@ -3229,6 +3293,57 @@ function openHistDetail(idx) {
         <div style="padding:14px 16px 10px;font-weight:700;border-bottom:1px solid var(--border)">💪 Exercícios</div>
         <div style="padding:0 16px">${exHTML}</div>
       </div>
+    </div>`;
+  showScreen('hist-detail-screen');
+}
+
+function openCorridaDetail(idx) {
+  const corridas = loadCorridasLocal();
+  const c = corridas[idx];
+  if (!c) return;
+  const ts = sanitizeCorridaDate(c.data);
+  const dateLabel = ts ? new Date(ts).toLocaleDateString('pt-PT',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}) : '—';
+  const tipoEmoji = {'Easy Run':'🟢','Long Run':'🔵','Tempo Run':'🟠','Intervalos':'🔴','Fartlek':'🟡','Recuperação':'⚪'};
+  const localEmoji = {'Angola':'🇦🇴','Dubai':'🇦🇪','Portugal':'🇵🇹','Outro':'🌍'};
+  const emoji = tipoEmoji[c.tipo_treino] || '🏃';
+  const flag  = localEmoji[c.localizacao] || '🌍';
+  const el = document.getElementById('hist-detail-content');
+
+  const stats = [
+    { label:'KM', value: c.distancia_km ? c.distancia_km+'km' : '—', color:'var(--green)' },
+    { label:'TEMPO', value: c.tempo_total||'—', color:'var(--accent)' },
+    { label:'PACE', value: c.pace_medio ? c.pace_medio+'/km' : '—', color:'var(--text)' },
+    { label:'FC MÉD', value: c.fc_media ? c.fc_media+'bpm' : '—', color:'var(--red)' },
+    { label:'FC MÁX', value: c.fc_max ? c.fc_max+'bpm' : '—', color:'var(--red)' },
+    { label:'CADÊNCIA', value: c.cadencia_media ? c.cadencia_media+'spm' : '—', color:'var(--text)' },
+  ].filter(s => s.value !== '—');
+
+  const extraStats = [
+    c.whoop_recovery ? `<span class="chip chip-green">💚 WHOOP ${c.whoop_recovery}%</span>` : '',
+    c.rpe ? `<span class="chip chip-gray">RPE ${c.rpe}/10</span>` : '',
+    c.semana_plano ? `<span class="chip chip-blue">Sem ${c.semana_plano}</span>` : '',
+  ].filter(Boolean).join('');
+
+  el.innerHTML = `
+    <div style="padding:16px;padding-bottom:40px">
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="font-size:28px;margin-bottom:4px">${emoji}</div>
+        <div style="font-size:20px;font-weight:800">${c.tipo_treino||'Corrida'}</div>
+        <div style="color:var(--text3);font-size:13px;margin-top:3px">${dateLabel} ${flag}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+        ${stats.map(s=>`
+          <div class="card" style="text-align:center;padding:14px">
+            <div style="font-size:${s.value.length>6?'16':'20'}px;font-weight:800;color:${s.color}">${s.value}</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:4px">${s.label}</div>
+          </div>`).join('')}
+      </div>
+      ${extraStats ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">${extraStats}</div>` : ''}
+      ${c.notas ? `
+        <div class="card" style="margin-bottom:12px">
+          <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px">📝 Notas</div>
+          <div style="font-size:14px;line-height:1.5;color:var(--text)">${c.notas}</div>
+        </div>` : ''}
     </div>`;
   showScreen('hist-detail-screen');
 }
@@ -4131,8 +4246,10 @@ async function loadSuplementos(forceRefresh) {
     const res = await fetch(url + '?action=suplementos&t=' + Date.now());
     const data = await res.json();
     if (data.status === 'ok' && data.suplementos && data.suplementos.length) {
-      setCachedSupl(data.suplementos);
-      renderSuplList(data.suplementos);
+      // Sanitizar horas ANTES de guardar no cache para que getCachedSupl() valide correctamente
+      const sanitized = data.suplementos.map(s => ({...s, hora: sanitizeHora(s.hora)}));
+      setCachedSupl(sanitized);
+      renderSuplList(sanitized);
       if(btn){btn.textContent='☁️ Sync';btn.disabled=false;} return;
     }
     renderSuplList(SUPL_FALLBACK);
