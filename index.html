@@ -1224,8 +1224,8 @@ function navTo(dest) {
     loadCorridaHistoryBg(); // Sempre actualiza corridas em background
   }
   if(dest==='progress') {
-    // Se planWeek mudou desde a última vez, reset para planWeek-1
-    const _curPlan = getPlanWeek();
+    // Reset automático quando a semana avança
+    const _curPlan = getCurrentPlanWeekByDate();
     if (progState._lastPlanWeek !== _curPlan) {
       progState.weekNum = Math.max(1, _curPlan - 1);
       progState._lastPlanWeek = _curPlan;
@@ -1261,8 +1261,8 @@ function renderHome() {
   const corridas = loadCorridasLocal();
   const qs = document.getElementById('quick-stats');
 
-  // Limite "esta semana" = início da semana actual do plano
-  const { start: weekStart } = weekDateRange(getPlanWeek());
+  // Limite "esta semana" = calculado pela data real (não pelo planWeek manual)
+  const { start: weekStart } = weekDateRange(getCurrentPlanWeekByDate());
   const weekStartMs = weekStart.getTime();
 
   // ── Treinos ──
@@ -3546,8 +3546,9 @@ function openSettings() {
   if(el) el.value = s.sheetsUrl||'';
   const bw = document.getElementById('bw-input');
   if(bw) bw.value = s.bodyweight||80;
-  const wk = document.getElementById('plan-week-input');
-  if(wk) wk.value = s.planWeek||1;
+  const ps = document.getElementById('plan-start-input');
+  if(ps) ps.value = s.planStart || '2026-05-05';
+  _updatePlanStartLabel();
   showScreen('settings-screen');
 }
 function saveBW() {
@@ -3555,20 +3556,30 @@ function saveBW() {
   const s = loadSettings(); s.bodyweight=val; saveSettings(s);
   showToast('Peso corporal: '+val+'kg guardado');
 }
-function savePlanWeek() {
-  const val = Math.min(12, Math.max(1, parseInt(document.getElementById('plan-week-input').value)||1));
-  document.getElementById('plan-week-input').value = val;
-  const s = loadSettings(); s.planWeek = val; saveSettings(s);
-  const isDeload = [4,8,12].includes(val);
-  showToast(isDeload ? '⭐ Semana '+val+' — DELOAD guardado' : '✓ Semana '+val+' guardada');
+function savePlanStart() {
+  const val = document.getElementById('plan-start-input')?.value || '2026-05-05';
+  const s = loadSettings(); s.planStart = val; saveSettings(s);
+  // Actualizar PLAN_START em memória
+  PLAN_START = new Date(val + 'T00:00:00Z');
+  const wk = getCurrentPlanWeekByDate();
+  const isDeload = DELOAD_WEEKS.includes(wk);
+  showToast(isDeload ? `📅 Início guardado — Semana ${wk} ⭐ DELOAD` : `📅 Início guardado — Semana ${wk} actual`);
+  _updatePlanStartLabel();
+}
+function _updatePlanStartLabel() {
+  const label = document.getElementById('plan-start-week-label');
+  if (!label) return;
+  const val = document.getElementById('plan-start-input')?.value;
+  if (!val) { label.textContent = ''; return; }
+  const tmpStart = new Date(val + 'T00:00:00Z');
+  const diffMs = Date.now() - tmpStart.getTime();
+  const wk = Math.min(12, Math.max(1, Math.floor(diffMs / (7*86400000)) + 1));
+  const isDeload = DELOAD_WEEKS.includes(wk);
+  label.textContent = `Semana actual: ${wk}${isDeload ? ' ⭐ DELOAD' : ''}`;
 }
 function getPlanWeek() {
-  return Math.min(12, Math.max(1, parseInt(loadSettings().planWeek)||1));
-}
-function _updateDeloadBadge() {
-  const val = parseInt(document.getElementById('plan-week-input').value)||1;
-  const badge = document.getElementById('plan-week-deload-badge');
-  if(badge) badge.style.display = [4,8,12].includes(val) ? 'inline' : 'none';
+  // Mantido por compatibilidade — usa sempre a data real
+  return getCurrentPlanWeekByDate();
 }
 function saveSheetUrl() {
   const url = document.getElementById('sheets-url-input').value.trim();
@@ -3661,10 +3672,16 @@ document.addEventListener('DOMContentLoaded', initTouchBindings);
 // PROGRESSÃO SEMANAL
 // ═══════════════════════════════════════════════════════════════
 
-const PLAN_START   = new Date('2026-05-05T00:00:00Z'); // 2ª feira início Semana 1
+let PLAN_START = new Date((loadSettings().planStart || '2026-05-05') + 'T00:00:00Z'); // 2ª feira início Semana 1
 const DELOAD_WEEKS = [4, 8, 12];
 
-// Usa sempre a semana configurada nas Definições (getPlanWeek), não calcula pela data
+// Calcula a semana actual do plano pela data real (não depende do planWeek manual)
+function getCurrentPlanWeekByDate() {
+  const diffMs = Date.now() - PLAN_START.getTime();
+  const week = Math.floor(diffMs / (7 * 86400000)) + 1;
+  return Math.min(12, Math.max(1, week));
+}
+// Usa a semana configurada nas Definições (para o formulário de progresso)
 function currentWeekNum() {
   return getPlanWeek();
 }
@@ -3749,10 +3766,10 @@ function upsertProgressaoLocal(data) {
 }
 
 // ── Estado do tab de progresso ───────────────────────────────
-// Default: abre sempre na semana anterior (planWeek - 1)
-// Usa ‹ / › para navegar. Sem depender de localStorage.
+// Default: semana anterior à semana actual calculada pela data
+// Ex: hoje é semana 4 → abre na semana 3 para preencher a semana passada
 function getDefaultProgWeek() {
-  return Math.max(1, getPlanWeek() - 1);
+  return Math.max(1, getCurrentPlanWeekByDate() - 1);
 }
 const progState = { tab: 'form', weekNum: 0 }; // 0 = inicializado lazily
 
@@ -4695,16 +4712,12 @@ function renderCorridaHistory(corridas) {
         </div>
       </div>
       <div style="margin-bottom:18px;padding:14px;background:var(--bg3);border-radius:12px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-          <div style="font-size:12px;font-weight:700;color:var(--text2)">📅 Semana do Plano (1–12)</div>
-          <span id="plan-week-deload-badge" style="display:none;font-size:10px;font-weight:700;color:#F1C40F;background:#F1C40F22;padding:2px 7px;border-radius:20px">⭐ DELOAD</span>
-        </div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:10px">Controla o treino de corrida e o modo deload (semanas 4, 8 e 12) em toda a app.</div>
+        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:4px">📅 Início do Plano</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px">A semana actual é calculada automaticamente a partir desta data (deve ser uma segunda-feira).</div>
+        <div id="plan-start-week-label" style="font-size:12px;color:var(--accent);font-weight:700;margin-bottom:8px"></div>
         <div style="display:flex;gap:10px;align-items:center">
-          <button onclick="(()=>{const i=document.getElementById('plan-week-input');i.value=Math.max(1,parseInt(i.value||1)-1);_updateDeloadBadge();})()" style="width:40px;height:40px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">−</button>
-          <input type="number" id="plan-week-input" min="1" max="12" inputmode="numeric" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text1);font-size:22px;text-align:center;font-weight:800" oninput="_updateDeloadBadge()">
-          <button onclick="(()=>{const i=document.getElementById('plan-week-input');i.value=Math.min(12,parseInt(i.value||1)+1);_updateDeloadBadge();})()" style="width:40px;height:40px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">+</button>
-          <button class="btn btn-primary" onclick="savePlanWeek()" style="flex:1;padding:12px">Guardar</button>
+          <input type="date" id="plan-start-input" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text1);font-size:15px;font-weight:700" oninput="_updatePlanStartLabel()">
+          <button class="btn btn-primary" onclick="savePlanStart()" style="flex:1;padding:12px">Guardar</button>
         </div>
       </div>
       <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Apps Script Web App URL</label>
