@@ -3478,7 +3478,11 @@ function getBestSetForWeek(exerciseIds, weekNum) {
   return bestKg > 0 ? { kg: bestKg, reps: bestReps } : null;
 }
 function getBestPlankForWeek(weekNum) {
-  const plankIds = ['gm_a_plank','forearm_plank_a'];
+  const plankIds = [
+    'gm_a_plank',      // Gym A — Plank
+    'sp_a_plank',      // Speediance A — Plank
+    'forearm_plank_a', // Hotel — Forearm Plank
+  ];
   const history  = loadHistory();
   const { start, end } = weekDateRange(weekNum);
   const startMs = start.getTime() - 86400000;
@@ -3544,9 +3548,24 @@ function renderProgressForm(content) {
   const { end }  = weekDateRange(wk);
   const sundayFmt = end.toLocaleDateString('pt-PT', { weekday:'long', day:'numeric', month:'long' });
 
-  const benchBest = getBestSetForWeek(['gm_a_bench','db_bench_press'], wk);
-  const latBest   = getBestSetForWeek(['gm_b_pulldown','sp_b_pulldown','gm_d_pulldown'], wk);
-  const curlBest  = getBestSetForWeek(['gm_b_bicep_curl','standing_biceps_curl'], wk);
+  // IDs cobertos por ambiente: gym (gm_), speediance (sp_), hotel (db_/standing_)
+  const benchBest = getBestSetForWeek([
+    'gm_a_bench',        // Gym — Dumbbell Bench Press
+    'sp_a_bench',        // Speediance — Dual-Handle Bench Press
+    'db_bench_press',    // Hotel — Dumbbell Bench Press
+  ], wk);
+  const latBest = getBestSetForWeek([
+    'gm_b_pulldown',     // Gym B — Neutral Grip Cable Lat Pulldown
+    'gm_d_pulldown',     // Gym D — Overhand Grip Cable Lat Pulldown
+    'sp_b_pulldown',     // Speediance B — Kneeling Dual-Handle Lat Pulldown
+    'sp_d_pulldown',     // Speediance D — Kneeling Dual-Handle Lat Pulldown
+  ], wk);
+  const curlBest = getBestSetForWeek([
+    'gm_b_bicep_curl',   // Gym B — Dumbbell Bicep Curl
+    'sp_b_bicep_curl',   // Speediance B — Standing Dual-Handle Biceps Curl (PRINCIPAL)
+    'sp_b_curl_fin',     // Speediance B — Curl Finisher
+    'standing_biceps_curl', // Hotel — Standing Biceps Curl
+  ], wk);
   const plankBest = getBestPlankForWeek(wk);
   const saved     = getProgressaoForWeek(wk);
 
