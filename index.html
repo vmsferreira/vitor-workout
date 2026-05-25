@@ -1145,6 +1145,12 @@ function loadHistory() {
 function saveHistory(h) {
   localStorage.setItem('vw_history', JSON.stringify(h));
 }
+function loadCorridasLocal() {
+  try { return JSON.parse(localStorage.getItem('vw_corridas') || '[]'); } catch(e) { return []; }
+}
+function saveCorridasLocal(arr) {
+  try { localStorage.setItem('vw_corridas', JSON.stringify(arr)); } catch(e) {}
+}
 function loadPrefs() {
   try { return JSON.parse(localStorage.getItem('vw_prefs') || '{}'); } catch(e) { return {}; }
 }
@@ -1203,7 +1209,12 @@ function showScreen(id) {
 }
 function navTo(dest) {
   if(dest==='home') { showScreen('home-screen'); renderHome(); }
-  if(dest==='history') { showScreen('history-screen'); renderHistory(); }
+  if(dest==='history') {
+    showScreen('history-screen'); renderHistory();
+    // Auto-carrega corridas em background se cache vazio ou desactualizado
+    const corridasCacheAge = parseInt(localStorage.getItem('vw_corridas_ts')||'0');
+    if (Date.now() - corridasCacheAge > 3600000) loadCorridaHistoryBg();
+  }
   if(dest==='progress') { progState.weekNum = getPlanWeek(); showScreen('progress-screen'); renderProgress(); }
   if(dest==='supl') { showScreen('supl-screen'); renderSuplementos(); }
 }
@@ -2924,6 +2935,30 @@ function exportCSV() {
 }
 
 // ── History Screen ────────────────────────────────────
+// Carrega corridas em background e actualiza o histórico silenciosamente
+async function loadCorridaHistoryBg() {
+  try {
+    const url = loadSettings().sheetsUrl;
+    if (!url) return;
+    const res = await fetch(url + '?action=corrida_history&t=' + Date.now());
+    const json = await res.json();
+    if (json.corridas && json.corridas.length > 0) {
+      saveCorridasLocal(json.corridas);
+      localStorage.setItem('vw_corridas_ts', Date.now().toString());
+      // Re-render se o histórico estiver visível
+      const scr = document.getElementById('history-screen');
+      if (scr && scr.classList.contains('active') && (state.histFilter||'all') !== 'workouts') {
+        renderHistory();
+      }
+    }
+  } catch(e) {}
+}
+
+function setHistFilter(f) {
+  state.histFilter = f;
+  renderHistory();
+}
+
 function switchHistTab(tab) {
   state.histTab = tab;
   document.querySelectorAll('#history-screen .tab').forEach((t,i)=>{
@@ -3001,35 +3036,96 @@ async function syncFromCloud() {
 }
 
 function renderHistLog(history, content) {
-  if(history.length===0){
-    content.innerHTML=`<div class="hist-empty"><div style="font-size:48px">🏋️</div><p>Ainda sem treinos registados.</p><p style="margin-top:8px;font-size:13px;color:var(--text3)">Começa o teu primeiro treino<br>ou toca em ☁️ Sync para carregar da cloud.</p></div>`;
+  const filter = state.histFilter || 'all';
+  const corridas = loadCorridasLocal();
+
+  // ── Filtro ──
+  const fBtn = (f, label) => `<button onclick="setHistFilter('${f}')" style="padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;border:1px solid ${filter===f?'var(--accent)':'var(--border)'};background:${filter===f?'var(--accentbg)':'var(--bg3)'};color:${filter===f?'var(--accent)':'var(--text2)'};touch-action:manipulation">${label}</button>`;
+  const filterBar = `<div style="display:flex;gap:8px;margin-bottom:14px">${fBtn('all','Tudo')}${fBtn('workouts','🏋️ Treinos')}${fBtn('runs','🏃 Corridas')}</div>`;
+
+  // ── Construir lista unificada ──
+  const entries = [];
+  if (filter !== 'runs') {
+    history.forEach((e, idx) => entries.push({ kind: 'workout', date: entryDate(e), idx, data: e }));
+  }
+  if (filter !== 'workouts') {
+    corridas.forEach((c, idx) => {
+      const ts = c.data ? new Date(c.data + 'T12:00:00Z').getTime() : 0;
+      if (ts > 0) entries.push({ kind: 'run', date: ts, idx, data: c });
+    });
+  }
+  entries.sort((a, b) => b.date - a.date);
+
+  if (entries.length === 0) {
+    const msg = filter === 'runs'
+      ? '<div style="font-size:48px">🏃</div><p>Ainda sem corridas registadas.</p>'
+      : '<div style="font-size:48px">🏋️</div><p>Ainda sem treinos registados.</p><p style="margin-top:8px;font-size:13px;color:var(--text3)">Começa o teu primeiro treino<br>ou toca em ☁️ Sync para carregar da cloud.</p>';
+    content.innerHTML = filterBar + `<div class="hist-empty">${msg}</div>`;
     return;
   }
-  const items = [...history].reverse().map(entry=>{
-    const sess = SESSIONS[entry.type]?.sessions[entry.session];
-    const idx = history.length - 1 - [...history].reverse().indexOf(entry);
-    const cloudBadge = entry._fromCloud ? '<span style="font-size:10px;color:var(--text3);margin-left:4px">☁️</span>' : '';
-    return `<button onclick="openHistDetail(${idx})" style="width:100%;text-align:left;font-family:inherit;cursor:pointer;-webkit-appearance:none;background:none;border:none;padding:0;display:block;margin-bottom:10px;touch-action:manipulation">
-      <div class="hist-entry" style="margin-bottom:0">
-        <div class="h-head">
-          <div>
-            <div class="h-date">${fmtEntryDate(entry)}${cloudBadge}</div>
-            <div class="h-sess">${sess?.name||'Treino'} · ${entry.type==='hotel'?'Hotel':entry.type} ${entry.mode==='log'?'· 📋 Log':''}</div>
+
+  const tipoEmoji = { 'Easy Run':'🟢', 'Long Run':'🔵', 'Tempo Run':'🟠', 'Intervalos':'🔴', 'Fartlek':'🟡', 'Recuperação':'⚪' };
+  const localEmoji = { 'Angola':'🇦🇴', 'Dubai':'🇦🇪', 'Portugal':'🇵🇹', 'Outro':'🌍' };
+
+  const items = entries.map(e => {
+    if (e.kind === 'workout') {
+      const entry = e.data;
+      const sess = SESSIONS[entry.type]?.sessions[entry.session];
+      const cloudBadge = entry._fromCloud ? '<span style="font-size:10px;color:var(--text3);margin-left:4px">☁️</span>' : '';
+      return `<button onclick="openHistDetail(${e.idx})" style="width:100%;text-align:left;font-family:inherit;cursor:pointer;-webkit-appearance:none;background:none;border:none;padding:0;display:block;margin-bottom:10px;touch-action:manipulation">
+        <div class="hist-entry" style="margin-bottom:0">
+          <div class="h-head">
+            <div>
+              <div class="h-date">${fmtEntryDate(entry)}${cloudBadge}</div>
+              <div class="h-sess">${sess?.name||'Treino'} · ${entry.type==='hotel'?'Hotel':entry.type} ${entry.mode==='log'?'· 📋 Log':''}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span class="chip chip-accent">${entry.session}</span>
+              <span style="color:var(--text3);font-size:18px">›</span>
+            </div>
           </div>
+          <div class="h-stats">
+            <div class="h-stat">⏱ <span>${fmtTime(entry.duration||0)}</span></div>
+            <div class="h-stat">🏋️ <span>${entry.totalVolume||0}kg</span></div>
+            <div class="h-stat">💪 <span>${entry.exercises?.length||0} ex.</span></div>
+          </div>
+        </div>
+      </button>`;
+    } else {
+      const c = e.data;
+      const _d = new Date(e.date);
+      const dateLabel = _d.toLocaleDateString('pt-PT', { weekday:'short', day:'numeric', month:'short', timeZone:'UTC' });
+      const emoji = tipoEmoji[c.tipo_treino] || '🏃';
+      const flag  = localEmoji[c.localizacao] || '🌍';
+      return `<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
           <div style="display:flex;align-items:center;gap:6px">
-            <span class="chip chip-accent">${entry.session}</span>
-            <span style="color:var(--text3);font-size:18px">›</span>
+            <span style="font-size:16px">${emoji}</span>
+            <div style="font-size:14px;font-weight:700">${c.tipo_treino||'Corrida'}</div>
+            <span style="font-size:11px;color:var(--text2)">${flag}</span>
+          </div>
+          <div style="font-size:12px;color:var(--text2);font-weight:600">${dateLabel}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+          <div style="background:var(--bg3);border-radius:8px;padding:8px;text-align:center">
+            <div style="font-size:10px;color:var(--text2);font-weight:600;margin-bottom:2px">KM</div>
+            <div style="font-size:16px;font-weight:800;color:var(--green)">${c.distancia_km||'—'}</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:8px;text-align:center">
+            <div style="font-size:10px;color:var(--text2);font-weight:600;margin-bottom:2px">TEMPO</div>
+            <div style="font-size:14px;font-weight:800;color:var(--accent)">${c.tempo_total||'—'}</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:8px;text-align:center">
+            <div style="font-size:10px;color:var(--text2);font-weight:600;margin-bottom:2px">PACE</div>
+            <div style="font-size:13px;font-weight:800">${c.pace_medio ? c.pace_medio+'/km' : '—'}</div>
           </div>
         </div>
-        <div class="h-stats">
-          <div class="h-stat">⏱ <span>${fmtTime(entry.duration||0)}</span></div>
-          <div class="h-stat">🏋️ <span>${entry.totalVolume||0}kg</span></div>
-          <div class="h-stat">💪 <span>${entry.exercises?.length||0} ex.</span></div>
-        </div>
-      </div>
-    </button>`;
+        ${c.notas ? `<div style="font-size:11px;color:var(--text2);margin-top:8px;font-style:italic">"${c.notas}"</div>` : ''}
+      </div>`;
+    }
   }).join('');
-  content.innerHTML = items + `<div style="text-align:center;padding:20px"><button class="btn btn-outline btn-sm" onclick="clearAllHistory()">🗑️ Limpar Histórico Local</button></div>`;
+
+  content.innerHTML = filterBar + items + `<div style="text-align:center;padding:20px"><button class="btn btn-outline btn-sm" onclick="clearAllHistory()">🗑️ Limpar Histórico Local</button></div>`;
 }
 
 
@@ -4324,6 +4420,10 @@ async function loadCorridaHistory() {
     const res = await fetch(settings.sheetsUrl + '?action=corrida_history');
     const json = await res.json();
     if (btn) { btn.textContent = '↻ Actualizar'; btn.disabled = false; }
+    if (json.corridas && json.corridas.length > 0) {
+      saveCorridasLocal(json.corridas);
+      localStorage.setItem('vw_corridas_ts', Date.now().toString());
+    }
     renderCorridaHistory(json.corridas || []);
   } catch(err) {
     listEl.innerHTML = '<div style="font-size:12px;color:#e74c3c;text-align:center;padding:8px">❌ Erro ao carregar: ' + err.message + '</div>';
