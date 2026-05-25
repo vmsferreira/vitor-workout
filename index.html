@@ -1216,7 +1216,7 @@ function navTo(dest) {
     showScreen('history-screen'); renderHistory();
     loadCorridaHistoryBg(); // Sempre actualiza corridas em background
   }
-  if(dest==='progress') { progState.weekNum = getPlanWeek(); showScreen('progress-screen'); renderProgress(); }
+  if(dest==='progress') { showScreen('progress-screen'); renderProgress(); }
   if(dest==='supl') { showScreen('supl-screen'); renderSuplementos(); }
 }
 
@@ -3624,7 +3624,14 @@ function upsertProgressaoLocal(data) {
 }
 
 // ── Estado do tab de progresso ───────────────────────────────
-const progState = { tab: 'form', weekNum: currentWeekNum() };
+// Smart default: se a semana actual não tem progresso guardado, abre na semana anterior
+// (caso típico: segunda-feira, a abrir para preencher a semana passada)
+function getDefaultProgWeek() {
+  const cur = getPlanWeek();
+  if (cur > 1 && !getProgressaoForWeek(cur)) return cur - 1;
+  return cur;
+}
+const progState = { tab: 'form', weekNum: 0 }; // 0 = inicializado lazily
 
 function switchProgTab(tab) {
   progState.tab = tab;
@@ -3638,6 +3645,8 @@ function switchProgTab(tab) {
 function renderProgress() {
   const content = document.getElementById('progress-content');
   if (!content) return;
+  // Inicializar semana por defeito na primeira abertura
+  if (!progState.weekNum) progState.weekNum = getDefaultProgWeek();
   if (progState.tab === 'form')   renderProgressForm(content);
   else if (progState.tab === 'table')  renderProgressTable(content);
   else renderProgressCharts(content);
