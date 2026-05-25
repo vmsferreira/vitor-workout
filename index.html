@@ -314,7 +314,10 @@ canvas{max-width:100%;}
       </button>
     </div>
     <div class="card" style="margin-top:8px;">
-      <div style="font-size:13px;font-weight:700;margin-bottom:8px;">📊 Resumo Rápido</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:700;">📊 Resumo Rápido</div>
+        <div id="home-week-badge" style="font-size:12px;font-weight:700;color:var(--accent);background:var(--accentbg);padding:3px 10px;border-radius:20px"></div>
+      </div>
       <div id="quick-stats" style="color:var(--text2);font-size:13px;">A carregar...</div>
     </div>
     <button id="last-workout-card" onclick="openLastWorkout()" style="width:100%;text-align:left;font-family:inherit;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;cursor:pointer;touch-action:manipulation;-webkit-appearance:none">
@@ -1261,8 +1264,14 @@ function renderHome() {
   const corridas = loadCorridasLocal();
   const qs = document.getElementById('quick-stats');
 
-  // Limite "esta semana" = calculado pela data real (não pelo planWeek manual)
-  const { start: weekStart } = weekDateRange(getCurrentPlanWeekByDate());
+  // Semana actual pela data real
+  const curWeek = getCurrentPlanWeekByDate();
+  const isDeloadWeek = DELOAD_WEEKS.includes(curWeek);
+  const weekBadge = document.getElementById('home-week-badge');
+  if (weekBadge) weekBadge.textContent = `Semana ${curWeek}${isDeloadWeek ? ' ⭐' : ''}`;
+
+  // Limite "esta semana" = calculado pela data real
+  const { start: weekStart } = weekDateRange(curWeek);
   const weekStartMs = weekStart.getTime();
 
   // ── Treinos ──
@@ -1283,7 +1292,7 @@ function renderHome() {
     statsHTML = 'Nenhuma actividade ainda. Começa já! 💪';
   } else {
     if (totalTreinos > 0) {
-      statsHTML += `<div style="margin-bottom:4px">🏋️ <b>${totalTreinos}</b> treino${totalTreinos!==1?'s':''} · <b>${treinsEstaSemana}</b> esta semana · <b>${Math.round(totalVol/1000)}t</b> vol total</div>`;
+      statsHTML += `<div style="margin-bottom:4px">🏋️ <b>${totalTreinos}</b> treino${totalTreinos!==1?'s':''} · <b>${treinsEstaSemana}</b> esta semana · <b>${Math.round(totalVol).toLocaleString('pt-PT')}kg</b> vol total</div>`;
     }
     if (totalCorridas > 0) {
       statsHTML += `<div>🏃 <b>${totalCorridas}</b> corrida${totalCorridas!==1?'s':''} · <b>${corridasEstaSemana}</b> esta semana · <b>${fmtDurationSecs(totalCorridaSecs)}</b> total</div>`;
