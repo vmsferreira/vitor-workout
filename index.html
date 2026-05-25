@@ -2,6 +2,9 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1211,9 +1214,7 @@ function navTo(dest) {
   if(dest==='home') { showScreen('home-screen'); renderHome(); }
   if(dest==='history') {
     showScreen('history-screen'); renderHistory();
-    // Auto-carrega corridas em background se cache vazio ou desactualizado
-    const corridasCacheAge = parseInt(localStorage.getItem('vw_corridas_ts')||'0');
-    if (Date.now() - corridasCacheAge > 3600000) loadCorridaHistoryBg();
+    loadCorridaHistoryBg(); // Sempre actualiza corridas em background
   }
   if(dest==='progress') { progState.weekNum = getPlanWeek(); showScreen('progress-screen'); renderProgress(); }
   if(dest==='supl') { showScreen('supl-screen'); renderSuplementos(); }
@@ -2945,9 +2946,8 @@ async function loadCorridaHistoryBg() {
     if (json.corridas && json.corridas.length > 0) {
       saveCorridasLocal(json.corridas);
       localStorage.setItem('vw_corridas_ts', Date.now().toString());
-      // Re-render se o histórico estiver visível
-      const scr = document.getElementById('history-screen');
-      if (scr && scr.classList.contains('active') && (state.histFilter||'all') !== 'workouts') {
+      // Re-render o histórico se estiver na tab "log"
+      if (state.screen === 'history-screen' && state.histTab === 'log') {
         renderHistory();
       }
     }
