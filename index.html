@@ -3584,15 +3584,15 @@ async function renderProgressForm(content) {
   ], wk);
   let plankBest = getBestPlankForWeek(wk);
 
-  // CLOUD FALLBACK: se não houver dados locais, vai buscar ao Sheets
-  const hasLocal = benchBest || latBest || curlBest || plankBest;
-  if (!hasLocal) {
+  // CLOUD FALLBACK: para cada métrica em falta, vai buscar ao Sheets
+  const needsCloud = !benchBest || !latBest || !curlBest || !plankBest;
+  if (needsCloud) {
     const cloud = await fetchWeekBestFromCloud(wk);
     if (cloud) {
-      benchBest = benchBest || cloud.bench;
-      latBest   = latBest   || cloud.lat;
-      curlBest  = curlBest  || cloud.curl;
-      plankBest = plankBest || cloud.plank;
+      if (!benchBest) benchBest = cloud.bench;
+      if (!latBest)   latBest   = cloud.lat;
+      if (!curlBest)  curlBest  = cloud.curl;
+      if (!plankBest) plankBest = cloud.plank;
     }
   }
 
@@ -3942,8 +3942,8 @@ function buildSparkline(metric, pts, wkNow) {
 // ══════════════════════════════════════════════════════════════
 // SUPLEMENTOS TRACKER
 // ══════════════════════════════════════════════════════════════
-const SUPL_CACHE_KEY  = 'supl_data_v1';
-const SUPL_CACHE_TIME = 'supl_data_time_v1';
+const SUPL_CACHE_KEY  = 'supl_data_v2';
+const SUPL_CACHE_TIME = 'supl_data_time_v2';
 const SUPL_FALLBACK = [
   {hora:'06:30',suplemento:'Ferro-Gradumet',dose:'1 comp',marca:'Ferro-Gradumet 329,7mg',notas:'Jejum · aguardar 30min antes de comer',dias:'Todos',ordem:1},
   {hora:'06:30',suplemento:'Verisol® Colagénio',dose:'5g',marca:'Prozis Collagen Peptides Verisol®',notas:'Com água + limão, jejum',dias:'Todos',ordem:2},
