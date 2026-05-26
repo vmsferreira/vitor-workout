@@ -1161,6 +1161,13 @@ function saveHistory(h) {
 function loadCorridasLocal() {
   try { return JSON.parse(localStorage.getItem('vw_corridas') || '[]'); } catch(e) { return []; }
 }
+function sanitizeCorrida(c) {
+  // Limpa campos que o GAS antigo devolve em formato bruto de Date
+  return { ...c,
+    tempo_total: sanitizeDuration(c.tempo_total),
+    pace_medio:  sanitizeDuration(c.pace_medio)
+  };
+}
 function saveCorridasLocal(arr) {
   try { localStorage.setItem('vw_corridas', JSON.stringify(arr)); } catch(e) {}
 }
@@ -3032,7 +3039,7 @@ async function loadCorridaHistoryBg() {
     const res = await fetch(url + '?action=corrida_history&t=' + Date.now());
     const json = await res.json();
     if (json.corridas && json.corridas.length > 0) {
-      saveCorridasLocal(json.corridas);
+      saveCorridasLocal(json.corridas.map(sanitizeCorrida));
       localStorage.setItem('vw_corridas_ts', Date.now().toString());
       // Re-render o histórico se estiver na tab "log"
       if (state.screen === 'history-screen' && state.histTab === 'log') {
@@ -4303,7 +4310,37 @@ function renderSuplementos() {
   else { loadSuplementos(false); }
 }
 
-/// Extrai timestamp de qualquer formato de data — incluindo "Sun May 24 2026 15:00:00 GMT+0300..."
+/// Converte "Sun Dec 31 1899 08:48:00 GMT+0227..." em "32:48" — mesma lógica do GAS cellToDurationStr
+function sanitizeDuration(s) {
+  if (!s) return '';
+  const str = String(s).trim();
+  // Já está limpo: "32:47" ou "1:18:21" ou "6:17"
+  if (/^\d+:\d{2}(:\d{2})?$/.test(str)) return str;
+  // Formato mau do GAS antigo: "Dec DD 1899 HH:MM:SS GMT±HHMM"
+  // Extrair dia (30 ou 31...), hora local e offset
+  const m = str.match(/Dec\s+(\d+)\s+1899\s+(\d{1,2}):(\d{2}):(\d{2})\s+GMT([+-])(\d{2})(\d{2})/i);
+  if (m) {
+    const dayOfDec = parseInt(m[1]);   // 30=base, 31=+1dia, etc.
+    const lh = parseInt(m[2]), lm = parseInt(m[3]), ls = parseInt(m[4]);
+    const sign = m[5] === '+' ? 1 : -1;
+    const oh = parseInt(m[6]), om = parseInt(m[7]);
+    const offsetMin = sign * (oh * 60 + om);
+    // Minutos desde Dec 30 00:00 local → converter para UTC
+    const localMin = (dayOfDec - 30) * 1440 + lh * 60 + lm;
+    const utcMin   = localMin - offsetMin;
+    const totalSec = utcMin * 60 + ls;
+    if (totalSec >= 0) {
+      const h  = Math.floor(totalSec / 3600);
+      const mn = Math.floor((totalSec % 3600) / 60);
+      const sc = totalSec % 60;
+      if (h > 0) return `${h}:${String(mn).padStart(2,'0')}:${String(sc).padStart(2,'0')}`;
+      return `${String(mn).padStart(2,'0')}:${String(sc).padStart(2,'0')}`;
+    }
+  }
+  return str;
+}
+
+// Extrai timestamp de qualquer formato de data — incluindo "Sun May 24 2026 15:00:00 GMT+0300..."
 function sanitizeCorridaDate(d) {
   if (!d) return 0;
   const s = String(d).trim();
@@ -4623,10 +4660,10 @@ async function loadCorridaHistory() {
     const json = await res.json();
     if (btn) { btn.textContent = '↻ Actualizar'; btn.disabled = false; }
     if (json.corridas && json.corridas.length > 0) {
-      saveCorridasLocal(json.corridas);
+      saveCorridasLocal(json.corridas.map(sanitizeCorrida));
       localStorage.setItem('vw_corridas_ts', Date.now().toString());
     }
-    renderCorridaHistory(json.corridas || []);
+    renderCorridaHistory((json.corridas || []).map(sanitizeCorrida));
   } catch(err) {
     listEl.innerHTML = '<div style="font-size:12px;color:#e74c3c;text-align:center;padding:8px">❌ Erro ao carregar: ' + err.message + '</div>';
     if (btn) { btn.textContent = 'Carregar ›'; btn.disabled = false; }
