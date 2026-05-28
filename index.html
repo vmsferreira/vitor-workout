@@ -1164,8 +1164,9 @@ function loadCorridasLocal() {
 function sanitizeCorrida(c) {
   // Limpa campos que o GAS antigo devolve em formato bruto de Date
   return { ...c,
-    tempo_total: sanitizeDuration(c.tempo_total),
-    pace_medio:  sanitizeDuration(c.pace_medio)
+    tempo_total:  sanitizeDuration(c.tempo_total),
+    pace_medio:   sanitizeDuration(c.pace_medio),
+    hora_corrida: c.hora_corrida || ''
   };
 }
 function saveCorridasLocal(arr) {
@@ -1800,6 +1801,8 @@ function renderRunning() {
   </div>`;
 
   // ── Registar corrida + histórico ──
+  const _cfToday = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  const _cfNowHora = String(today.getHours()).padStart(2,'0') + ':' + String(today.getMinutes()).padStart(2,'0');
   html += `<div class="card" style="margin-bottom:12px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0">
       <div style="display:flex;align-items:center;gap:8px">
@@ -1809,6 +1812,16 @@ function renderRunning() {
       <button onclick="toggleCorridaForm()" id="btn-corrida-form" style="background:var(--accent);color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">+ Registar</button>
     </div>
     <div id="corrida-form-wrap" style="display:none;margin-top:14px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">📅 Data da corrida</div>
+          <input id="cf-data-corrida" type="date" value="${_cfToday}" max="${_cfToday}" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:13px;font-family:inherit">
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">🕐 Hora da corrida</div>
+          <input id="cf-hora-corrida" type="time" value="${_cfNowHora}" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:13px;font-family:inherit">
+        </div>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
         <div>
           <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Tipo de treino</div>
@@ -4311,11 +4324,21 @@ function renderSuplementos() {
 }
 
 /// Converte "Sun Dec 31 1899 08:48:00 GMT+0227..." em "32:48" — mesma lógica do GAS cellToDurationStr
+/// Também converte "0:32:48" → "32:48" (remove horas 0 para melhor legibilidade)
 function sanitizeDuration(s) {
   if (!s) return '';
   const str = String(s).trim();
-  // Já está limpo: "32:47" ou "1:18:21" ou "6:17"
-  if (/^\d+:\d{2}(:\d{2})?$/.test(str)) return str;
+  // HH:MM:SS — se horas = 0, mostrar só MM:SS (ex: "0:32:48" → "32:48", "0:06:03" → "6:03")
+  if (/^\d+:\d{2}:\d{2}$/.test(str)) {
+    const parts = str.split(':');
+    const h = parseInt(parts[0]);
+    if (h === 0) return String(parseInt(parts[1])) + ':' + parts[2]; // strip leading "0:" + leading zeros
+    return str;
+  }
+  // "0:MM" com horas 0 → strip (ex: "0:06" → "6:00" não ocorre normalmente, mas por segurança)
+  if (/^0:\d{2}$/.test(str)) return String(parseInt(str.slice(2))) + ':00';
+  // Já está limpo: "32:47" ou "6:17"
+  if (/^\d+:\d{2}$/.test(str)) return str;
   // Formato mau do GAS antigo: "Dec DD 1899 HH:MM:SS GMT±HHMM"
   // Extrair dia (30 ou 31...), hora local e offset
   const m = str.match(/Dec\s+(\d+)\s+1899\s+(\d{1,2}):(\d{2}):(\d{2})\s+GMT([+-])(\d{2})(\d{2})/i);
@@ -4559,6 +4582,17 @@ function toggleCorridaForm() {
   }
 }
 
+// Normaliza "MM:SS" → "0:MM:SS" para evitar que o Google Sheets interprete como horas
+function normalizeDuration(s) {
+  if (!s) return s;
+  const parts = s.trim().split(':');
+  if (parts.length === 2) {
+    // MM:SS → 0:MM:SS (Sheets: 0h + MM min + SS seg = correcto)
+    return '0:' + parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0');
+  }
+  return s; // já é HH:MM:SS — não alterar
+}
+
 async function submitCorridaLog() {
   const setStatus = (msg, color) => {
     const el = document.getElementById('cf-status');
@@ -4577,22 +4611,26 @@ async function submitCorridaLog() {
     return;
   }
 
-  // Data local do dispositivo (não UTC) para evitar desfasamento de fuso
+  // Data da corrida: usar input do formulário (não necessariamente hoje)
+  const _dataInput = document.getElementById('cf-data-corrida');
+  const _horaInput = document.getElementById('cf-hora-corrida');
   const _now = new Date();
-  const _localDate = _now.getFullYear() + '-' +
-    String(_now.getMonth() + 1).padStart(2, '0') + '-' +
-    String(_now.getDate()).padStart(2, '0');
+  const _localDate = _dataInput?.value ||
+    (_now.getFullYear() + '-' + String(_now.getMonth() + 1).padStart(2, '0') + '-' + String(_now.getDate()).padStart(2, '0'));
+  const _horaCorrida = _horaInput?.value || '';
+
   const _loc = document.getElementById('cf-local').value;
   // Fuso horário baseado na localização seleccionada
   const _tzMap = { 'Portugal': 'Europe/Lisbon', 'Angola': 'Africa/Luanda', 'Dubai': 'Asia/Dubai', 'Outro': 'UTC' };
   const corrida = {
     data:           _localDate,
+    hora_corrida:   _horaCorrida,
     timezone:       _tzMap[_loc] || 'UTC',
     semana_plano:   getPlanWeek(),
     tipo_treino:    document.getElementById('cf-tipo').value,
     distancia_km:   dist,
-    tempo_total:    tempo,
-    pace_medio:     document.getElementById('cf-pace').value.trim(),
+    tempo_total:    normalizeDuration(tempo),           // "32:48" → "0:32:48" para Sheets
+    pace_medio:     normalizeDuration(document.getElementById('cf-pace').value.trim()),
     fc_media:       parseInt(document.getElementById('cf-fc-avg').value) || null,
     fc_max:         parseInt(document.getElementById('cf-fc-max').value) || null,
     cadencia_media: parseInt(document.getElementById('cf-cad').value) || null,
@@ -4622,7 +4660,7 @@ async function submitCorridaLog() {
     if (json.status === 'ok') {
       setStatus('✅ Corrida guardada!', '#2ECC71');
       setTimeout(() => {
-        ['cf-dist','cf-tempo','cf-pace','cf-fc-avg','cf-fc-max','cf-cad','cf-whoop','cf-rpe','cf-notas']
+        ['cf-dist','cf-tempo','cf-pace','cf-fc-avg','cf-fc-max','cf-cad','cf-whoop','cf-rpe','cf-notas','cf-hora-corrida']
           .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
         const s = document.getElementById('cf-status'); if(s) s.textContent = '';
         toggleCorridaForm();
@@ -4690,7 +4728,9 @@ function renderCorridaHistory(corridas) {
     const flag  = localEmoji[c.localizacao] || '🌍';
     const _d = c.data ? new Date(c.data + 'T12:00:00Z') : null;
     const _valid = _d && !isNaN(_d) && _d.getFullYear() > 1900;
-    const dateLabel = _valid ? _d.toLocaleDateString('pt-PT', { weekday:'short', day:'numeric', month:'short', year:'numeric', timeZone:'UTC' }) : (c.data || '—');
+    const _dateStr = _valid ? _d.toLocaleDateString('pt-PT', { weekday:'short', day:'numeric', month:'short', year:'numeric', timeZone:'UTC' }) : (c.data || '—');
+    const _horaStr = c.hora_corrida ? ' · ' + c.hora_corrida : '';
+    const dateLabel = _dateStr + _horaStr;
     const isFirst = idx === 0;
 
     html += `<div style="border-radius:10px;background:var(--bg3);padding:12px;margin-bottom:8px;${isFirst?'border:1px solid var(--accent)33':''}">
